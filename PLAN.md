@@ -30,7 +30,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 ### Phase 1 — Pure-managed numerics & CV
 - [x] `020` NumericOps (numpy parity).
 - [x] `030` Gray image types + host image codecs (OpenCV gray weights).
-- [ ] `040` OpenCV primitives: resize, getRotationMatrix2D, warpAffine, CCL(4).
+- [x] `040` OpenCV primitives: resize, getRotationMatrix2D, warpAffine, CCL(4).
 - [ ] `050` Vocab + Unicode helpers.
 
 ### Phase 2 — ONNX pipeline
@@ -77,4 +77,5 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`030` done: numerics, gray decode/encode parity (17 tests green, build clean).
+- Steps `000`–`040` done: numerics, gray decode/encode parity, and bit-exact OpenCV primitives
+  (25 tests green, build clean).
