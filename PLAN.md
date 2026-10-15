@@ -70,6 +70,14 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [ ] `250` Port python unit tests.
 - [ ] `260` End-to-end parity sweep + docs.
 
+### Phase 8 — Last
+- [x] `270` ONNX backend benchmark: `Microsoft.ML.OnnxRuntime` vs `Lokad.Onnx` on the Indra
+  models, as a BenchmarkDotNet project under `temp/` (see `docs/270-onnx-benchmark.md`).
+  Result: Lokad.Onnx 0.3.0 cannot execute `det.onnx` (`Softplus`) or `rec.onnx` (`ArgMax`) at
+  all, even after rewriting `HardSwish`/`Xor`/`Mod`/`BatchNormalization`/`DepthToSpace`; where
+  it does run it is 1.6–2.8× slower than ORT on the same graph and allocates ~63 MB per
+  `orient` call. `Microsoft.ML.OnnxRuntime` stays the reference backend.
+
 ## Current state
 
 - Environment verified: dotnet 10.0.400, uv 0.12.7, Python ref env at `tools/pyenv`.
