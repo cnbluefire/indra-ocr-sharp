@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Indra.Ocr.Viewer</RootNamespace>
+    <AssemblyName>indra-ocr-viewer</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
+  </ItemGroup>
+
+</Project>

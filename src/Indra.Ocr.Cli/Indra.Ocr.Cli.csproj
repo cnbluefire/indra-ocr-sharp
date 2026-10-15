@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Indra.Ocr.Cli</RootNamespace>
+    <AssemblyName>indra-ocr</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
+  </ItemGroup>
+
+</Project>

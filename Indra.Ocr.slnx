@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Indra.Ocr.Cli/Indra.Ocr.Cli.csproj" />
+    <Project Path="src/Indra.Ocr.Core/Indra.Ocr.Core.csproj" />
+    <Project Path="src/Indra.Ocr.Viewer/Indra.Ocr.Viewer.csproj" />
+  </Folder>
+</Solution>

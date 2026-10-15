@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.31.0" />
+    <PackageVersion Include="PDFiumCore" Version="156.0.8076" />
+    <!-- 2.1.x is the last Apache-2.0 release (3.x/4.x use the Six Labors Split License
+         and 4.x refuses Release builds without a licence key). -->
+    <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.13" />
+    <!-- test -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+</Project>
