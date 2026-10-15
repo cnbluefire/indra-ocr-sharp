@@ -1,4 +1,4 @@
-"""Generate tests/Indra.Ocr.Tests/fixtures/numerics.json from numpy for step 020."""
+"""Generate src/Indra.Ocr.Tests/fixtures/numerics.json from numpy for step 020."""
 
 from __future__ import annotations
 

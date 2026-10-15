@@ -10,9 +10,10 @@ status. Keep these in sync with `PLAN.md`.
 |---|---|
 | [000](000-project-governance.md) | Project governance & layout |
 | [010](010-solution-scaffold.md) | Solution, projects, build props, NuGet refs |
+| [012](012-project-layout.md) | Project layout: `src/`, `Indra.Ocr.Pdf`, `BitmapData`, no codec in Core |
 | [015](015-test-scaffolding.md) | Test scaffolding |
 | [020](020-numeric-ops.md) | NumericOps (numpy parity) |
-| 030 | Gray image types + codecs |
+| [030](030-image-codecs.md) | Gray image types + host image codecs |
 | 040 | OpenCV primitives |
 | 050 | Vocab + Unicode helpers |
 | 060 | ORT session infra |

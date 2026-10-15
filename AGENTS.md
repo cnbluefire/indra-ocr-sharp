@@ -12,11 +12,22 @@ package** (`Microsoft.ML.OnnxRuntime`).
 
 ## Hard requirements
 
-1. **Three projects**
+1. **Four projects**, all under `src/` (`src/Shared/` holds source files linked into more
+   than one project):
    - `Indra.Ocr.Core` — all core functionality: ONNX Runtime reference, inference-engine
-     lifecycle management, the whole OCR pipeline.
-   - `Indra.Ocr.Cli` — console app; commands must match the `indra-ocr` command 1:1.
+     lifecycle management, the whole OCR pipeline. It has **no** image-codec or PDF
+     dependency: the only image input it accepts is `Indra.Ocr.Imaging.BitmapData`, a
+     non-owning `ref struct` view over 8-bit single-channel pixels
+     (`Width` / `Height` / `Stride` / `Data`), so callers can pass padded buffers with no copy.
+   - `Indra.Ocr.Pdf` — PDF handling (page rasterisation + text layer) via `PDFiumCore`. This
+     is the **only** project that references the PDFium package. PDFium renders straight to
+     grayscale (`FPDFBitmap_Gray`), so rendered pages come back as `GrayImage` with no
+     decoding. It references `Indra.Ocr.Core`.
+   - `Indra.Ocr.Cli` — console app; commands must match the `indra-ocr` command 1:1. Owns
+     image-file decoding (ImageSharp, `src/Shared/ImageFiles.cs`).
    - `Indra.Ocr.Viewer` — preview project; must match the `indra-ocr-viewer` command 1:1.
+     Reuses the same image-file decoder.
+   `Pdf`, `Cli` and `Viewer` all reference `Core`; `Core` references none of them.
 2. **`resources/` is read-only.** Never modify anything under `resources/`. It also never
    enters git (it is externally downloaded material).
 3. **ONNX runtime via NuGet.** `Microsoft.ML.OnnxRuntime`.
@@ -67,9 +78,12 @@ package** (`Microsoft.ML.OnnxRuntime`).
   distinct floats (identical results); divergence is only possible when keys tie exactly.
   Python `sorted(...)` calls are stable and are matched exactly.
 - **Scope**: OCR + PDF text layer first; `--math` last.
-- **Image codecs**: pure-managed ImageSharp for decode/encode; grayscale conversion uses
-  OpenCV's exact weights. (Licence: ImageSharp v3 Six Labors Split License — revisit if a
-  strictly permissive codec is required.)
+- **Image codecs**: the host projects (`Cli` / `Viewer`) decode image files with pure-managed
+  **ImageSharp 2.1.13** (the last Apache-2.0 release; 3.x/4.x are under the Six Labors Split
+  License, and 4.x refuses Release builds without a key). `Core` never touches a file it
+  cannot itself describe as pixels — the hosts decode to grayscale and hand `Core` a
+  `BitmapData`. Reproducing OpenCV 5.0.0's grayscale conversion needs **three different**
+  fixed-point formulas (one per decoder), documented in `docs/030-image-codecs.md`.
 
 ## Environment
 

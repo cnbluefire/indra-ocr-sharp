@@ -4,19 +4,20 @@ Status: done
 
 ## Goal
 
-Create the three-project C# solution that mirrors the Python package layout, with ONNX
-Runtime referenced via NuGet, and helper scripts to run the original Python tools.
+Create the C# solution that mirrors the Python package layout, with ONNX Runtime referenced
+via NuGet, and helper scripts to run the original Python tools.
 
 ## Deliverables
 
-- `Indra.Ocr.slnx` (the .NET 10 SDK emits `.slnx`) with three projects.
-- `Directory.Build.props` — `net10.0`, nullable, implicit usings, latest LangVersion,
+- `src/Indra.Ocr.slnx` (the .NET 10 SDK emits `.slnx`) with four projects.
+- `src/Directory.Build.props` — `net10.0`, nullable, implicit usings, latest LangVersion,
   deterministic builds.
-- `Directory.Packages.props` — central package versions:
+- `src/Directory.Packages.props` — central package versions:
   - `Microsoft.ML.OnnxRuntime` **1.31.0** (matches the Python `onnxruntime` 1.31.0).
   - `PDFiumCore` **156.0.8076** (pulls in `bblanchon.PDFium`).
   - `SixLabors.ImageSharp` **2.1.13** (last Apache-2.0 release).
 - `src/Indra.Ocr.Core` (classlib, assembly `Indra.Ocr.Core`).
+- `src/Indra.Ocr.Pdf` (classlib — PDFium; added with `012`).
 - `src/Indra.Ocr.Cli` (console, **assembly name `indra-ocr`**).
 - `src/Indra.Ocr.Viewer` (`Microsoft.NET.Sdk.Web`, **assembly name `indra-ocr-viewer`**).
 - `tools/scripts/setup-pyenv.ps1` — (re)create the gitignored python reference env.
@@ -34,6 +35,6 @@ Runtime referenced via NuGet, and helper scripts to run the original Python tool
 
 ## Verification
 
-- `dotnet build Indra.Ocr.slnx` → 0 warnings, 0 errors.
+- `dotnet build src/Indra.Ocr.slnx` → 0 warnings, 0 errors.
 - `tools/scripts/run-original.ps1 --version` → `indra-ocr 0.3.2`.
 - `dotnet run --project src/Indra.Ocr.Cli` → exits 1 with the placeholder message.

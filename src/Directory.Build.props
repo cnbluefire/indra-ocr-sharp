@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <NuGetAuditMode>direct</NuGetAuditMode>
+    <!-- SixLabors.ImageSharp 2.1.13 is the last Apache-2.0 release (3.x/4.x are under the
+         Six Labors Split License), and it carries advisories that are only fixed in 3.x.
+         We accept that knowingly: the port needs a permissive image codec. -->
+    <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
+  </PropertyGroup>
+</Project>

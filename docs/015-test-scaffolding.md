@@ -9,9 +9,9 @@ fixture plumbing, a Python reference-output comparator, and deterministic test i
 
 ## Deliverables
 
-- `tests/Indra.Ocr.Tests` (xUnit 2.9.3, `Microsoft.NET.Test.Sdk` 17.14.1) referencing
+- `src/Indra.Ocr.Tests` (xUnit 2.9.3, `Microsoft.NET.Test.Sdk` 17.14.1) referencing
   `Indra.Ocr.Core`. `fixtures/**` is copied to the output dir.
-- `tests/Indra.Ocr.Tests/Fixtures.cs` — loads JSON fixtures (arrays of floats/ints/bytes,
+- `src/Indra.Ocr.Tests/Fixtures.cs` — loads JSON fixtures (arrays of floats/ints/bytes,
   2D flattening) that record Python-reference inputs and expected outputs.
 - `tools/scripts/test/refutil.py` — helpers for writing fixtures from Python.
 - `tools/scripts/test/compare_outputs.py` — compares a reference artifact with a port
@@ -26,7 +26,7 @@ fixture plumbing, a Python reference-output comparator, and deterministic test i
 
 ## Verification
 
-- `dotnet test tests/Indra.Ocr.Tests` → 1 passed.
+- `dotnet test src/Indra.Ocr.Tests` → 1 passed.
 - Reference pipeline runs on the fixtures:
   `run-original.ps1 temp/inputs/latin.png --model-dir resources/models` produces markdown
   with 5 lines / 3 blocks.

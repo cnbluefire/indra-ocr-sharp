@@ -6,7 +6,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
+    <ProjectReference Include="..\Indra.Ocr.Pdf\Indra.Ocr.Pdf.csproj" />
+  </ItemGroup>
+
+  <!-- Image-file decoding (ImageSharp) is a host concern, shared verbatim with the Cli. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\ImageFiles.cs" Link="Hosting\ImageFiles.cs" />
   </ItemGroup>
 
 </Project>

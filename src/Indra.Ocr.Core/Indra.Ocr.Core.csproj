@@ -5,10 +5,10 @@
     <AssemblyName>Indra.Ocr.Core</AssemblyName>
   </PropertyGroup>
 
+  <!-- No third-party image-codec or PDF dependency: Core consumes handwritten grayscale
+       pixels (Indra.Ocr.Imaging.BitmapData) and samples ONNX models. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
-    <PackageReference Include="PDFiumCore" />
-    <PackageReference Include="SixLabors.ImageSharp" />
   </ItemGroup>
 
 </Project>

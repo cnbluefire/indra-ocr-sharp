@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Indra.Ocr.Pdf</RootNamespace>
+    <AssemblyName>Indra.Ocr.Pdf</AssemblyName>
+  </PropertyGroup>
+
+  <!-- The only project that depends on PDFium. It references Core (for GrayImage) but Core
+       does not reference it, so no third-party PDF code leaks into the pipeline. -->
+  <ItemGroup>
+    <PackageReference Include="PDFiumCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
+  </ItemGroup>
+
+</Project>

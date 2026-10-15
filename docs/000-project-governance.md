@@ -9,7 +9,7 @@ Establish the repository rules, plan and documentation structure before any code
 ## Deliverables
 
 - `AGENTS.md` — authoritative record of the user's requirements and working rules
-  (`resources/` read-only, NuGet ONNX runtime, three projects, tool/temp/doc layout,
+  (`resources/` read-only, NuGet ONNX runtime, four projects, tool/temp/doc layout,
   commit-per-step, the two-phase plan, and the locked parity decisions).
 - `PLAN.md` — living execution plan (phases, step IDs, status, current state).
 - `.gitignore` — excludes `resources/`, build output, `tools/pyenv/`, `temp/`, and native

@@ -1,6 +1,6 @@
 """Helpers for writing JSON fixtures that the C# tests read.
 
-A fixture is a small JSON document under tests/Indra.Ocr.Tests/fixtures/. It records
+A fixture is a small JSON document under src/Indra.Ocr.Tests/fixtures/. It records
 the inputs and the **expected outputs from the Python reference implementation**, so a
 C# test can assert bit-parity (arrays are compared element-wise with a tolerance only
 where floats are unavoidable).
@@ -16,7 +16,7 @@ import numpy as np
 
 def fixtures_dir() -> Path:
     root = Path(__file__).resolve().parents[3]
-    d = root / "tests" / "Indra.Ocr.Tests" / "fixtures"
+    d = root / "src" / "Indra.Ocr.Tests" / "fixtures"
     d.mkdir(parents=True, exist_ok=True)
     return d
 
