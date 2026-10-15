@@ -197,12 +197,16 @@ public class OrderPostTests
         var digit = Ranges(Uni.GetProperty("digit"));
         var upper = Ranges(Uni.GetProperty("upper"));
         var space = Ranges(Uni.GetProperty("space"));
+        var lower = Ranges(Uni.GetProperty("lower"));
+        var alpha = Ranges(Uni.GetProperty("alpha"));
 
         for (int cp = 0; cp <= 0x10FFFF; cp++)
         {
             bool wantDigit = InRanges(digit, cp);
             bool wantUpper = InRanges(upper, cp);
             bool wantSpace = InRanges(space, cp);
+            bool wantLower = InRanges(lower, cp);
+            bool wantAlpha = InRanges(alpha, cp);
 
             if (UnicodeText.IsDigitCodePoint(cp) != wantDigit)
                 Assert.Fail($"isdigit(chr(0x{cp:X4})): expected {wantDigit}");
@@ -210,6 +214,10 @@ public class OrderPostTests
                 Assert.Fail($"isupper(chr(0x{cp:X4})): expected {wantUpper}");
             if (UnicodeText.IsSpaceCodePoint(cp) != wantSpace)
                 Assert.Fail($"isspace(chr(0x{cp:X4})): expected {wantSpace}");
+            if (UnicodeText.IsLowerCodePoint(cp) != wantLower)
+                Assert.Fail($"islower(chr(0x{cp:X4})): expected {wantLower}");
+            if (UnicodeText.IsAlphaCodePoint(cp) != wantAlpha)
+                Assert.Fail($"isalpha(chr(0x{cp:X4})): expected {wantAlpha}");
 
             string s = cp >= 0x10000 ? char.ConvertFromUtf32(cp) : ((char)cp).ToString();
             if (UnicodeText.CodePointCount(s) != 1)
@@ -218,6 +226,9 @@ public class OrderPostTests
                 Assert.Fail($"str.isdigit(chr(0x{cp:X4})): expected {wantDigit}");
             if (UnicodeText.IsSpace(s) != wantSpace)
                 Assert.Fail($"str.isspace(chr(0x{cp:X4})): expected {wantSpace}");
+            // str.strip() removes exactly the isspace() code points, from both ends
+            if (UnicodeText.Strip(s + "a" + s) != (wantSpace ? "a" : s + "a" + s))
+                Assert.Fail($"str.strip() with chr(0x{cp:X4}): expected {wantSpace}");
         }
     }
 

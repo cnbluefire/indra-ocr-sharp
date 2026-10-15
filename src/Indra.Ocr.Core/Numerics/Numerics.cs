@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Numerics;
+
 namespace Indra.Ocr;
 
 /// <summary>
@@ -279,6 +282,110 @@ public static class Numerics
             else hi = mid;
         }
         return lo;
+    }
+
+    // ---------------------------------------------------------------- python round()
+
+    /// <summary>
+    /// Python's <c>round(value, digits)</c>: the nearest multiple of <c>10**-digits</c> as a
+    /// <b>decimal</b>, ties to even, converted to the nearest double.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is not what <see cref="Math.Round(double, int)"/> computes. .NET scales by
+    /// <c>10**digits</c> first, i.e. it rounds a rounded value: <c>Math.Round(0.15, 1)</c> is
+    /// <c>0.2</c> because <c>0.15 * 10</c> lands exactly on <c>1.5</c>, while Python's
+    /// <c>round(0.15, 1)</c> is <c>0.1</c> because the double <c>0.15</c> is really
+    /// <c>0.1499999999999999944...</c>. The pipeline writes box coordinates and confidences with
+    /// <c>round(...)</c>, so the port reproduces Python's decimal rounding exactly: it
+    /// decomposes the double into <c>mant * 2**exp</c>, forms the exact rational
+    /// <c>|value| * 10**digits</c>, rounds that to an integer with ties to even, and divides back.
+    /// </para>
+    /// <para>
+    /// The final division is done in double, which is correctly rounded as long as
+    /// <c>10**|digits|</c> is exactly representable (<c>|digits| &lt;= 22</c>, the last exact
+    /// power) and the rounded integer is below <c>2**53</c> — both true for page coordinates.
+    /// Validated against Python over 425 110 values (random doubles, float32-derived doubles and
+    /// boundaries) at 0…4 digits: 0 differences; see <c>docs/120-layout-post.md</c>.
+    /// </para>
+    /// </remarks>
+    public static double RoundHalfEven(double value, int digits)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+            return value;                     // Python: round(nan, n) is nan, round(inf, n) is inf
+        if (value == 0.0)
+            return value;                     // 0.0 and -0.0 are their own nearest multiples
+
+        long bits = BitConverter.DoubleToInt64Bits(value);
+        bool negative = bits < 0;
+        int rawExponent = (int)((bits >> 52) & 0x7FF);
+        long mantissa = bits & 0xF_FFFF_FFFF_FFFFL;
+        int exp2;
+        if (rawExponent == 0)
+        {
+            exp2 = -1074;                     // subnormal
+        }
+        else
+        {
+            mantissa |= 1L << 52;             // implicit leading bit
+            exp2 = rawExponent - 1075;
+        }
+
+        BigInteger numerator = mantissa;
+        BigInteger denominator = BigInteger.One;
+        int shift = exp2 + digits;
+        if (shift >= 0)
+            numerator <<= shift;
+        else
+            denominator <<= -shift;
+        if (digits >= 0)
+            numerator *= BigInteger.Pow(5, digits);
+        else
+            denominator *= BigInteger.Pow(5, -digits);
+
+        BigInteger q = BigInteger.DivRem(numerator, denominator, out BigInteger r);
+        BigInteger twice = r * 2;
+        if (twice > denominator || (twice == denominator && !q.IsEven))
+            q += 1;
+
+        double scaled = digits >= 0
+            ? ScaledToDouble(q, digits)
+            : (double)q * PowerOfTen(-digits);
+        return negative ? -scaled : scaled;
+    }
+
+    /// <summary>
+    /// The nearest double to the exact rational <c>q / 10**digits</c> (q &gt;= 0).
+    /// </summary>
+    /// <remarks>
+    /// While the integer and the power are exact (<c>|q| &lt; 2**53</c>, <c>digits &lt;= 22</c>) the
+    /// IEEE division is already correctly rounded. Beyond that the exact rational is written as a
+    /// decimal string and parsed, which .NET also rounds correctly (nearest, ties to even) — the
+    /// page coordinates this is used on never leave the fast path.
+    /// </remarks>
+    private static double ScaledToDouble(BigInteger q, int digits)
+    {
+        if (q.IsZero)
+            return 0.0;
+        if (digits <= 22 && BigInteger.Abs(q) < (BigInteger.One << 53))
+            return (double)q / PowerOfTen(digits);
+        if (digits == 0)
+            return (double)q;
+
+        string integer = q.ToString(CultureInfo.InvariantCulture);
+        if (integer.Length <= digits)
+            integer = integer.PadLeft(digits + 1, '0');
+        string text = integer[..^digits] + "." + integer[^digits..];
+        return double.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture);
+    }
+
+    // 10**n as a double for n >= 0: exact up to n = 22, which is what RoundHalfEven needs.
+    private static double PowerOfTen(int n)
+    {
+        double p = 1.0;
+        for (int i = 0; i < n; i++)
+            p *= 10.0;
+        return p;
     }
 
     // ---------------------------------------------------------------- matrices

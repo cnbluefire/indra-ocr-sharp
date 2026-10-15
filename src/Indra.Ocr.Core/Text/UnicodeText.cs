@@ -124,6 +124,45 @@ public static class UnicodeText
             || InRanges(OtherUppercase, codePoint);
     }
 
+    /// <summary>
+    /// Python's <c>str.islower()</c> for one code point: <c>Ll</c> plus the "Other_Lowercase"
+    /// code points (modifier letters, Roman numeral lower cases, ...), which .NET reports as
+    /// <c>Lm</c>/<c>Nl</c>/<c>Lo</c>. Needed by <c>join_lines</c>'s hyphen test.
+    /// </summary>
+    public static bool IsLowerCodePoint(int codePoint)
+    {
+        if (codePoint < 0 || codePoint > 0x10FFFF)
+            return false;
+        return CharUnicodeInfo.GetUnicodeCategory(codePoint) == UnicodeCategory.LowercaseLetter
+            || InRanges(OtherLowercase, codePoint);
+    }
+
+    /// <summary>Python's <c>str.isalpha()</c> for one code point (any <c>L*</c> category).</summary>
+    public static bool IsAlphaCodePoint(int codePoint)
+    {
+        if (codePoint < 0 || codePoint > 0x10FFFF)
+            return false;
+        return CharUnicodeInfo.GetUnicodeCategory(codePoint) is
+            UnicodeCategory.UppercaseLetter or UnicodeCategory.LowercaseLetter
+            or UnicodeCategory.TitlecaseLetter or UnicodeCategory.ModifierLetter
+            or UnicodeCategory.OtherLetter;
+    }
+
+    /// <summary>
+    /// Python's <c>str.strip()</c> with no argument: Python whitespace (not .NET's, which misses
+    /// <c>0x1C</c>..<c>0x1F</c>) trimmed from both ends.
+    /// </summary>
+    public static string Strip(string s)
+    {
+        int start = 0;
+        int end = s.Length;
+        while (start < end && IsSpaceCodePoint(s[start]))
+            start++;
+        while (end > start && IsSpaceCodePoint(s[end - 1]))
+            end--;
+        return start == 0 && end == s.Length ? s : s[start..end];
+    }
+
     private static bool InRanges((int Lo, int Hi)[] ranges, int codePoint)
     {
         foreach (var (lo, hi) in ranges)
@@ -147,6 +186,18 @@ public static class UnicodeText
     [
         (0x2160, 0x216F), (0x24B6, 0x24CF), (0x1F130, 0x1F149), (0x1F150, 0x1F169),
         (0x1F170, 0x1F189),
+    ];
+
+    // Code points with the Unicode "Other_Lowercase" property that are not Ll (Unicode 16.0.0,
+    // what Python 3.14 reports): modifier letters and the lower-case Roman numerals.
+    private static readonly (int Lo, int Hi)[] OtherLowercase =
+    [
+        (0x00AA, 0x00AA), (0x00BA, 0x00BA), (0x02B0, 0x02B8), (0x02C0, 0x02C1), (0x02E0, 0x02E4),
+        (0x0345, 0x0345), (0x037A, 0x037A), (0x10FC, 0x10FC), (0x1D2C, 0x1D6A), (0x1D78, 0x1D78),
+        (0x1D9B, 0x1DBF), (0x2071, 0x2071), (0x207F, 0x207F), (0x2090, 0x209C), (0x2170, 0x217F),
+        (0x24D0, 0x24E9), (0x2C7C, 0x2C7D), (0xA69C, 0xA69D), (0xA770, 0xA770), (0xA7F2, 0xA7F4),
+        (0xA7F8, 0xA7F9), (0xAB5C, 0xAB5F), (0xAB69, 0xAB69), (0x10780, 0x10780),
+        (0x10783, 0x10785), (0x10787, 0x107B0), (0x107B2, 0x107BA), (0x1E030, 0x1E06D),
     ];
 
     /// <summary>Python's <c>str.isspace()</c> for one code point.</summary>

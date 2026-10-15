@@ -43,6 +43,10 @@ public static class B64
         return a;
     }
 
+    /// <summary>Reads a 16-character little-endian hex string (``struct.pack('&lt;d', x).hex()``)
+    /// as a double, so fixtures can carry exact bit patterns including <c>-0.0</c>.</summary>
+    public static double HexDouble(string s) => BinaryPrimitives.ReadDoubleLittleEndian(Convert.FromHexString(s));
+
     public static float[] Floats(string s)
     {
         var raw = Convert.FromBase64String(s);

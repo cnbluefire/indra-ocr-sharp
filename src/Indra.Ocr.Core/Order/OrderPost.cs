@@ -108,7 +108,7 @@ public static class OrderPost
             int m = Math.Min(count, texts.Count);
             for (int i = 0; i < m; i++)
             {
-                string t = texts[i].Trim();
+                string t = UnicodeText.Strip(texts[i]);
                 if (t.Length == 0)
                     continue;
                 int len = UnicodeText.CodePointCount(t);

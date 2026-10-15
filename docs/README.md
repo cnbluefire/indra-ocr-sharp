@@ -25,7 +25,7 @@ status. Keep these in sync with `PLAN.md`.
 | [100](100-recognize.md) | recognize |
 | [110](110-order-post.md) | order_post |
 | [115](115-reading-order.md) | reading_order |
-| 120 | layout_post |
+| [120](120-layout-post.md) | layout_post |
 | 130 | assemble |
 | 135 | image inputs |
 | 140 | PDFium backend |
