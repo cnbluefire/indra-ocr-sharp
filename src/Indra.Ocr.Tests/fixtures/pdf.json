@@ -1,0 +1,2785 @@
+{
+ "note": "Generate ``src/Indra.Ocr.Tests/fixtures/pdf.json`` \u2014 the parity fixture for the PDFium",
+ "check_scale": 1.0,
+ "documents": [
+  {
+   "name": "text",
+   "pdf": "JVBERi0xLjMKJenr8b8KMSAwIG9iago8PAovQ291bnQgMgovS2lkcyBbMyAwIFIKNSAwIFJdCi9NZWRpYUJveCBbMCAwIDIwMC4wMCAxMjAuMDBdCi9UeXBlIC9QYWdlcwo+PgplbmRvYmoKMiAwIG9iago8PAovT3BlbkFjdGlvbiBbMyAwIFIgL0ZpdEggbnVsbF0KL1BhZ2VMYXlvdXQgL09uZUNvbHVtbgovUGFnZXMgMSAwIFIKL1R5cGUgL0NhdGFsb2cKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL0NvbnRlbnRzIDQgMCBSCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA4IDAgUgovVHlwZSAvUGFnZQo+PgplbmRvYmoKNCAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDEwMAo+PgpzdHJlYW0KeJwzUvDiMtAzNVco53IKUdB3M1QwNNIzMFAISVNwDQEJGRmAuBZgMiRFQcMjNScnX6E8vygnRVMhJAukCqLEDEyagEldQzBVlKqQhjDDyBRmRnBqcn5eikJOZl4qzAwAHJgfoAplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwKL0NvbnRlbnRzIDYgMCBSCi9NZWRpYUJveCBbMCAwIDIwMC41MCAxMjAuMjVdCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA5IDAgUgovVHlwZSAvUGFnZQo+PgplbmRvYmoKNiAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDY3Cj4+CnN0cmVhbQp4nDNS8OIy0DM1VyjncgpR0HczVLDUMzBQCElTcA0BiRgagLiWBnpGpgohKQoabkWJySWZ+XmJOZoKIVkgRQDc6g+iCmVuZHN0cmVhbQplbmRvYmoKNyAwIG9iago8PAovQmFzZUZvbnQgL0hlbHZldGljYQovRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZwovU3VidHlwZSAvVHlwZTEKL1R5cGUgL0ZvbnQKPj4KZW5kb2JqCjggMCBvYmoKPDwKL0ZvbnQgPDwvRjEgNyAwIFI+PgovUHJvY1NldCBbL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSV0KPj4KZW5kb2JqCjkgMCBvYmoKPDwKL0ZvbnQgPDwvRjEgNyAwIFI+PgovUHJvY1NldCBbL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSV0KPj4KZW5kb2JqCjEwIDAgb2JqCjw8Ci9DcmVhdGlvbkRhdGUgKEQ6MjAyNjAxMDEwMDAwMDBaKQo+PgplbmRvYmoKeHJlZgowIDExCjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTA4IDAwMDAwIG4gCjAwMDAwMDAyMTEgMDAwMDAgbiAKMDAwMDAwMDI5MSAwMDAwMCBuIAowMDAwMDAwNDYzIDAwMDAwIG4gCjAwMDAwMDA1NzMgMDAwMDAgbiAKMDAwMDAwMDcxMSAwMDAwMCBuIAowMDAwMDAwODA4IDAwMDAwIG4gCjAwMDAwMDA4OTUgMDAwMDAgbiAKMDAwMDAwMDk4MiAwMDAwMCBuIAp0cmFpbGVyCjw8Ci9TaXplIDExCi9Sb290IDIgMCBSCi9JbmZvIDEwIDAgUgovSUQgWzw0RTA3NUY4NTAyN0RGQzA0RTEwRkU3RkQ3OTk0MjJDNz48NEUwNzVGODUwMjdERkMwNEUxMEZFN0ZENzk5NDIyQzc+XQo+PgpzdGFydHhyZWYKMTAzOAolJUVPRgo=",
+   "password": null,
+   "pages": [
+    {
+     "size": [
+      200.0,
+      120.0
+     ],
+     "rotation": 0,
+     "renders": [
+      {
+       "scale": 0.25,
+       "width": 50,
+       "height": 30,
+       "stride": 50,
+       "gray": "eNr7/38U0Bh8+fL//1cghIDXROiY2nf2/u4TC/4f3Xnw9vbDdUTo2Ly9d//u1e3/J0xYvXP38obRQMcDGOBgMOkYnOD1WyjjK1ISxgvmbTl7/8Ty5VcPr/2/e++as/cJ69g5v3f/6rrFu5ev/797d2fv/tEUSqWEDgAFFqZI"
+      },
+      {
+       "scale": 1.0,
+       "width": 200,
+       "height": 120,
+       "stride": 200,
+       "gray": "eNrt2l9IU1EcB/DZQwlWgn8wuVIyTS0pkaCtBAUfZjQKfIighyREyCyWD0lgf6SHsCDEoKAIQnC1BkP7A6KgLRZc0lphFCZoGYVa1iIctubur3PPOcv50OitQ3w/jHu5v3Mu3C+729OXCAAAAAAAAAAAAAAA4M9+1n1jx/4OcTXean6SkxvGTyuVY8EyzY4dTnEVKDU/yckNgTJFcwz73sVzGI99U3zVE6Lp20TPg3L0qT94/yHbEO0b9KuW400oFDrvpP2VrkK3yBGrqTia12Wu7nZTp2WGnL1ypOdUN/hLKWJz1JeoliMjMzMzzXl3u0FTGY94DrfNoNE1YbZ69RDtLff8yArLkb4ybG64WUF0Uc336kyapmkpd3iOEyfZaN0Ldni/ftF67fDAnvhI38h/H64WohE1c7QfZKeoeK/amohiq1+by2XdtZMlzTfiI72U52htVPZ3PpoeJE/uEM8xkj1GlwoNc/lU/mWy5szERzLHcPZEdJ+i/1feTdo2Xf5fdRXlVI/x5SeWl9Rgp/hI5qDreRvq1MoBAAAAAAAAAP+e5S8hB3IgB3IgB3IgBwAAAAAAANBM846qtu/J94iOKyu8vm1RNYZRdkT376pJvkl031jx6mOnsl9HygLRF/s8r72yWAHvlOy9zvV/7n1KCR1XlmPO93ssb1BFbLOz5ys789orLTp2unL7RMl1xFp1TGtP6Liajb8CkmN5gzpmXfkr7IOi9hrzbTFo6IoouQZWzdGDrQkdV5lDjOUNSr1bE+dSm3jtdfJso3ktSq7uAlZuLUnouMocYix6spPKZOiuNI/lB3jtlTrYafaeKLl6i9kDFyd0XGUOMRY9WXW+i+n0Cx/me9IHeO018ipr3DheL0quw+KBlzquy3KInmxEnSDPHGtTbX5ReyW6VaTVhkTJVT7wUsd1WY74DQAAAAAAAAAAAPB/+gWN86IL"
+      },
+      {
+       "scale": 0.255,
+       "width": 51,
+       "height": 31,
+       "stride": 51,
+       "gray": "eNr7/38U0Ae8f/f//wcgBAM4Ay+Y0Xbi9u5jc/8f2rz7+pZd+1YSoWX75s7du9e0/O/vXrN19+6lq0fDnRBgQIDBpWU4gfv3/yMS/geitCzedOL2sYULLwCT/e4dK0/cJibxz+3cvaZyASjZ797d2bl7NHFTN6sAAD2z8ug="
+      }
+     ],
+     "chars": [
+      {
+       "code": 72,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        20.959999084472656,
+        27.70400047302246,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        29.107999801635742,
+        34.84400177001953,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        36.104000091552734,
+        37.15999984741211,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        38.76799774169922,
+        39.823997497558594,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        41.05999755859375,
+        46.891998291015625,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 32,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        47.33599853515625,
+        50.6719970703125,
+        80.0,
+        80.01200103759766
+       ]
+      },
+      {
+       "code": 119,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        50.70800018310547,
+        59.23999786376953,
+        80.0,
+        86.22799682617188
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        59.731998443603516,
+        65.56399536132812,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 114,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        66.78799438476562,
+        70.1719970703125,
+        80.0,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        70.77200317382812,
+        71.8280029296875,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 100,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        73.07600402832031,
+        78.47599792480469,
+        79.86799621582031,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 13,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        79.33999633789062,
+        79.33999633789062,
+        80.0,
+        80.0
+       ]
+      },
+      {
+       "code": 10,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        79.33999633789062,
+        79.33999633789062,
+        80.0,
+        80.0
+       ]
+      },
+      {
+       "code": 83,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        20.540000915527344,
+        27.380001068115234,
+        24.868000030517578,
+        33.736000061035156
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        28.447999954223633,
+        34.183998107910156,
+        24.868000030517578,
+        31.360000610351562
+       ]
+      },
+      {
+       "code": 99,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        35.14400100708008,
+        40.56800079345703,
+        24.868000030517578,
+        31.360000610351562
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        41.071998596191406,
+        46.90399932861328,
+        24.868000030517578,
+        31.360000610351562
+       ]
+      },
+      {
+       "code": 110,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        48.13999938964844,
+        53.19200134277344,
+        25.0,
+        31.360000610351562
+       ]
+      },
+      {
+       "code": 100,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        54.428001403808594,
+        59.827999114990234,
+        24.868000030517578,
+        33.59199905395508
+       ]
+      },
+      {
+       "code": 32,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        60.69200134277344,
+        64.02799987792969,
+        25.0,
+        25.011999130249023
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        64.79600524902344,
+        65.85200500488281,
+        25.0,
+        33.59199905395508
+       ]
+      },
+      {
+       "code": 105,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        67.48400115966797,
+        68.54000091552734,
+        25.0,
+        33.59199905395508
+       ]
+      },
+      {
+       "code": 110,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        70.14800262451172,
+        75.20000457763672,
+        25.0,
+        31.360000610351562
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        76.47200012207031,
+        82.2080078125,
+        24.868000030517578,
+        31.360000610351562
+       ]
+      }
+     ],
+     "affine": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       -1.0,
+       120.0
+      ]
+     ],
+     "invisible_frac": 0.0,
+     "textlayer": {
+      "runs": [
+       {
+        "bbox": [
+         20.959999084472656,
+         31.407997131347656,
+         78.47599792480469,
+         40.13200378417969
+        ],
+        "text": "Hello world",
+        "chars": [
+         [
+          "H",
+          [
+           20.959999084472656,
+           31.407997131347656,
+           27.70400047302246,
+           40.0
+          ]
+         ],
+         [
+          "e",
+          [
+           29.107999801635742,
+           33.63999938964844,
+           34.84400177001953,
+           40.13200378417969
+          ]
+         ],
+         [
+          "l",
+          [
+           36.104000091552734,
+           31.407997131347656,
+           37.15999984741211,
+           40.0
+          ]
+         ],
+         [
+          "l",
+          [
+           38.76799774169922,
+           31.407997131347656,
+           39.823997497558594,
+           40.0
+          ]
+         ],
+         [
+          "o",
+          [
+           41.05999755859375,
+           33.63999938964844,
+           46.891998291015625,
+           40.13200378417969
+          ]
+         ],
+         [
+          " ",
+          [
+           47.33599853515625,
+           39.987998962402344,
+           50.6719970703125,
+           40.0
+          ]
+         ],
+         [
+          "w",
+          [
+           50.70800018310547,
+           33.772003173828125,
+           59.23999786376953,
+           40.0
+          ]
+         ],
+         [
+          "o",
+          [
+           59.731998443603516,
+           33.63999938964844,
+           65.56399536132812,
+           40.13200378417969
+          ]
+         ],
+         [
+          "r",
+          [
+           66.78799438476562,
+           33.63999938964844,
+           70.1719970703125,
+           40.0
+          ]
+         ],
+         [
+          "l",
+          [
+           70.77200317382812,
+           31.407997131347656,
+           71.8280029296875,
+           40.0
+          ]
+         ],
+         [
+          "d",
+          [
+           73.07600402832031,
+           31.407997131347656,
+           78.47599792480469,
+           40.13200378417969
+          ]
+         ]
+        ]
+       },
+       {
+        "bbox": [
+         20.540000915527344,
+         86.26399993896484,
+         82.2080078125,
+         95.13199996948242
+        ],
+        "text": "Second line",
+        "chars": [
+         [
+          "S",
+          [
+           20.540000915527344,
+           86.26399993896484,
+           27.380001068115234,
+           95.13199996948242
+          ]
+         ],
+         [
+          "e",
+          [
+           28.447999954223633,
+           88.63999938964844,
+           34.183998107910156,
+           95.13199996948242
+          ]
+         ],
+         [
+          "c",
+          [
+           35.14400100708008,
+           88.63999938964844,
+           40.56800079345703,
+           95.13199996948242
+          ]
+         ],
+         [
+          "o",
+          [
+           41.071998596191406,
+           88.63999938964844,
+           46.90399932861328,
+           95.13199996948242
+          ]
+         ],
+         [
+          "n",
+          [
+           48.13999938964844,
+           88.63999938964844,
+           53.19200134277344,
+           95.0
+          ]
+         ],
+         [
+          "d",
+          [
+           54.428001403808594,
+           86.40800094604492,
+           59.827999114990234,
+           95.13199996948242
+          ]
+         ],
+         [
+          " ",
+          [
+           60.69200134277344,
+           94.98800086975098,
+           64.02799987792969,
+           95.0
+          ]
+         ],
+         [
+          "l",
+          [
+           64.79600524902344,
+           86.40800094604492,
+           65.85200500488281,
+           95.0
+          ]
+         ],
+         [
+          "i",
+          [
+           67.48400115966797,
+           86.40800094604492,
+           68.54000091552734,
+           95.0
+          ]
+         ],
+         [
+          "n",
+          [
+           70.14800262451172,
+           88.63999938964844,
+           75.20000457763672,
+           95.0
+          ]
+         ],
+         [
+          "e",
+          [
+           76.47200012207031,
+           88.63999938964844,
+           82.2080078125,
+           95.13199996948242
+          ]
+         ]
+        ]
+       }
+      ],
+      "stats": {
+       "chars": 20,
+       "rotated": 0,
+       "bad": 0,
+       "off_page": 0
+      },
+      "trusted": true,
+      "reason": ""
+     }
+    },
+    {
+     "size": [
+      200.5,
+      120.25
+     ],
+     "rotation": 0,
+     "renders": [
+      {
+       "scale": 0.25,
+       "width": 51,
+       "height": 31,
+       "stride": 51,
+       "gray": "eNr7/38UkAz2Xrv74PLjF3fu3CFay+qjE6ftX7VtY+Pm0eAbBaNgFAxBAADzxiJf"
+      },
+      {
+       "scale": 1.0,
+       "width": 201,
+       "height": 121,
+       "stride": 201,
+       "gray": "eNrt0z9Lw0Ach/H34qqbk69B0GihrULBP0OcKiolBcWliIIuEuHUK7iIESqiiwitUxYp4tjFCuKmoJVKh3TwZ3KT9hX09PkMGe57Qx5IRAAAAAAAAPAvNVdjn7+OnqV+13Pr9r7vQ6rjYRh2f57ceNJ87LnlH/V/iBs/Tt3M22J6ph0tjRa/coP1ynm0PFGMKuvZ+U47GWwIGUil9vy8XF/K2vH+pmw0qp4ovbUr2ztqTrzADDaEzLZaHb8sryuZYe0m/4YJST9II6sORJfNYMunFb/nQiD5w9KJqLCWhBQuJCgoLVqbwaKQs5HcVOndmZzuPg1dKf0y5jgfJsQMFoQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPCnfQMlY1lZ"
+      },
+      {
+       "scale": 0.255,
+       "width": 52,
+       "height": 31,
+       "stride": 52,
+       "gray": "eNr7/38UkAn2Xrl779Lj53du3yZez+qDUybvWbNha/260fAbBaNgFAwjAAC/uUEq"
+      }
+     ],
+     "chars": [
+      {
+       "code": 70,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        10.73799991607666,
+        15.084999084472656,
+        90.25,
+        96.69400024414062
+       ]
+      },
+      {
+       "code": 114,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        16.083999633789062,
+        18.621999740600586,
+        90.25,
+        95.0199966430664
+       ]
+      },
+      {
+       "code": 97,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        18.81999969482422,
+        23.121999740600586,
+        90.1510009765625,
+        95.0199966430664
+       ]
+      },
+      {
+       "code": 99,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        23.85099983215332,
+        27.91899871826172,
+        90.1510009765625,
+        95.0199966430664
+       ]
+      },
+      {
+       "code": 116,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        28.16200065612793,
+        30.43899917602539,
+        90.19599914550781,
+        96.55000305175781
+       ]
+      },
+      {
+       "code": 105,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        31.09600067138672,
+        31.88800048828125,
+        90.25,
+        96.69400024414062
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        32.797000885009766,
+        37.170997619628906,
+        90.1510009765625,
+        95.0199966430664
+       ]
+      },
+      {
+       "code": 110,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        38.097999572753906,
+        41.887001037597656,
+        90.25,
+        95.0199966430664
+       ]
+      },
+      {
+       "code": 97,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        42.832000732421875,
+        47.13399887084961,
+        90.1510009765625,
+        95.0199966430664
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        48.0880012512207,
+        48.880001068115234,
+        90.25,
+        96.69400024414062
+       ]
+      }
+     ],
+     "affine": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       -1.0,
+       120.25
+      ]
+     ],
+     "invisible_frac": 0.0,
+     "textlayer": {
+      "runs": [
+       {
+        "bbox": [
+         10.73799991607666,
+         23.555999755859375,
+         48.880001068115234,
+         30.0989990234375
+        ],
+        "text": "Fractional",
+        "chars": [
+         [
+          "F",
+          [
+           10.73799991607666,
+           23.555999755859375,
+           15.084999084472656,
+           30.0
+          ]
+         ],
+         [
+          "r",
+          [
+           16.083999633789062,
+           25.230003356933594,
+           18.621999740600586,
+           30.0
+          ]
+         ],
+         [
+          "a",
+          [
+           18.81999969482422,
+           25.230003356933594,
+           23.121999740600586,
+           30.0989990234375
+          ]
+         ],
+         [
+          "c",
+          [
+           23.85099983215332,
+           25.230003356933594,
+           27.91899871826172,
+           30.0989990234375
+          ]
+         ],
+         [
+          "t",
+          [
+           28.16200065612793,
+           23.699996948242188,
+           30.43899917602539,
+           30.054000854492188
+          ]
+         ],
+         [
+          "i",
+          [
+           31.09600067138672,
+           23.555999755859375,
+           31.88800048828125,
+           30.0
+          ]
+         ],
+         [
+          "o",
+          [
+           32.797000885009766,
+           25.230003356933594,
+           37.170997619628906,
+           30.0989990234375
+          ]
+         ],
+         [
+          "n",
+          [
+           38.097999572753906,
+           25.230003356933594,
+           41.887001037597656,
+           30.0
+          ]
+         ],
+         [
+          "a",
+          [
+           42.832000732421875,
+           25.230003356933594,
+           47.13399887084961,
+           30.0989990234375
+          ]
+         ],
+         [
+          "l",
+          [
+           48.0880012512207,
+           23.555999755859375,
+           48.880001068115234,
+           30.0
+          ]
+         ]
+        ]
+       }
+      ],
+      "stats": {
+       "chars": 10,
+       "rotated": 0,
+       "bad": 0,
+       "off_page": 0
+      },
+      "trusted": true,
+      "reason": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "image",
+   "pdf": "JVBERi0xLjMKJenr8b8KMSAwIG9iago8PAovQ291bnQgMQovS2lkcyBbMyAwIFJdCi9NZWRpYUJveCBbMCAwIDIwMC4wMCAxMjAuMDBdCi9UeXBlIC9QYWdlcwo+PgplbmRvYmoKMiAwIG9iago8PAovT3BlbkFjdGlvbiBbMyAwIFIgL0ZpdEggbnVsbF0KL1BhZ2VMYXlvdXQgL09uZUNvbHVtbgovUGFnZXMgMSAwIFIKL1R5cGUgL0NhdGFsb2cKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL0NvbnRlbnRzIDQgMCBSCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA3IDAgUgovVHlwZSAvUGFnZQo+PgplbmRvYmoKNCAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDg5Cj4+CnN0cmVhbQp4nDNS8OIy0DM1VyjnKlQwM9AzMFAAQRMwywhMQkSTcxX0PQ0VXPIVArmcQhT03QwVDMESIWkKriEgIYhqY4hgioJGaF5KapFCZm5ieqqmQkgWSBUA2OAYPgplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwKL0JpdHNQZXJDb21wb25lbnQgOAovQ29sb3JTcGFjZSAvRGV2aWNlR3JheQovRGVjb2RlUGFybXMgPDwvUHJlZGljdG9yIDE1IC9Db2xvcnMgMSAvQ29sdW1ucyA2MCAvQml0c1BlckNvbXBvbmVudCA4Pj4KL0ZpbHRlciAvRmxhdGVEZWNvZGUKL0hlaWdodCA0MAovTGVuZ3RoIDQ5MwovU3VidHlwZSAvSW1hZ2UKL1R5cGUgL1hPYmplY3QKL1dpZHRoIDYwCj4+CnN0cmVhbQp4nJ3PBUIQAAADwClId3d3d3d3dylKKKJY2IgBBhiE3d3domAXCoogKha2ILZgYfxh94MDBEUkZBRUNHQMTCxsHFw8fAJCImISUjKG5AwvHDNh8vSZZfMXVi1duXbj1p17Dx49eebcpWs3b7fdf9T58m0PBITFpeWV1bX1jc2t7Z3dvf2Dw6Pjk9MHD8sfWTR+0rTSOfMql9SuWLNhy449B46cOH324tUbt1rvPXz64s27jxASk5JTUtPSMzKzsnNy8/ILCouKS0rLGppXMHrcxKkzZs+tWFyzfPX6zdt37z98vK7hwpXG5jvtHU+ev+7+8AWikrKKqpq6hqaWto6unr6BoZGxiamZ2bkjRo0tnlIyq3zBouplq9Zt2rZr36Fjp+rPX77e1HL3weNnr7ref+4FHf707Qfo8Nfvv0GH+379BR3++WcA6HA/BEGH/wkIgw4PFBIDHR4kKgk6LCIhAzosLi0POiwlpwQ6LKuoCjqsoKIBOqysrg06rKalBzqsqWsIOqxjYAI6rG9sDjpsZGYFOmxqaQs6bGHjADpsbe8MOmzn5AY67OjqCTrs4uEDOuzu7Q867OUXBDrsGxgKOhwQEgE6HBweDTocFhUHOhwZmwg6HJOQAjocn5wOOpyUlgU6nJqZ/R+0CM3tCmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iago8PAovQmFzZUZvbnQgL0hlbHZldGljYQovRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZwovU3VidHlwZSAvVHlwZTEKL1R5cGUgL0ZvbnQKPj4KZW5kb2JqCjcgMCBvYmoKPDwKL0ZvbnQgPDwvRjEgNiAwIFI+PgovUHJvY1NldCBbL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSV0KL1hPYmplY3QgPDwvSTEgNSAwIFI+Pgo+PgplbmRvYmoKOCAwIG9iago8PAovQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikKPj4KZW5kb2JqCnhyZWYKMCA5CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTAyIDAwMDAwIG4gCjAwMDAwMDAyMDUgMDAwMDAgbiAKMDAwMDAwMDI4NSAwMDAwMCBuIAowMDAwMDAwNDQ1IDAwMDAwIG4gCjAwMDAwMDExNzkgMDAwMDAgbiAKMDAwMDAwMTI3NiAwMDAwMCBuIAowMDAwMDAxMzg2IDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgOQovUm9vdCAyIDAgUgovSW5mbyA4IDAgUgovSUQgWzwwREFENjFGQkM0MDk2QjZGQzBERjA2QjBGNzBDQjc1QT48MERBRDYxRkJDNDA5NkI2RkMwREYwNkIwRjcwQ0I3NUE+XQo+PgpzdGFydHhyZWYKMTQ0MQolJUVPRgo=",
+   "password": null,
+   "pages": [
+    {
+     "size": [
+      200.0,
+      120.0
+     ],
+     "rotation": 0,
+     "renders": [
+      {
+       "scale": 0.25,
+       "width": 50,
+       "height": 30,
+       "stride": 50,
+       "gray": "eNr7/39EAy4pLSuvqKyqrlmrdp269YoIHWJqZm5haWVt05ZtO3bt2TMidCgZOQUlFTVNWrTp0KVHn4KI0KFn5xeXV9c3b92+c/fe9fERoQPZE6e4pIjQgewJNTE1InQge0JIyYgIHciekNOzI0IHsieAMUOEDmRPAGPm/yigJrhw4dLpa3cu/T+398rXG2d/EqFj844jTWemrvy/tWrW8VUld4jQ8ReJffHDaJhTDQAAimGGaw=="
+      },
+      {
+       "scale": 1.0,
+       "width": 200,
+       "height": 120,
+       "stride": 200,
+       "gray": "eNrtm2dUzXEYx43svUeIlFspGVnZKyNCkRVFdnZ0zZbsbDLKKOPamxDdjJIZhUqRUQkhlGuUx5NzvahXzvPCeTjP58U9557/78X9nHs/5/89594LIAiCIAiCIAiCIAgCRwroFC9dvnL1WnUNjEwbW7Rq27Frj979Bgx2cBo9ftK0mbPne/os9V2zYXPAzt37Dh07dfZC2NXIW3fvxyU+TU5L5+RRuFipcpWq6erVVzQ0b9ayTYcu3a372g0a5ug8zmWqq3Kex8IlK1av3+S/Y5fq4NGTwSHqK9duRsXEJiS9ePnmPSePoiXLVqxas45+A5NGTVtYtu9s1cvG1n7oiFFjJ06Z4TbX3Xvx8lXr/LZuD9p74MiJM+dDL0fcuBP98NGT56mv333k5FGiTIUqNWrXMzQ2a9K8dbtO3Xr26T9wyPCRYyZMnj5rzgKvRctWrt24ZVvgnv2Hj58+d/FS+PXb9x7EP36W8urthyxOHuQ4MjK/cPIgx/FJ852TBzmOz99+cPIgx/E1pyAnD3Ic2QV0OHnQ4yhcjJMHOY5CRUty8iDHUaREGU4e5DhwlnHyIMeBs4yTBzkOnGWcPMhx4Czj5EGOA2cZJw9yHDjLOHmQ48BZxsmDHAfOMk4e5DhwlnHyIMeBs4yTBzkOnGWcPMhx4Czj5EGOA2cZJw9yHDjLOHmQ48BZxsmDHAfOMk4e5DhwlnHyIMeBs4yTBzkOnGWcPMhx4Czj5EGOA2cZJw9yHDjLOHmQ48BZxsmDHAfOMk4e5DhwlnHyIMeBs4yTBzkOnGWcPMhx4CwDQRAEQRAEQRAEQRAEgS1ZifiQ+ub30x+xea5mpPwrHtdyv1VSrv/9VKPIczXM79/yWJgQE44/j06/kIYeWWEPAJLjwvB/ESn3kxOioyA2HN8adWQOnghJD9We4OjhZDbbbgLEG/vYKOBVc++hnqCq434X4KCrytito62yq2+8xXL7kZBo4mNjoD3B0mMEaPTB3R+SFODlolbralROuVfRwxHO9IYbdokxObcMwTUIXtfWnuDlEZX7LfjEsUoAPXAMhhwTGGPv4eHxXqXUeighxBGi+sZ1sZpUHxzU+AtT7QleHp+qpkK2uc8vj7VucEkBfuMh0/l7fg+XALioD6s94bqu9gSzD9YWvR5Gua8WPbIdLG3N4JuzpXkg5PcINbOebPg1a2AHBz3tCW5onvz5H50ibsPj1v/BXTPa1MXi+P9w+/8c+xEEQRAEQRAEQRAEQRAEQRCEv8xPLo5kQw=="
+      }
+     ],
+     "chars": [
+      {
+       "code": 85,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        20.790000915527344,
+        26.420000076293945,
+        29.889999389648438,
+        37.15999984741211
+       ]
+      },
+      {
+       "code": 110,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        27.8799991607666,
+        32.09000015258789,
+        30.0,
+        35.29999923706055
+       ]
+      },
+      {
+       "code": 100,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        33.119998931884766,
+        37.619998931884766,
+        29.889999389648438,
+        37.15999984741211
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        38.709999084472656,
+        43.48999786376953,
+        29.889999389648438,
+        35.29999923706055
+       ]
+      },
+      {
+       "code": 114,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        44.54999923706055,
+        47.369998931884766,
+        30.0,
+        35.29999923706055
+       ]
+      },
+      {
+       "code": 32,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        47.22999954223633,
+        50.01000213623047,
+        30.0,
+        30.010000228881836
+       ]
+      },
+      {
+       "code": 105,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        50.66999816894531,
+        51.54999923706055,
+        30.0,
+        37.15999984741211
+       ]
+      },
+      {
+       "code": 109,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        52.88999938964844,
+        59.91999816894531,
+        30.0,
+        35.29999923706055
+       ]
+      },
+      {
+       "code": 97,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        60.91999816894531,
+        65.69999694824219,
+        29.889999389648438,
+        35.29999923706055
+       ]
+      },
+      {
+       "code": 103,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        66.44000244140625,
+        71.00999450683594,
+        27.90999984741211,
+        35.29999923706055
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        72.05000305175781,
+        76.83000183105469,
+        29.889999389648438,
+        35.29999923706055
+       ]
+      }
+     ],
+     "affine": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       -1.0,
+       120.0
+      ]
+     ],
+     "invisible_frac": 0.0,
+     "textlayer": {
+      "runs": [
+       {
+        "bbox": [
+         20.790000915527344,
+         82.84000015258789,
+         76.83000183105469,
+         92.09000015258789
+        ],
+        "text": "Under image",
+        "chars": [
+         [
+          "U",
+          [
+           20.790000915527344,
+           82.84000015258789,
+           26.420000076293945,
+           90.11000061035156
+          ]
+         ],
+         [
+          "n",
+          [
+           27.8799991607666,
+           84.70000076293945,
+           32.09000015258789,
+           90.0
+          ]
+         ],
+         [
+          "d",
+          [
+           33.119998931884766,
+           82.84000015258789,
+           37.619998931884766,
+           90.11000061035156
+          ]
+         ],
+         [
+          "e",
+          [
+           38.709999084472656,
+           84.70000076293945,
+           43.48999786376953,
+           90.11000061035156
+          ]
+         ],
+         [
+          "r",
+          [
+           44.54999923706055,
+           84.70000076293945,
+           47.369998931884766,
+           90.0
+          ]
+         ],
+         [
+          " ",
+          [
+           47.22999954223633,
+           89.98999977111816,
+           50.01000213623047,
+           90.0
+          ]
+         ],
+         [
+          "i",
+          [
+           50.66999816894531,
+           82.84000015258789,
+           51.54999923706055,
+           90.0
+          ]
+         ],
+         [
+          "m",
+          [
+           52.88999938964844,
+           84.70000076293945,
+           59.91999816894531,
+           90.0
+          ]
+         ],
+         [
+          "a",
+          [
+           60.91999816894531,
+           84.70000076293945,
+           65.69999694824219,
+           90.11000061035156
+          ]
+         ],
+         [
+          "g",
+          [
+           66.44000244140625,
+           84.70000076293945,
+           71.00999450683594,
+           92.09000015258789
+          ]
+         ],
+         [
+          "e",
+          [
+           72.05000305175781,
+           84.70000076293945,
+           76.83000183105469,
+           90.11000061035156
+          ]
+         ]
+        ]
+       }
+      ],
+      "stats": {
+       "chars": 10,
+       "rotated": 0,
+       "bad": 0,
+       "off_page": 0
+      },
+      "trusted": true,
+      "reason": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "rotated",
+   "pdf": "JVBERi0xLjMKJb/3ov4KMSAwIG9iago8PCAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL0NvbnRlbnRzIDUgMCBSIC9NZWRpYUJveCA2IDAgUiAvUGFyZW50IDQgMCBSIC9SZXNvdXJjZXMgNyAwIFIgL1JvdGF0ZSA5MCAvVHlwZSAvUGFnZSA+PgplbmRvYmoKNCAwIG9iago8PCAvQ291bnQgMSAvS2lkcyBbIDMgMCBSIF0gL1R5cGUgL1BhZ2VzID4+CmVuZG9iago1IDAgb2JqCjw8IC9GaWx0ZXIgL0ZsYXRlRGVjb2RlIC9MZW5ndGggNjYgPj4Kc3RyZWFtCnicM1Lw4jLQMzVXKOdyClHQdzNUMDTSMzBQCElTcA0BCRkZgLgWYDIkRUHDIzUnJ1+hPL8oJ0VTISQLpAoA9tEP/gplbmRzdHJlYW0KZW5kb2JqCjYgMCBvYmoKWyAwIDAgMjAwLjAwIDEyMC4wMCBdCmVuZG9iago3IDAgb2JqCjw8IC9Gb250IDw8IC9GMSA4IDAgUiA+PiAvUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXSA+PgplbmRvYmoKOCAwIG9iago8PCAvQmFzZUZvbnQgL0hlbHZldGljYSAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyAvU3VidHlwZSAvVHlwZTEgL1R5cGUgL0ZvbnQgPj4KZW5kb2JqCnhyZWYKMCA5CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTIwIDAwMDAwIG4gCjAwMDAwMDAxNzUgMDAwMDAgbiAKMDAwMDAwMDI4MiAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCjAwMDAwMDA0NzggMDAwMDAgbiAKMDAwMDAwMDUxNSAwMDAwMCBuIAowMDAwMDAwNjA2IDAwMDAwIG4gCnRyYWlsZXIgPDwgL0luZm8gMiAwIFIgL1Jvb3QgMSAwIFIgL1NpemUgOSAvSUQgWzwwOWYzNDZlNzdhZmE0YWFkZDkxM2M1ZWQ2ZWNiYmU4Nz48MmY3ZDU2YTk1NDFiNzhhYTljNTgxOWNlOWVhOGQ4YWI+XSA+PgpzdGFydHhyZWYKNzAzCiUlRU9GCg==",
+   "password": null,
+   "pages": [
+    {
+     "size": [
+      120.0,
+      200.0
+     ],
+     "rotation": 90,
+     "renders": [
+      {
+       "scale": 0.25,
+       "width": 30,
+       "height": 50,
+       "stride": 30,
+       "gray": "eNr7/3+ogM1Tv+CR3d6HT7bnLD6T99/FJ7t791c8sqtP4NPbPv8r2f6dcAyv7E58sqsP4pPdeQuvf7fhk11xGJ9sY93r/6NgFIyCwQAAojPNWA=="
+      },
+      {
+       "scale": 1.0,
+       "width": 120,
+       "height": 200,
+       "stride": 120,
+       "gray": "eNrt18srRFEcwPGxsPFIXk0aJCbCAklEFjYsKFasxMIrKSywEAsLpWhioygKeUWKhSSPukrkUR6JErIY2bAgr2aOGd1/we94fD9Nd/vtnHPvmXOUAgAAwE/2YnoX7lpMFcJdp0fIudP5qGGuQx/0rPF/6jo8/LsdjhXhbqHJIT3g457ORQ1rOxdU7pdRJt9NOlA2d+6ueNfm/TXOi3fTZ5Xtxn4t3t2O+PAJHpNfX2PdmNk0DONCuJtsav8n//uGiXn+ZvtdrZMu+ex4WH1bRoF8N/5MKXf2lnjX6n00yO/PeX1udRIlvz+f2QMiAkc0vM+u08Mnrk1/2e1g4bR4dKcjNbpyQv7CYImZcOmY5KP+ktjiAaeG8tVQmmVKvFoTl1A7pWG4Wdbm1VcdC3w3XBRWdKjlA35e2OecwzmHc84vPOdsf7kX73quZHZf64rS4TlPzz6pqpf03Ls3Nrh3f7fd9qbRN/nsUHhdS07mh3g38tLzyF8W78Z4h1q1Jt6tKN3a603cFP+OUkwd3BMBAAAAAAAAAAAAAAAAAAAAAAAAAICQT1b2zlU="
+      }
+     ],
+     "chars": [
+      {
+       "code": 72,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        20.959999084472656,
+        27.70400047302246,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        29.107999801635742,
+        34.84400177001953,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        36.104000091552734,
+        37.15999984741211,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        38.76799774169922,
+        39.823997497558594,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        41.05999755859375,
+        46.891998291015625,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 32,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        47.33599853515625,
+        50.6719970703125,
+        80.0,
+        80.01200103759766
+       ]
+      },
+      {
+       "code": 119,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        50.70800018310547,
+        59.23999786376953,
+        80.0,
+        86.22799682617188
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        59.731998443603516,
+        65.56399536132812,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 114,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        66.78799438476562,
+        70.1719970703125,
+        80.0,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        70.77200317382812,
+        71.8280029296875,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 100,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        73.07600402832031,
+        78.47599792480469,
+        79.86799621582031,
+        88.59200286865234
+       ]
+      }
+     ],
+     "affine": [
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       1.0,
+       0.0,
+       0.0
+      ]
+     ],
+     "invisible_frac": 0.0,
+     "textlayer": {
+      "runs": [],
+      "stats": {
+       "chars": 10,
+       "rotated": 10,
+       "bad": 0,
+       "off_page": 0
+      },
+      "trusted": false,
+      "reason": "no text layer"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cropped",
+   "pdf": "JVBERi0xLjMKJb/3ov4KMSAwIG9iago8PCAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL0NvbnRlbnRzIDUgMCBSIC9Dcm9wQm94IFsgMjAgMTAgMTgwIDExMCBdIC9NZWRpYUJveCA2IDAgUiAvUGFyZW50IDQgMCBSIC9SZXNvdXJjZXMgNyAwIFIgL1R5cGUgL1BhZ2UgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0NvdW50IDEgL0tpZHMgWyAzIDAgUiBdIC9UeXBlIC9QYWdlcyA+PgplbmRvYmoKNSAwIG9iago8PCAvRmlsdGVyIC9GbGF0ZURlY29kZSAvTGVuZ3RoIDY2ID4+CnN0cmVhbQp4nDNS8OIy0DM1VyjncgpR0HczVDA00jMwUAhJU3ANAQkZGYC4FmAyJEVBwyM1JydfoTy/KCdFUyEkC6QKAPbRD/4KZW5kc3RyZWFtCmVuZG9iago2IDAgb2JqClsgMCAwIDIwMC4wMCAxMjAuMDAgXQplbmRvYmoKNyAwIG9iago8PCAvRm9udCA8PCAvRjEgOCAwIFIgPj4gL1Byb2NTZXQgWyAvUERGIC9UZXh0IC9JbWFnZUIgL0ltYWdlQyAvSW1hZ2VJIF0gPj4KZW5kb2JqCjggMCBvYmoKPDwgL0Jhc2VGb250IC9IZWx2ZXRpY2EgL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcgL1N1YnR5cGUgL1R5cGUxIC9UeXBlIC9Gb250ID4+CmVuZG9iagp4cmVmCjAgOQowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDEyMCAwMDAwMCBuIAowMDAwMDAwMTc1IDAwMDAwIG4gCjAwMDAwMDAyOTggMDAwMDAgbiAKMDAwMDAwMDM1NyAwMDAwMCBuIAowMDAwMDAwNDk0IDAwMDAwIG4gCjAwMDAwMDA1MzEgMDAwMDAgbiAKMDAwMDAwMDYyMiAwMDAwMCBuIAp0cmFpbGVyIDw8IC9JbmZvIDIgMCBSIC9Sb290IDEgMCBSIC9TaXplIDkgL0lEIFs8MDlmMzQ2ZTc3YWZhNGFhZGQ5MTNjNWVkNmVjYmJlODc+PDBjZThlYmVlMzJmYzlkNGM0ZDM0MDg2OWI3NTJiYmFlPl0gPj4Kc3RhcnR4cmVmCjcxOQolJUVPRgo=",
+   "password": null,
+   "pages": [
+    {
+     "size": [
+      160.0,
+      100.0
+     ],
+     "rotation": 0,
+     "renders": [
+      {
+       "scale": 0.25,
+       "width": 40,
+       "height": 25,
+       "stride": 40,
+       "gray": "eNr7/394gC9f/v//CoQQ8Bqnuql9Z+/vPrHg/9GdB29vP1yHU93m7b37d69u/z9hwuqdu5c3/B8Fo2AoAwDqR9sx"
+      },
+      {
+       "scale": 1.0,
+       "width": 160,
+       "height": 100,
+       "stride": 160,
+       "gray": "eNrt1T9IAmEYBnBbWiwCTSyUCrEwHCSCDIQGh4KOgoZoSyKEokAaisCKpoggpIagCEJIskAoGsKgMgyOFCwMwoQiW5QWW6Q/5r3dnXer4w3x/Di+43vfd3jgu48jAgAAAAAAAMGP64Nfw77yLu0VnsqkgfSiIvk+VVl+9THlXdQqPJVJA1GbwvlioVc5H3cTyojdYJ6yB0R3Can0Hk6cXvEDxbOLiFL5nvL5/ApDIz0ec6Ccr9TnmDb6hW5/gDZUOWKOpRKrd7ojVvq2945blMqn0Wq1auaki6OM5lrMF7BzlKwt8N2tMRrsCH7VF6QSW10QBvYcRGvKnu+S2mAwVB2K+Wbn+VLDPb+8Nf2atifOB+QS2yp+f545oriy+VZH+VexfL7LU0SlmkehbdsferHM7Mol1irm804qfj+SdQkKNl6K+eK6FK2bOaG90LJJJn1OLkn5Yrrn4rDC9/eo3dDJSvfX36Z3psT2reqB3N0kl6R8tGNsdtnw8wAAAAAAAAAAAAAAAAAAAAAAAAAAAPhn/gA+wavG"
+      }
+     ],
+     "chars": [
+      {
+       "code": 72,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        20.959999084472656,
+        27.70400047302246,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        29.107999801635742,
+        34.84400177001953,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        36.104000091552734,
+        37.15999984741211,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        38.76799774169922,
+        39.823997497558594,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        41.05999755859375,
+        46.891998291015625,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 32,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        47.33599853515625,
+        50.6719970703125,
+        80.0,
+        80.01200103759766
+       ]
+      },
+      {
+       "code": 119,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        50.70800018310547,
+        59.23999786376953,
+        80.0,
+        86.22799682617188
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        59.731998443603516,
+        65.56399536132812,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 114,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        66.78799438476562,
+        70.1719970703125,
+        80.0,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        70.77200317382812,
+        71.8280029296875,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 100,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        73.07600402832031,
+        78.47599792480469,
+        79.86799621582031,
+        88.59200286865234
+       ]
+      }
+     ],
+     "affine": [
+      [
+       1.0,
+       0.0,
+       -20.0
+      ],
+      [
+       0.0,
+       -1.0,
+       110.0
+      ]
+     ],
+     "invisible_frac": 0.0,
+     "textlayer": {
+      "runs": [
+       {
+        "bbox": [
+         0.9599990844726562,
+         21.407997131347656,
+         58.47599792480469,
+         30.132003784179688
+        ],
+        "text": "Hello world",
+        "chars": [
+         [
+          "H",
+          [
+           0.9599990844726562,
+           21.407997131347656,
+           7.704000473022461,
+           30.0
+          ]
+         ],
+         [
+          "e",
+          [
+           9.107999801635742,
+           23.639999389648438,
+           14.844001770019531,
+           30.132003784179688
+          ]
+         ],
+         [
+          "l",
+          [
+           16.104000091552734,
+           21.407997131347656,
+           17.15999984741211,
+           30.0
+          ]
+         ],
+         [
+          "l",
+          [
+           18.76799774169922,
+           21.407997131347656,
+           19.823997497558594,
+           30.0
+          ]
+         ],
+         [
+          "o",
+          [
+           21.05999755859375,
+           23.639999389648438,
+           26.891998291015625,
+           30.132003784179688
+          ]
+         ],
+         [
+          " ",
+          [
+           27.33599853515625,
+           29.987998962402344,
+           30.6719970703125,
+           30.0
+          ]
+         ],
+         [
+          "w",
+          [
+           30.70800018310547,
+           23.772003173828125,
+           39.23999786376953,
+           30.0
+          ]
+         ],
+         [
+          "o",
+          [
+           39.731998443603516,
+           23.639999389648438,
+           45.563995361328125,
+           30.132003784179688
+          ]
+         ],
+         [
+          "r",
+          [
+           46.787994384765625,
+           23.639999389648438,
+           50.1719970703125,
+           30.0
+          ]
+         ],
+         [
+          "l",
+          [
+           50.772003173828125,
+           21.407997131347656,
+           51.8280029296875,
+           30.0
+          ]
+         ],
+         [
+          "d",
+          [
+           53.07600402832031,
+           21.407997131347656,
+           58.47599792480469,
+           30.132003784179688
+          ]
+         ]
+        ]
+       }
+      ],
+      "stats": {
+       "chars": 10,
+       "rotated": 0,
+       "bad": 0,
+       "off_page": 0
+      },
+      "trusted": true,
+      "reason": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "invisible",
+   "pdf": "JVBERi0xLjMKJb/3ov4KMSAwIG9iago8PCAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL0NvbnRlbnRzIFsgNSAwIFIgNiAwIFIgXSAvTWVkaWFCb3ggNyAwIFIgL1BhcmVudCA0IDAgUiAvUmVzb3VyY2VzIDggMCBSIC9UeXBlIC9QYWdlID4+CmVuZG9iago0IDAgb2JqCjw8IC9Db3VudCAxIC9LaWRzIFsgMyAwIFIgXSAvVHlwZSAvUGFnZXMgPj4KZW5kb2JqCjUgMCBvYmoKPDwgL0ZpbHRlciAvRmxhdGVEZWNvZGUgL0xlbmd0aCA2NiA+PgpzdHJlYW0KeJwzUvDiMtAzNVco53IKUdB3M1QwNNIzMFAISVNwDQEJGRmAuBZgMiRFQcMjNScnX6E8vygnRVMhJAukCgD20Q/+CmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iago8PCAvTGVuZ3RoIDU2IC9GaWx0ZXIgL0ZsYXRlRGVjb2RlID4+CnN0cmVhbQp4nHMKUdB3M1QwNFIISVMwVggpUjAyULAwUAhJUdDIyExJSc1TyEmsTC3SVAjJUnAN4QIAHxAMkAplbmRzdHJlYW0KZW5kb2JqCjcgMCBvYmoKWyAwIDAgMjAwLjAwIDEyMC4wMCBdCmVuZG9iago4IDAgb2JqCjw8IC9Gb250IDw8IC9GMSA5IDAgUiA+PiAvUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXSA+PgplbmRvYmoKOSAwIG9iago8PCAvQmFzZUZvbnQgL0hlbHZldGljYSAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyAvU3VidHlwZSAvVHlwZTEgL1R5cGUgL0ZvbnQgPj4KZW5kb2JqCnhyZWYKMCAxMAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDEyMCAwMDAwMCBuIAowMDAwMDAwMTc1IDAwMDAwIG4gCjAwMDAwMDAyODEgMDAwMDAgbiAKMDAwMDAwMDM0MCAwMDAwMCBuIAowMDAwMDAwNDc3IDAwMDAwIG4gCjAwMDAwMDA2MDQgMDAwMDAgbiAKMDAwMDAwMDY0MSAwMDAwMCBuIAowMDAwMDAwNzMyIDAwMDAwIG4gCnRyYWlsZXIgPDwgL0luZm8gMiAwIFIgL1Jvb3QgMSAwIFIgL1NpemUgMTAgL0lEIFs8MDlmMzQ2ZTc3YWZhNGFhZGQ5MTNjNWVkNmVjYmJlODc+PDZhMmYzMjcwODcwODE0N2YxNDdjMGE4NmFmYmUyZjQ3Pl0gPj4Kc3RhcnR4cmVmCjgyOQolJUVPRgo=",
+   "password": null,
+   "pages": [
+    {
+     "size": [
+      200.0,
+      120.0
+     ],
+     "rotation": 0,
+     "renders": [
+      {
+       "scale": 0.25,
+       "width": 50,
+       "height": 30,
+       "stride": 50,
+       "gray": "eNr7/38U0Bh8+fL//1cghIDXROiY2nf2/u4TC/4f3Xnw9vbDdUTo2Ly9d//u1e3/J0xYvXP38obRQB8Fo2CkAwCd9s1b"
+      },
+      {
+       "scale": 1.0,
+       "width": 200,
+       "height": 120,
+       "stride": 200,
+       "gray": "eNrt1EFokmEcx3G7dHER6IYNpQ2xYXiQGMyB0MFDg6TBDrHbRsSgKJAOi8AtOo0RhKxDUAQhJLOBUOwQG2wtDF5SsDAIE4rZReliF9mW6b/3fX3f4zw/0PfDw/Py/P//yw+e5xUBAAAAAAAAAAA43p/53/q+leqdqklj9WcNVJeVynHgqOt7Kt475UPG6s8ayIcVzVHI7ds5uh9yNbObbUp9XeRTySr92iptvtMH2m939lTL8a3ZbK7EZfZiIpDp5ehMRW/70kb3ckbWHA2Jv7ZKmie2sBeSo8il60HVcrjcbrcz/maiKzXXezNHJtKV8qmW3n1yTaYvZA8HW1ZJO9kyBl5ERR6qea/uO71e74lXZo7Fe3rpzGd9+3n2r//pje0rdkk7Z76PxF2Ropo5Vuf0T7t3rx7cEukMfDXa4ZczP4J3ntslLWTmSN5U9p2XT5ckO7xr5igOVeRRoGu0l0Yfi9/TsEtWjsLQ9/ZVRf9XG+e945r1v0qPeWIVs/3R8UUWJsUuWTnkmW9kXq0cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAID/zz+BqM5X"
+      }
+     ],
+     "chars": [
+      {
+       "code": 72,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        20.959999084472656,
+        27.70400047302246,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        29.107999801635742,
+        34.84400177001953,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        36.104000091552734,
+        37.15999984741211,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        38.76799774169922,
+        39.823997497558594,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        41.05999755859375,
+        46.891998291015625,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 32,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        47.33599853515625,
+        50.6719970703125,
+        80.0,
+        80.01200103759766
+       ]
+      },
+      {
+       "code": 119,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        50.70800018310547,
+        59.23999786376953,
+        80.0,
+        86.22799682617188
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        59.731998443603516,
+        65.56399536132812,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 114,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        66.78799438476562,
+        70.1719970703125,
+        80.0,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        70.77200317382812,
+        71.8280029296875,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 100,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        73.07600402832031,
+        78.47599792480469,
+        79.86799621582031,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 32,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        79.33999633789062,
+        79.33999633789062,
+        80.0,
+        80.0
+       ]
+      },
+      {
+       "code": 104,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        20.79199981689453,
+        25.855998992919922,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 105,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        27.464000701904297,
+        28.520000457763672,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 100,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        29.743999481201172,
+        35.14400100708008,
+        79.86799621582031,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 100,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        36.41600036621094,
+        41.816001892089844,
+        79.86799621582031,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        43.124000549316406,
+        48.86000061035156,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 110,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        50.14400100708008,
+        55.19599914550781,
+        80.0,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 32,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        56.02400207519531,
+        59.36000061035156,
+        80.0,
+        80.01200103759766
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        60.12800216674805,
+        61.18400192260742,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 97,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        62.45600128173828,
+        68.19200134277344,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 121,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        68.88800048828125,
+        74.58800506591797,
+        77.49199676513672,
+        86.22799682617188
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        75.13999938964844,
+        80.87600708007812,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 114,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        82.14800262451172,
+        85.5320053100586,
+        80.0,
+        86.36000061035156
+       ]
+      }
+     ],
+     "affine": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       -1.0,
+       120.0
+      ]
+     ],
+     "invisible_frac": 0.5,
+     "textlayer": {
+      "runs": [
+       {
+        "bbox": [
+         20.79199981689453,
+         31.407997131347656,
+         85.5320053100586,
+         42.50800323486328
+        ],
+        "text": "Hello world hidden layer",
+        "chars": [
+         [
+          "H",
+          [
+           20.959999084472656,
+           31.407997131347656,
+           27.70400047302246,
+           40.0
+          ]
+         ],
+         [
+          "e",
+          [
+           29.107999801635742,
+           33.63999938964844,
+           34.84400177001953,
+           40.13200378417969
+          ]
+         ],
+         [
+          "l",
+          [
+           36.104000091552734,
+           31.407997131347656,
+           37.15999984741211,
+           40.0
+          ]
+         ],
+         [
+          "l",
+          [
+           38.76799774169922,
+           31.407997131347656,
+           39.823997497558594,
+           40.0
+          ]
+         ],
+         [
+          "o",
+          [
+           41.05999755859375,
+           33.63999938964844,
+           46.891998291015625,
+           40.13200378417969
+          ]
+         ],
+         [
+          " ",
+          [
+           47.33599853515625,
+           39.987998962402344,
+           50.6719970703125,
+           40.0
+          ]
+         ],
+         [
+          "w",
+          [
+           50.70800018310547,
+           33.772003173828125,
+           59.23999786376953,
+           40.0
+          ]
+         ],
+         [
+          "o",
+          [
+           59.731998443603516,
+           33.63999938964844,
+           65.56399536132812,
+           40.13200378417969
+          ]
+         ],
+         [
+          "r",
+          [
+           66.78799438476562,
+           33.63999938964844,
+           70.1719970703125,
+           40.0
+          ]
+         ],
+         [
+          "l",
+          [
+           70.77200317382812,
+           31.407997131347656,
+           71.8280029296875,
+           40.0
+          ]
+         ],
+         [
+          "d",
+          [
+           73.07600402832031,
+           31.407997131347656,
+           78.47599792480469,
+           40.13200378417969
+          ]
+         ],
+         [
+          " ",
+          [
+           79.33999633789062,
+           40.0,
+           79.33999633789062,
+           40.0
+          ]
+         ],
+         [
+          "h",
+          [
+           20.79199981689453,
+           31.407997131347656,
+           25.855998992919922,
+           40.0
+          ]
+         ],
+         [
+          "i",
+          [
+           27.464000701904297,
+           31.407997131347656,
+           28.520000457763672,
+           40.0
+          ]
+         ],
+         [
+          "d",
+          [
+           29.743999481201172,
+           31.407997131347656,
+           35.14400100708008,
+           40.13200378417969
+          ]
+         ],
+         [
+          "d",
+          [
+           36.41600036621094,
+           31.407997131347656,
+           41.816001892089844,
+           40.13200378417969
+          ]
+         ],
+         [
+          "e",
+          [
+           43.124000549316406,
+           33.63999938964844,
+           48.86000061035156,
+           40.13200378417969
+          ]
+         ],
+         [
+          "n",
+          [
+           50.14400100708008,
+           33.63999938964844,
+           55.19599914550781,
+           40.0
+          ]
+         ],
+         [
+          " ",
+          [
+           56.02400207519531,
+           39.987998962402344,
+           59.36000061035156,
+           40.0
+          ]
+         ],
+         [
+          "l",
+          [
+           60.12800216674805,
+           31.407997131347656,
+           61.18400192260742,
+           40.0
+          ]
+         ],
+         [
+          "a",
+          [
+           62.45600128173828,
+           33.63999938964844,
+           68.19200134277344,
+           40.13200378417969
+          ]
+         ],
+         [
+          "y",
+          [
+           68.88800048828125,
+           33.772003173828125,
+           74.58800506591797,
+           42.50800323486328
+          ]
+         ],
+         [
+          "e",
+          [
+           75.13999938964844,
+           33.63999938964844,
+           80.87600708007812,
+           40.13200378417969
+          ]
+         ],
+         [
+          "r",
+          [
+           82.14800262451172,
+           33.63999938964844,
+           85.5320053100586,
+           40.0
+          ]
+         ]
+        ]
+       }
+      ],
+      "stats": {
+       "chars": 21,
+       "rotated": 0,
+       "bad": 0,
+       "off_page": 0
+      },
+      "trusted": false,
+      "reason": "invisible text 50% (OCR layer)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "empty",
+   "pdf": "JVBERi0xLjMKJenr8b8KMSAwIG9iago8PAovQ291bnQgMQovS2lkcyBbMyAwIFJdCi9NZWRpYUJveCBbMCAwIDIwMC4wMCAxMjAuMDBdCi9UeXBlIC9QYWdlcwo+PgplbmRvYmoKMiAwIG9iago8PAovT3BlbkFjdGlvbiBbMyAwIFIgL0ZpdEggbnVsbF0KL1BhZ2VMYXlvdXQgL09uZUNvbHVtbgovUGFnZXMgMSAwIFIKL1R5cGUgL0NhdGFsb2cKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL0NvbnRlbnRzIDQgMCBSCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA1IDAgUgovVHlwZSAvUGFnZQo+PgplbmRvYmoKNCAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDUxCj4+CnN0cmVhbQp4nDNS8OIy0DM1VyjnMtAztzAxVkClitK5jAz0DAwUDA3AlBmY1DUBU0WpCmlcAKrCDPoKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjw8Ci9Qcm9jU2V0IFsvUERGIC9UZXh0IC9JbWFnZUIgL0ltYWdlQyAvSW1hZ2VJXQo+PgplbmRvYmoKNiAwIG9iago8PAovQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikKPj4KZW5kb2JqCnhyZWYKMCA3CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTAyIDAwMDAwIG4gCjAwMDAwMDAyMDUgMDAwMDAgbiAKMDAwMDAwMDI4NSAwMDAwMCBuIAowMDAwMDAwNDA3IDAwMDAwIG4gCjAwMDAwMDA0NzQgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSA3Ci9Sb290IDIgMCBSCi9JbmZvIDYgMCBSCi9JRCBbPEVGOEY5NDQ4QjBCNTkxMkYxMTNBQkY4NUM3M0M5RjIzPjxFRjhGOTQ0OEIwQjU5MTJGMTEzQUJGODVDNzNDOUYyMz5dCj4+CnN0YXJ0eHJlZgo1MjkKJSVFT0YK",
+   "password": null,
+   "pages": [
+    {
+     "size": [
+      200.0,
+      120.0
+     ],
+     "rotation": 0,
+     "renders": [
+      {
+       "scale": 0.25,
+       "width": 50,
+       "height": 30,
+       "stride": 50,
+       "gray": "eNr7/39EgxOoYFTHCNAxCkbBiAAAwhe2Ng=="
+      },
+      {
+       "scale": 1.0,
+       "width": 200,
+       "height": 120,
+       "stride": 200,
+       "gray": "eNrtzwEJAAAIA7D+zWx1QwgisjVYAgAAAFxUAx4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHl8eAAAAAAAAAAAAAACwrQFnY2P2"
+      }
+     ],
+     "chars": [],
+     "affine": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       -1.0,
+       120.0
+      ]
+     ],
+     "invisible_frac": 0.0,
+     "textlayer": {
+      "runs": [],
+      "stats": {
+       "chars": 0,
+       "rotated": 0,
+       "bad": 0
+      },
+      "trusted": false,
+      "reason": "no text layer"
+     }
+    }
+   ]
+  },
+  {
+   "name": "broken",
+   "pdf": "JVBERi0xLjMKJb/3ov4KMSAwIG9iago8PCAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL0NvbnRlbnRzIDUgMCBSIC9NZWRpYUJveCA2IDAgUiAvUGFyZW50IDQgMCBSIC9SZXNvdXJjZXMgNyAwIFIgL1R5cGUgL1BhZ2UgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0NvdW50IDEgL0tpZHMgWyAzIDAgUiBdIC9UeXBlIC9QYWdlcyA+PgplbmRvYmoKNSAwIG9iago8PCAvRmlsdGVyIC9GbGF0ZURlY29kZSAvTGVuZ3RoIDY2ID4+CnN0cmVhbQp4nDNS8OIy0DM1VyjncgpR0HczVDA00jMwUAhJU3ANAQkZGYC4FmAyJEVBwyM1JydfoTy/KCdFUyEkC6QKAPbRD/4KZW5kc3RyZWFtCmVuZG9iago2IDAgb2JqClsgMCAwIDIwMC4wMCAxMjAuMDAgXQplbmRvYmoKNyAwIG9iago8PCAvRm9udCA8PCAvRjEgOCAwIFIgPj4gL1Byb2NTZXQgWyAvUERGIC9UZXh0IC9JbWFnZUIgL0ltYWdlQyAvSW1hZ2VJIF0gPj4KZW5kb2JqCjggMCBvYmoKPDwgL0Jhc2VGb250IC9IZWx2ZXRpY2EgL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcgL1N1YnR5cGUgL1R5cGUxIC9Ub1VuaWNvZGUgOSAwIFIgL1R5cGUgL0ZvbnQgPj4KZW5kb2JqCjkgMCBvYmoKPDwgL0xlbmd0aCAyNDEgL0ZpbHRlciAvRmxhdGVEZWNvZGUgPj4Kc3RyZWFtCnicXVC7bsQgEOz5ii3vKmxfLkqBLEVcLLnIQ3HyARjWDlIMCOPCfx8e1hUpQDOwM7uzlPe33ugA9MNbOWCASRvlcbWblwgjztqQugGlZThYvuUiHKH8Vbg3sSBQvq3BLqBwKq9fu0NoDt7fhn0NuPRmssAY0M9osQa/w+lZ2RHPQN+9Qq/NDKdvPkQ+bM794oImQAVtm43qMoC0ClcnJHphZiSsqlpgXdcSNOrf37Uoxkn+CE/Yw1OsfKmigLDHa8F1wrzgJuGu4EvETXKuck30PlxSlxT+nl1u3sc584Zy9jSsNnhforMuqfL5Ay0Dc+AKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgMTAKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDE1IDAwMDAwIG4gCjAwMDAwMDAxMjAgMDAwMDAgbiAKMDAwMDAwMDE3NSAwMDAwMCBuIAowMDAwMDAwMjcxIDAwMDAwIG4gCjAwMDAwMDAzMzAgMDAwMDAgbiAKMDAwMDAwMDQ2NyAwMDAwMCBuIAowMDAwMDAwNTA0IDAwMDAwIG4gCjAwMDAwMDA1OTUgMDAwMDAgbiAKMDAwMDAwMDcwOSAwMDAwMCBuIAp0cmFpbGVyIDw8IC9JbmZvIDIgMCBSIC9Sb290IDEgMCBSIC9TaXplIDEwIC9JRCBbPDA5ZjM0NmU3N2FmYTRhYWRkOTEzYzVlZDZlY2JiZTg3PjxiZjkyODhiNzlmZWY3Mzc0OGNmNzRjMzNlOTVlNzdiYz5dID4+CnN0YXJ0eHJlZgoxMDIyCiUlRU9GCg==",
+   "password": null,
+   "pages": [
+    {
+     "size": [
+      200.0,
+      120.0
+     ],
+     "rotation": 0,
+     "renders": [
+      {
+       "scale": 0.25,
+       "width": 50,
+       "height": 30,
+       "stride": 50,
+       "gray": "eNr7/38U0Bh8+fL//1cghIDXROiY2nf2/u4TC/4f3Xnw9vbDdUTo2Ly9d//u1e3/J0xYvXP38obRQB8Fo2CkAwCd9s1b"
+      },
+      {
+       "scale": 1.0,
+       "width": 200,
+       "height": 120,
+       "stride": 200,
+       "gray": "eNrt1EFokmEcx3G7dHER6IYNpQ2xYXiQGMyB0MFDg6TBDrHbRsSgKJAOi8AtOo0RhKxDUAQhJLOBUOwQG2wtDF5SsDAIE4rZReliF9mW6b/3fX3f4zw/0PfDw/Py/P//yw+e5xUBAAAAAAAAAAA43p/53/q+leqdqklj9WcNVJeVynHgqOt7Kt475UPG6s8ayIcVzVHI7ds5uh9yNbObbUp9XeRTySr92iptvtMH2m939lTL8a3ZbK7EZfZiIpDp5ehMRW/70kb3ckbWHA2Jv7ZKmie2sBeSo8il60HVcrjcbrcz/maiKzXXezNHJtKV8qmW3n1yTaYvZA8HW1ZJO9kyBl5ERR6qea/uO71e74lXZo7Fe3rpzGd9+3n2r//pje0rdkk7Z76PxF2Ropo5Vuf0T7t3rx7cEukMfDXa4ZczP4J3ntslLWTmSN5U9p2XT5ckO7xr5igOVeRRoGu0l0Yfi9/TsEtWjsLQ9/ZVRf9XG+e945r1v0qPeWIVs/3R8UUWJsUuWTnkmW9kXq0cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAID/zz+BqM5X"
+      }
+     ],
+     "chars": [
+      {
+       "code": 57344,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        20.959999084472656,
+        27.70400047302246,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 57345,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        29.107999801635742,
+        34.84400177001953,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 57346,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        36.104000091552734,
+        37.15999984741211,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 57346,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        38.76799774169922,
+        39.823997497558594,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 57347,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        41.05999755859375,
+        46.891998291015625,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 1,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        47.33599853515625,
+        50.6719970703125,
+        80.0,
+        80.01200103759766
+       ]
+      },
+      {
+       "code": 119,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        50.70800018310547,
+        59.23999786376953,
+        80.0,
+        86.22799682617188
+       ]
+      },
+      {
+       "code": 57347,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        59.731998443603516,
+        65.56399536132812,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 114,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        66.78799438476562,
+        70.1719970703125,
+        80.0,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 57346,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        70.77200317382812,
+        71.8280029296875,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 100,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        73.07600402832031,
+        78.47599792480469,
+        79.86799621582031,
+        88.59200286865234
+       ]
+      }
+     ],
+     "affine": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       -1.0,
+       120.0
+      ]
+     ],
+     "invisible_frac": 0.0,
+     "textlayer": {
+      "runs": [
+       {
+        "bbox": [
+         20.959999084472656,
+         31.407997131347656,
+         78.47599792480469,
+         40.13200378417969
+        ],
+        "text": "\ue000\ue001\ue002\ue002\ue003\u0001w\ue003r\ue002d",
+        "chars": [
+         [
+          "\ue000",
+          [
+           20.959999084472656,
+           31.407997131347656,
+           27.70400047302246,
+           40.0
+          ]
+         ],
+         [
+          "\ue001",
+          [
+           29.107999801635742,
+           33.63999938964844,
+           34.84400177001953,
+           40.13200378417969
+          ]
+         ],
+         [
+          "\ue002",
+          [
+           36.104000091552734,
+           31.407997131347656,
+           37.15999984741211,
+           40.0
+          ]
+         ],
+         [
+          "\ue002",
+          [
+           38.76799774169922,
+           31.407997131347656,
+           39.823997497558594,
+           40.0
+          ]
+         ],
+         [
+          "\ue003",
+          [
+           41.05999755859375,
+           33.63999938964844,
+           46.891998291015625,
+           40.13200378417969
+          ]
+         ],
+         [
+          "\u0001",
+          [
+           47.33599853515625,
+           39.987998962402344,
+           50.6719970703125,
+           40.0
+          ]
+         ],
+         [
+          "w",
+          [
+           50.70800018310547,
+           33.772003173828125,
+           59.23999786376953,
+           40.0
+          ]
+         ],
+         [
+          "\ue003",
+          [
+           59.731998443603516,
+           33.63999938964844,
+           65.56399536132812,
+           40.13200378417969
+          ]
+         ],
+         [
+          "r",
+          [
+           66.78799438476562,
+           33.63999938964844,
+           70.1719970703125,
+           40.0
+          ]
+         ],
+         [
+          "\ue002",
+          [
+           70.77200317382812,
+           31.407997131347656,
+           71.8280029296875,
+           40.0
+          ]
+         ],
+         [
+          "d",
+          [
+           73.07600402832031,
+           31.407997131347656,
+           78.47599792480469,
+           40.13200378417969
+          ]
+         ]
+        ]
+       }
+      ],
+      "stats": {
+       "chars": 11,
+       "rotated": 0,
+       "bad": 8,
+       "off_page": 0
+      },
+      "trusted": false,
+      "reason": "broken font map"
+     }
+    }
+   ]
+  },
+  {
+   "name": "locked",
+   "pdf": "JVBERi0xLjcKJb/3ov4KMSAwIG9iago8PCAvRXh0ZW5zaW9ucyA8PCAvQURCRSA8PCAvQmFzZVZlcnNpb24gLzEuNyAvRXh0ZW5zaW9uTGV2ZWwgOCA+PiA+PiAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIDxkNzI4MWU2MzAzMThlNTg0OWRmOTI2MTQ3ZjkwZWJmMTdhOTQwOGY5YjM1OTgyODZiMmUxMjY3MmQwY2UzZmYxMGY2ODNiZTgzNDQ2ZTA3MTkxMjM4Yjg0MmI3MzkxN2I+ID4+CmVuZG9iagozIDAgb2JqCjw8IC9Db250ZW50cyA1IDAgUiAvTWVkaWFCb3ggNiAwIFIgL1BhcmVudCA0IDAgUiAvUmVzb3VyY2VzIDcgMCBSIC9UeXBlIC9QYWdlID4+CmVuZG9iago0IDAgb2JqCjw8IC9Db3VudCAxIC9LaWRzIFsgMyAwIFIgXSAvVHlwZSAvUGFnZXMgPj4KZW5kb2JqCjUgMCBvYmoKPDwgL0ZpbHRlciAvRmxhdGVEZWNvZGUgL0xlbmd0aCA5NiA+PgpzdHJlYW0K4AkxrhTbbD8LYhCBhubMxTqW3K8xSDpViXU+Wo+f9kS1++6WyqsdEazRqXnP1rBO/4C5dh+i/YUfrPpFeR6XFT4Ffn1f8y9ZSeGbY0sWMAddKB6ZBmlYkt0AykkWLrhkCmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iagpbIDAgMCAyMDAuMDAgMTIwLjAwIF0KZW5kb2JqCjcgMCBvYmoKPDwgL0ZvbnQgPDwgL0YxIDggMCBSID4+IC9Qcm9jU2V0IFsgL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSSBdID4+CmVuZG9iago4IDAgb2JqCjw8IC9CYXNlRm9udCAvSGVsdmV0aWNhIC9FbmNvZGluZyAvV2luQW5zaUVuY29kaW5nIC9TdWJ0eXBlIC9UeXBlMSAvVHlwZSAvRm9udCA+PgplbmRvYmoKOSAwIG9iago8PCAvQ0YgPDwgL1N0ZENGIDw8IC9BdXRoRXZlbnQgL0RvY09wZW4gL0NGTSAvQUVTVjMgL0xlbmd0aCAzMiA+PiA+PiAvRmlsdGVyIC9TdGFuZGFyZCAvTGVuZ3RoIDI1NiAvTyA8Y2IwNzAzYjk5Y2EwNGMyOGU0MjlmYWQ2MWU5NmJhMTc0MGJlOGYyNGJmZmFmMGQzNmFkNWU1Y2YyZTFjOTMyODdkOTE0OTA0YmY2ZGE0OWE3N2Y0ZGUxZWU3YjJhZGUwPiAvT0UgPGJkZThjNzBlOTdmMzk2ZmViMTM5ZjYzNzM4Njg1MmE0ZTAxOGEwNWNjODQ1MjBjODk4MDU1YWI0OGVlYTQ1NmU+IC9QIC0xMDI4IC9QZXJtcyA8YjllYTJjYjUxZWEyZjBiZjU2ZGU4ZjI3NGJjNjYwZmY+IC9SIDYgL1N0bUYgL1N0ZENGIC9TdHJGIC9TdGRDRiAvVSA8NmRiNTkxY2U0MzZjYWEzMjM4ZDNlZjVjYmNkNTk3ZjQ1MzQ4YzgwNGIyNTA0ODNkZjhjMTUwZDViN2UyNDVjMWFmNjEwNzU3OWFmOGQ4Y2M5NTA4NmQzNWU2NjJmY2RlPiAvVUUgPDc4YzQwYzc0ZTBlNTA1NzBmMjQ2NDE5MTFlOTg0NzU1MTA1NmI2MGM1MDAzYWNiN2NlZjZkMDVlNGJjOTBiMTA+IC9WIDUgPj4KZW5kb2JqCnhyZWYKMCAxMAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDE4NiAwMDAwMCBuIAowMDAwMDAwMzIwIDAwMDAwIG4gCjAwMDAwMDA0MTYgMDAwMDAgbiAKMDAwMDAwMDQ3NSAwMDAwMCBuIAowMDAwMDAwNjQyIDAwMDAwIG4gCjAwMDAwMDA2NzkgMDAwMDAgbiAKMDAwMDAwMDc3MCAwMDAwMCBuIAowMDAwMDAwODY3IDAwMDAwIG4gCnRyYWlsZXIgPDwgL0luZm8gMiAwIFIgL1Jvb3QgMSAwIFIgL1NpemUgMTAgL0lEIFs8MDlmMzQ2ZTc3YWZhNGFhZGQ5MTNjNWVkNmVjYmJlODc+PDkyYjBjOTA1ZTY2NzczZjc2MmUxZTc4MTIwNjk1YzA0Pl0gL0VuY3J5cHQgOSAwIFIgPj4Kc3RhcnR4cmVmCjE0MTcKJSVFT0YK",
+   "password": "secret",
+   "pages": [
+    {
+     "size": [
+      200.0,
+      120.0
+     ],
+     "rotation": 0,
+     "renders": [
+      {
+       "scale": 0.25,
+       "width": 50,
+       "height": 30,
+       "stride": 50,
+       "gray": "eNr7/38U0Bh8+fL//1cghIDXROiY2nf2/u4TC/4f3Xnw9vbDdUTo2Ly9d//u1e3/J0xYvXP38obRQB8Fo2CkAwCd9s1b"
+      },
+      {
+       "scale": 1.0,
+       "width": 200,
+       "height": 120,
+       "stride": 200,
+       "gray": "eNrt1EFokmEcx3G7dHER6IYNpQ2xYXiQGMyB0MFDg6TBDrHbRsSgKJAOi8AtOo0RhKxDUAQhJLOBUOwQG2wtDF5SsDAIE4rZReliF9mW6b/3fX3f4zw/0PfDw/Py/P//yw+e5xUBAAAAAAAAAAA43p/53/q+leqdqklj9WcNVJeVynHgqOt7Kt475UPG6s8ayIcVzVHI7ds5uh9yNbObbUp9XeRTySr92iptvtMH2m939lTL8a3ZbK7EZfZiIpDp5ehMRW/70kb3ckbWHA2Jv7ZKmie2sBeSo8il60HVcrjcbrcz/maiKzXXezNHJtKV8qmW3n1yTaYvZA8HW1ZJO9kyBl5ERR6qea/uO71e74lXZo7Fe3rpzGd9+3n2r//pje0rdkk7Z76PxF2Ropo5Vuf0T7t3rx7cEukMfDXa4ZczP4J3ntslLWTmSN5U9p2XT5ckO7xr5igOVeRRoGu0l0Yfi9/TsEtWjsLQ9/ZVRf9XG+e945r1v0qPeWIVs/3R8UUWJsUuWTnkmW9kXq0cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAID/zz+BqM5X"
+      }
+     ],
+     "chars": [
+      {
+       "code": 72,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        20.959999084472656,
+        27.70400047302246,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 101,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        29.107999801635742,
+        34.84400177001953,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        36.104000091552734,
+        37.15999984741211,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        38.76799774169922,
+        39.823997497558594,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        41.05999755859375,
+        46.891998291015625,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 32,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        47.33599853515625,
+        50.6719970703125,
+        80.0,
+        80.01200103759766
+       ]
+      },
+      {
+       "code": 119,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        50.70800018310547,
+        59.23999786376953,
+        80.0,
+        86.22799682617188
+       ]
+      },
+      {
+       "code": 111,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        59.731998443603516,
+        65.56399536132812,
+        79.86799621582031,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 114,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        66.78799438476562,
+        70.1719970703125,
+        80.0,
+        86.36000061035156
+       ]
+      },
+      {
+       "code": 108,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        70.77200317382812,
+        71.8280029296875,
+        80.0,
+        88.59200286865234
+       ]
+      },
+      {
+       "code": 100,
+       "angle": 0.0,
+       "has_box": true,
+       "box": [
+        73.07600402832031,
+        78.47599792480469,
+        79.86799621582031,
+        88.59200286865234
+       ]
+      }
+     ],
+     "affine": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       -1.0,
+       120.0
+      ]
+     ],
+     "invisible_frac": 0.0,
+     "textlayer": {
+      "runs": [
+       {
+        "bbox": [
+         20.959999084472656,
+         31.407997131347656,
+         78.47599792480469,
+         40.13200378417969
+        ],
+        "text": "Hello world",
+        "chars": [
+         [
+          "H",
+          [
+           20.959999084472656,
+           31.407997131347656,
+           27.70400047302246,
+           40.0
+          ]
+         ],
+         [
+          "e",
+          [
+           29.107999801635742,
+           33.63999938964844,
+           34.84400177001953,
+           40.13200378417969
+          ]
+         ],
+         [
+          "l",
+          [
+           36.104000091552734,
+           31.407997131347656,
+           37.15999984741211,
+           40.0
+          ]
+         ],
+         [
+          "l",
+          [
+           38.76799774169922,
+           31.407997131347656,
+           39.823997497558594,
+           40.0
+          ]
+         ],
+         [
+          "o",
+          [
+           41.05999755859375,
+           33.63999938964844,
+           46.891998291015625,
+           40.13200378417969
+          ]
+         ],
+         [
+          " ",
+          [
+           47.33599853515625,
+           39.987998962402344,
+           50.6719970703125,
+           40.0
+          ]
+         ],
+         [
+          "w",
+          [
+           50.70800018310547,
+           33.772003173828125,
+           59.23999786376953,
+           40.0
+          ]
+         ],
+         [
+          "o",
+          [
+           59.731998443603516,
+           33.63999938964844,
+           65.56399536132812,
+           40.13200378417969
+          ]
+         ],
+         [
+          "r",
+          [
+           66.78799438476562,
+           33.63999938964844,
+           70.1719970703125,
+           40.0
+          ]
+         ],
+         [
+          "l",
+          [
+           70.77200317382812,
+           31.407997131347656,
+           71.8280029296875,
+           40.0
+          ]
+         ],
+         [
+          "d",
+          [
+           73.07600402832031,
+           31.407997131347656,
+           78.47599792480469,
+           40.13200378417969
+          ]
+         ]
+        ]
+       }
+      ],
+      "stats": {
+       "chars": 10,
+       "rotated": 0,
+       "bad": 0,
+       "off_page": 0
+      },
+      "trusted": true,
+      "reason": ""
+     }
+    }
+   ]
+  }
+ ],
+ "errors": [
+  {
+   "name": "empty",
+   "pdf": "",
+   "password": null,
+   "message": "Failed to load document (PDFium: Data format error)."
+  },
+  {
+   "name": "garbage",
+   "pdf": "bm90IGEgcGRmIGF0IGFsbAo=",
+   "password": null,
+   "message": "Failed to load document (PDFium: Data format error)."
+  },
+  {
+   "name": "truncated",
+   "pdf": "JVBERi0xLjMKJenr8b8KMSAwIG9iago8PAovQ291bnQgMgovS2lkcyBbMyAwIFIKNSAwIFJdCi9NZWRpYUJveCBbMCAwIDIwMC4wMCAxMjAuMDBdCi9UeXBlIC9QYWdlcwo+PgplbmRvYmoKMiAwIG9iago8PAovT3BlbkFjdGlvbiBbMyAwIFIgL0ZpdEggbnVsbF0KL1BhZ2VMYXlvdXQgL09uZUNvbHVtbgovUGFnZXMgMSAwIFIKL1R5cGUgL0NhdGFsb2c=",
+   "password": null,
+   "message": "Failed to load document (PDFium: Data format error)."
+  },
+  {
+   "name": "locked_no_password",
+   "pdf": "JVBERi0xLjcKJb/3ov4KMSAwIG9iago8PCAvRXh0ZW5zaW9ucyA8PCAvQURCRSA8PCAvQmFzZVZlcnNpb24gLzEuNyAvRXh0ZW5zaW9uTGV2ZWwgOCA+PiA+PiAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIDxhN2Y0ZjVjMTNjNzFmMGE0NjhmZGYzZjEwYWEyOGVkNDI0MDUzNjY4ZGZmOTJlOTllY2RhYjIyZWQ1ZTg0ODdlNWJmMDZiM2ZkYzRkMDkwMWViYTJiMzY2MGM0ZTBjZGE+ID4+CmVuZG9iagozIDAgb2JqCjw8IC9Db250ZW50cyA1IDAgUiAvTWVkaWFCb3ggNiAwIFIgL1BhcmVudCA0IDAgUiAvUmVzb3VyY2VzIDcgMCBSIC9UeXBlIC9QYWdlID4+CmVuZG9iago0IDAgb2JqCjw8IC9Db3VudCAxIC9LaWRzIFsgMyAwIFIgXSAvVHlwZSAvUGFnZXMgPj4KZW5kb2JqCjUgMCBvYmoKPDwgL0ZpbHRlciAvRmxhdGVEZWNvZGUgL0xlbmd0aCA5NiA+PgpzdHJlYW0KI/ZhYf21gw32fpN68JoaCYMHQVnS6MZWmPimREvQ1j3ljhYNfhYSJhwbmhYRjQlTdUOzEZt0wroMS7Ghq0SqWctTM6xhD3iDl9IPQpA35adh4oGu0ozpVvh46+Vl2rYVCmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iagpbIDAgMCAyMDAuMDAgMTIwLjAwIF0KZW5kb2JqCjcgMCBvYmoKPDwgL0ZvbnQgPDwgL0YxIDggMCBSID4+IC9Qcm9jU2V0IFsgL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSSBdID4+CmVuZG9iago4IDAgb2JqCjw8IC9CYXNlRm9udCAvSGVsdmV0aWNhIC9FbmNvZGluZyAvV2luQW5zaUVuY29kaW5nIC9TdWJ0eXBlIC9UeXBlMSAvVHlwZSAvRm9udCA+PgplbmRvYmoKOSAwIG9iago8PCAvQ0YgPDwgL1N0ZENGIDw8IC9BdXRoRXZlbnQgL0RvY09wZW4gL0NGTSAvQUVTVjMgL0xlbmd0aCAzMiA+PiA+PiAvRmlsdGVyIC9TdGFuZGFyZCAvTGVuZ3RoIDI1NiAvTyA8MjRjODIxOWE2ODExMTQwYjdlZWU1MzdkNGIyNzc0YTFiNzBkMDBmZmE3Y2YzZDg5YjYxMDg1YWJkOTBiNzJlY2JjYWZmODM1Y2JmNTg1MTMxODVmMmE3MmE4ZDQyYmUyPiAvT0UgPDA0ODZjNTI0MjVhYjA5ZDY0YmNmZDdiMWY3Y2NmM2Y5NzVlNTQ3MzIzY2U1NjQyZDQzZjhmZTg0YTQ2Y2NmN2Y+IC9QIC0xMDI4IC9QZXJtcyA8ZmI0OTU1M2FjNThlZWNlOGI5YTI3MTAzYjg5NDM5OWM+IC9SIDYgL1N0bUYgL1N0ZENGIC9TdHJGIC9TdGRDRiAvVSA8NmI0NWNkNGU1NDc2OWRhNDc4ZDFhMWE1NjhkMzAyYzc2Y2I2NzU5YTU4OTM5ZDIzM2RmOTE0Y2NmZmJjNmJlOTMwOGUzYjI0MzFlMTMyNDMyY2UwOTI2Y2U4NzA4MWM0PiAvVUUgPDNiZThmMjNkNDQ2NTIyMTI2NDEwMmExMzA4MWY3NGZkZGUyZmY2MTIzMzQ4ZjczZWQ1MDc5MDlhZGZiOGQ0NjE+IC9WIDUgPj4KZW5kb2JqCnhyZWYKMCAxMAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDE4NiAwMDAwMCBuIAowMDAwMDAwMzIwIDAwMDAwIG4gCjAwMDAwMDA0MTYgMDAwMDAgbiAKMDAwMDAwMDQ3NSAwMDAwMCBuIAowMDAwMDAwNjQyIDAwMDAwIG4gCjAwMDAwMDA2NzkgMDAwMDAgbiAKMDAwMDAwMDc3MCAwMDAwMCBuIAowMDAwMDAwODY3IDAwMDAwIG4gCnRyYWlsZXIgPDwgL0luZm8gMiAwIFIgL1Jvb3QgMSAwIFIgL1NpemUgMTAgL0lEIFs8MDlmMzQ2ZTc3YWZhNGFhZGQ5MTNjNWVkNmVjYmJlODc+PDkyYjBjOTA1ZTY2NzczZjc2MmUxZTc4MTIwNjk1YzA0Pl0gL0VuY3J5cHQgOSAwIFIgPj4Kc3RhcnR4cmVmCjE0MTcKJSVFT0YK",
+   "password": null,
+   "message": "Failed to load document (PDFium: Incorrect password error)."
+  },
+  {
+   "name": "locked_wrong_password",
+   "pdf": "JVBERi0xLjcKJb/3ov4KMSAwIG9iago8PCAvRXh0ZW5zaW9ucyA8PCAvQURCRSA8PCAvQmFzZVZlcnNpb24gLzEuNyAvRXh0ZW5zaW9uTGV2ZWwgOCA+PiA+PiAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIDxhN2Y0ZjVjMTNjNzFmMGE0NjhmZGYzZjEwYWEyOGVkNDI0MDUzNjY4ZGZmOTJlOTllY2RhYjIyZWQ1ZTg0ODdlNWJmMDZiM2ZkYzRkMDkwMWViYTJiMzY2MGM0ZTBjZGE+ID4+CmVuZG9iagozIDAgb2JqCjw8IC9Db250ZW50cyA1IDAgUiAvTWVkaWFCb3ggNiAwIFIgL1BhcmVudCA0IDAgUiAvUmVzb3VyY2VzIDcgMCBSIC9UeXBlIC9QYWdlID4+CmVuZG9iago0IDAgb2JqCjw8IC9Db3VudCAxIC9LaWRzIFsgMyAwIFIgXSAvVHlwZSAvUGFnZXMgPj4KZW5kb2JqCjUgMCBvYmoKPDwgL0ZpbHRlciAvRmxhdGVEZWNvZGUgL0xlbmd0aCA5NiA+PgpzdHJlYW0KI/ZhYf21gw32fpN68JoaCYMHQVnS6MZWmPimREvQ1j3ljhYNfhYSJhwbmhYRjQlTdUOzEZt0wroMS7Ghq0SqWctTM6xhD3iDl9IPQpA35adh4oGu0ozpVvh46+Vl2rYVCmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iagpbIDAgMCAyMDAuMDAgMTIwLjAwIF0KZW5kb2JqCjcgMCBvYmoKPDwgL0ZvbnQgPDwgL0YxIDggMCBSID4+IC9Qcm9jU2V0IFsgL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSSBdID4+CmVuZG9iago4IDAgb2JqCjw8IC9CYXNlRm9udCAvSGVsdmV0aWNhIC9FbmNvZGluZyAvV2luQW5zaUVuY29kaW5nIC9TdWJ0eXBlIC9UeXBlMSAvVHlwZSAvRm9udCA+PgplbmRvYmoKOSAwIG9iago8PCAvQ0YgPDwgL1N0ZENGIDw8IC9BdXRoRXZlbnQgL0RvY09wZW4gL0NGTSAvQUVTVjMgL0xlbmd0aCAzMiA+PiA+PiAvRmlsdGVyIC9TdGFuZGFyZCAvTGVuZ3RoIDI1NiAvTyA8MjRjODIxOWE2ODExMTQwYjdlZWU1MzdkNGIyNzc0YTFiNzBkMDBmZmE3Y2YzZDg5YjYxMDg1YWJkOTBiNzJlY2JjYWZmODM1Y2JmNTg1MTMxODVmMmE3MmE4ZDQyYmUyPiAvT0UgPDA0ODZjNTI0MjVhYjA5ZDY0YmNmZDdiMWY3Y2NmM2Y5NzVlNTQ3MzIzY2U1NjQyZDQzZjhmZTg0YTQ2Y2NmN2Y+IC9QIC0xMDI4IC9QZXJtcyA8ZmI0OTU1M2FjNThlZWNlOGI5YTI3MTAzYjg5NDM5OWM+IC9SIDYgL1N0bUYgL1N0ZENGIC9TdHJGIC9TdGRDRiAvVSA8NmI0NWNkNGU1NDc2OWRhNDc4ZDFhMWE1NjhkMzAyYzc2Y2I2NzU5YTU4OTM5ZDIzM2RmOTE0Y2NmZmJjNmJlOTMwOGUzYjI0MzFlMTMyNDMyY2UwOTI2Y2U4NzA4MWM0PiAvVUUgPDNiZThmMjNkNDQ2NTIyMTI2NDEwMmExMzA4MWY3NGZkZGUyZmY2MTIzMzQ4ZjczZWQ1MDc5MDlhZGZiOGQ0NjE+IC9WIDUgPj4KZW5kb2JqCnhyZWYKMCAxMAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDE4NiAwMDAwMCBuIAowMDAwMDAwMzIwIDAwMDAwIG4gCjAwMDAwMDA0MTYgMDAwMDAgbiAKMDAwMDAwMDQ3NSAwMDAwMCBuIAowMDAwMDAwNjQyIDAwMDAwIG4gCjAwMDAwMDA2NzkgMDAwMDAgbiAKMDAwMDAwMDc3MCAwMDAwMCBuIAowMDAwMDAwODY3IDAwMDAwIG4gCnRyYWlsZXIgPDwgL0luZm8gMiAwIFIgL1Jvb3QgMSAwIFIgL1NpemUgMTAgL0lEIFs8MDlmMzQ2ZTc3YWZhNGFhZGQ5MTNjNWVkNmVjYmJlODc+PDkyYjBjOTA1ZTY2NzczZjc2MmUxZTc4MTIwNjk1YzA0Pl0gL0VuY3J5cHQgOSAwIFIgPj4Kc3RhcnR4cmVmCjE0MTcKJSVFT0YK",
+   "password": "wrong",
+   "message": "Failed to load document (PDFium: Incorrect password error)."
+  }
+ ]
+}

@@ -27,8 +27,8 @@ status. Keep these in sync with `PLAN.md`.
 | [115](115-reading-order.md) | reading_order |
 | [120](120-layout-post.md) | layout_post |
 | [130](130-assemble.md) | assemble |
-| 135 | image inputs |
-| 140 | PDFium backend |
+| 135 | image inputs (folded into [030](030-image-codecs.md)) |
+| [140](140-pdfium.md) | PDFium backend |
 | 145 | Unicode bidi class table |
 | 150 | textlayer |
 | 160 | document Converter |

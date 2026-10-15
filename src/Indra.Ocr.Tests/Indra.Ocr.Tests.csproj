@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
+    <ProjectReference Include="..\Indra.Ocr.Pdf\Indra.Ocr.Pdf.csproj" />
   </ItemGroup>
 
   <!-- The host-side image decoder, shared verbatim with Cli / Viewer. -->
