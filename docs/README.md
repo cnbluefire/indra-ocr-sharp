@@ -29,7 +29,7 @@ status. Keep these in sync with `PLAN.md`.
 | [130](130-assemble.md) | assemble |
 | 135 | image inputs (folded into [030](030-image-codecs.md)) |
 | [140](140-pdfium.md) | PDFium backend |
-| 145 | Unicode bidi class table |
+| [145](145-bidi-classes.md) | Unicode bidi class table |
 | [150](150-textlayer.md) | textlayer |
 | 160 | document Converter |
 | 170 | models |

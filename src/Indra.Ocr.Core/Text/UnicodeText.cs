@@ -253,6 +253,52 @@ public static class UnicodeText
     }
 
     /// <summary>
+    /// Python's <c>unicodedata.bidirectional</c>: the bidirectional class of a code point
+    /// (<c>"L"</c>, <c>"R"</c>, <c>"AL"</c>, <c>"EN"</c>, ... — the empty string when the code
+    /// point is unassigned). <c>document.right_to_left</c> is the only caller.
+    /// </summary>
+    /// <remarks>
+    /// .NET does not expose bidirectional classes, so the table is generated from the same
+    /// CPython the reference runs on (<c>tools/scripts/test/gen_bidi_table.py</c>): it is that
+    /// UCD version's answer, not .NET's.
+    /// </remarks>
+    public static string BidiClass(int codePoint)
+    {
+        if (codePoint < 0 || codePoint > 0x10FFFF)
+            throw new ArgumentOutOfRangeException(
+                nameof(codePoint), codePoint, "Not a Unicode code point.");
+        var ranges = BidiClassData.Ranges;
+        int lo = 0, hi = ranges.Length - 1;
+        while (lo < hi)
+        {
+            int mid = (lo + hi) >> 1;
+            if (ranges[mid].End >= codePoint)
+                hi = mid;
+            else
+                lo = mid + 1;
+        }
+        return ranges[lo].Class;
+    }
+
+    /// <summary>
+    /// Python's <c>unicodedata.bidirectional(s)</c>, which takes a one-character string.
+    /// </summary>
+    public static string BidiClass(string s)
+    {
+        int count = 0, only = 0;
+        foreach (int cp in CodePointValues(s))
+        {
+            if (count == 0)
+                only = cp;
+            count++;
+        }
+        if (count != 1)
+            throw new ArgumentException(
+                "bidirectional() argument must be a single character", nameof(s));
+        return BidiClass(only);
+    }
+
+    /// <summary>
     /// Canonicalizes a label: NFC, the look-alike table, collapsed doubled quotes and
     /// leader runs.
     /// </summary>

@@ -87,7 +87,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   `FPDF_ANNOT|FPDF_GRAYSCALE`), the text layer's characters, the `FPDF_PageToDevice` affine and
   the invisible-text share; the `IPdfDocument`/`IPdfPage` seam in Core keeps PDFium out of it
   (`docs/140-pdfium.md`).
-- [ ] `145` Unicode bidi class table (`unicodedata.bidirectional` parity, used by `document.py`).
+- [x] `145` Unicode bidi class table (`unicodedata.bidirectional` parity, used by
+  `document.py`): 2 300 generated ranges, checked at every code point
+  (`docs/145-bidi-classes.md`).
 - [x] `150` `textlayer` — the text-layer runs and the verdict on them: the uprightness test
   through the page affine, the bad-character test (`unicodedata.category`), the
   invisible-text / broken-font-map / no-ink checks and their messages, over Core's `IPdfPage`
