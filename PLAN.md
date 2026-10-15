@@ -31,7 +31,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `020` NumericOps (numpy parity).
 - [x] `030` Gray image types + host image codecs (OpenCV gray weights).
 - [x] `040` OpenCV primitives: resize, getRotationMatrix2D, warpAffine, CCL(4).
-- [ ] `050` Vocab + Unicode helpers.
+- [x] `050` Vocab + Unicode helpers.
 
 ### Phase 2 — ONNX pipeline
 - [ ] `060` ORT session infra + meta/vocab load.
@@ -47,6 +47,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 
 ### Phase 3 — PDF + Document
 - [ ] `140` `Indra.Ocr.Pdf` PDFium backend (grayscale render + text layer).
+- [ ] `145` Unicode bidi class table (`unicodedata.bidirectional` parity, used by `document.py`).
 - [ ] `150` `textlayer`.
 - [ ] `160` `document` Converter.
 - [ ] `170` `models` model_dir + download.
@@ -77,5 +78,5 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`040` done: numerics, gray decode/encode parity, and bit-exact OpenCV primitives
-  (25 tests green, build clean).
+- Steps `000`–`050` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives and
+  the recognizer vocabulary (35 tests green, build clean).

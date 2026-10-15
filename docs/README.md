@@ -15,7 +15,7 @@ status. Keep these in sync with `PLAN.md`.
 | [020](020-numeric-ops.md) | NumericOps (numpy parity) |
 | [030](030-image-codecs.md) | Gray image types + host image codecs |
 | [040](040-opencv-primitives.md) | OpenCV primitives (resize, warpAffine, CCL) |
-| 050 | Vocab + Unicode helpers |
+| [050](050-vocab.md) | Vocab + Unicode helpers |
 | 060 | ORT session infra |
 | 070 | det_post |
 | 080 | rec_preproc + line_mask |
@@ -27,6 +27,7 @@ status. Keep these in sync with `PLAN.md`.
 | 130 | assemble |
 | 135 | image inputs |
 | 140 | PDFium backend |
+| 145 | Unicode bidi class table |
 | 150 | textlayer |
 | 160 | document Converter |
 | 170 | models |
