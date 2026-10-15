@@ -23,7 +23,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `015` Test scaffolding — fixtures, comparator, reference runner.
 
 ### Phase 1 — Pure-managed numerics & CV
-- [ ] `020` NumericOps (numpy parity).
+- [x] `020` NumericOps (numpy parity).
 - [ ] `030` Gray image types + ImageSharp codecs (OpenCV gray weights).
 - [ ] `040` OpenCV primitives: resize, getRotationMatrix2D, warpAffine, CCL(4).
 - [ ] `050` Vocab + Unicode helpers.

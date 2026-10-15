@@ -57,6 +57,15 @@ package** (`Microsoft.ML.OnnxRuntime`).
   directly.
 - **Parity level**: bit-exact for deterministic output (markdown / text / JSON-lines);
   tolerance only for timings and sub-1e-3 floats.
+
+  **Known, principled deviation — `np.argsort` tie order.** numpy's default `quicksort`
+  argsort dispatches to a **CPU-specific SIMD sorting network** (AVX2/AVX512 via
+  `x86-simd-sort`). For keys that are *exactly equal* the relative order it returns is an
+  implementation detail of that SIMD build, is **not** part of numpy's contract, and
+  differs between machines/CPUs. Reproducing it is neither portable nor meaningful, so the
+  port uses a **stable** argsort (ties keep index order). Keys in the pipeline are mostly
+  distinct floats (identical results); divergence is only possible when keys tie exactly.
+  Python `sorted(...)` calls are stable and are matched exactly.
 - **Scope**: OCR + PDF text layer first; `--math` last.
 - **Image codecs**: pure-managed ImageSharp for decode/encode; grayscale conversion uses
   OpenCV's exact weights. (Licence: ImageSharp v3 Six Labors Split License — revisit if a

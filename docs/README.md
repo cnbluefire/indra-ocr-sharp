@@ -11,7 +11,7 @@ status. Keep these in sync with `PLAN.md`.
 | [000](000-project-governance.md) | Project governance & layout |
 | [010](010-solution-scaffold.md) | Solution, projects, build props, NuGet refs |
 | [015](015-test-scaffolding.md) | Test scaffolding |
-| 020 | NumericOps (numpy parity) |
+| [020](020-numeric-ops.md) | NumericOps (numpy parity) |
 | 030 | Gray image types + codecs |
 | 040 | OpenCV primitives |
 | 050 | Vocab + Unicode helpers |
