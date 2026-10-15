@@ -55,7 +55,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `095` adaptive detect — `det.onnx` behind an `IDetModel` seam, `_detect_at`/`detect`
   (`DetectAt`, `AdaptiveLongSide`, `Run`), including the float32 median, the 32-grid candidate,
   the 2048 cap and the NEP 50 scale/clip tail (`docs/095-adaptive-detect.md`).
-- [ ] `100` recognize (CTC, CJK routing).
+- [x] `100` recognize — `recognize` + `hanzi_lines` (`IRecModel`/`IScriptModel` over both
+  recognizers and the script classifier), the crop/route/batch loop, the CTC collapse and the
+  token → page-x mapping (`docs/100-recognize.md`).
 - [ ] `110` `order_post`.
 - [ ] `120` `layout_post`.
 - [ ] `130` assemble / gutter cuts / split.
@@ -102,10 +104,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`095` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+- Steps `000`–`100` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
   the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
   with numpy's float32 `exp` reproduced bit-exactly), the line crop rule + batching
   (`RecPreproc`), the CenterMask windowing (`LineMask`), the page uprighting
-  (`Orientation`: orient.onnx turns, deskew search, rotations) and line detection
-  (`Detect`: one LineNet pass, the adaptive second pass and the scale/clip tail). 67 tests
-  green, build clean.
+  (`Orientation`: orient.onnx turns, deskew search, rotations), line detection
+  (`Detect`: one LineNet pass, the adaptive second pass and the scale/clip tail) and line
+  recognition (`Recognizer`: cropping, the hanzi routing, width batching, the CTC collapse and
+  the token → page-x mapping). 70 tests green, build clean.

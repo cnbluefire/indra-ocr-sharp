@@ -22,7 +22,7 @@ status. Keep these in sync with `PLAN.md`.
 | [085](085-line-mask.md) | line_mask (CenterMask) |
 | [090](090-orientation-deskew.md) | orientation + deskew |
 | [095](095-adaptive-detect.md) | adaptive detect |
-| 100 | recognize |
+| [100](100-recognize.md) | recognize |
 | 110 | order_post |
 | 120 | layout_post |
 | 130 | assemble |
