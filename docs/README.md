@@ -18,7 +18,8 @@ status. Keep these in sync with `PLAN.md`.
 | [050](050-vocab.md) | Vocab + Unicode helpers |
 | [060](060-ort-sessions.md) | ORT sessions + model set |
 | 070 | [det_post](070-det-post.md) |
-| 080 | rec_preproc + line_mask |
+| [080](080-rec-preproc.md) | rec_preproc (line crop + batching) |
+| 085 | line_mask (CenterMask) |
 | 090 | orientation + deskew |
 | 095 | adaptive detect |
 | 100 | recognize |

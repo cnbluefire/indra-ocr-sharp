@@ -41,7 +41,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `070` `det_post` — `page_to_input` + `decode`; numpy's float32 `exp` reproduced
   bit-exactly (`NpyExp`). `encode_targets` is training-only and intentionally omitted
   (`docs/070-det-post.md`).
-- [ ] `080` `rec_preproc` + `line_mask`.
+- [x] `080` `rec_preproc` — `crop_line`, `pad_batch`, `width_batches`
+  (`docs/080-rec-preproc.md`).
+- [ ] `085` `line_mask` — CenterMask windowing + `crop_lines` (only reachable when
+  `mask.onnx` is present, which the shipped model set is not).
 - [ ] `090` orientation + deskew.
 - [ ] `095` adaptive detect.
 - [ ] `100` recognize (CTC, CJK routing).
@@ -91,6 +94,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`070` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
-  the recognizer vocabulary, the ORT model set, and the LineNet pre/post-processing
-  (`DetPost`, with numpy's float32 `exp` reproduced bit-exactly). 44 tests green, build clean.
+- Steps `000`–`080` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+  the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
+  with numpy's float32 `exp` reproduced bit-exactly) and the line crop rule + batching
+  (`RecPreproc`). 48 tests green, build clean.
