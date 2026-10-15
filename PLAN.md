@@ -14,6 +14,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   (`PDFiumCore` + `bblanchon.PDFium`) lives in `Indra.Ocr.Pdf` and emits grayscale directly.
   ONNX: `Microsoft.ML.OnnxRuntime`.
 - Parity: bit-exact for deterministic output; tolerance only for timings and <1e-3 floats.
+- numpy's float32 `exp` is not the CRT's `expf`, so the port reproduces numpy's own vector
+  kernel (`Indra.Ocr.NpyExp`, with hardware FMA) instead of calling `MathF.Exp`; see
+  `docs/070-det-post.md`.
 - Order: Core + Cli first (aligned against `indra-ocr`), then Viewer.
 - Math (`--math`) ported last.
 - `resources/` read-only and gitignored; binaries/temp gitignored.
@@ -35,7 +38,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 
 ### Phase 2 — ONNX pipeline
 - [x] `060` ORT session infra + meta/vocab load.
-- [ ] `070` `det_post`.
+- [x] `070` `det_post` — `page_to_input` + `decode`; numpy's float32 `exp` reproduced
+  bit-exactly (`NpyExp`). `encode_targets` is training-only and intentionally omitted
+  (`docs/070-det-post.md`).
 - [ ] `080` `rec_preproc` + `line_mask`.
 - [ ] `090` orientation + deskew.
 - [ ] `095` adaptive detect.
@@ -86,5 +91,6 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`060` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
-  the recognizer vocabulary and the ORT model set (38 tests green, build clean).
+- Steps `000`–`070` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+  the recognizer vocabulary, the ORT model set, and the LineNet pre/post-processing
+  (`DetPost`, with numpy's float32 `exp` reproduced bit-exactly). 44 tests green, build clean.

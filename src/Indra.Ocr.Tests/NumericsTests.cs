@@ -99,6 +99,47 @@ public class NumericsTests
     }
 
     [Fact]
+    public void Npy_exp_matches_numpy_float32()
+    {
+        // numpy's exp is its own vector kernel, not the CRT's expf, and it is ~40% likely to
+        // differ by 1 ulp: the port reproduces the kernel (see docs/070-det-post.md). The
+        // corpus holds the discriminating cases — exact quadrant ties, the denormal scalef
+        // branch, both range boundaries — so this has to be a bit comparison.
+        var c = Fx.GetProperty("exp_f32");
+        var x = B64.Floats(c.GetProperty("x").GetString()!);
+        var expected = B64.Floats(c.GetProperty("y").GetString()!);
+        Assert.Equal(c.GetProperty("n").GetInt32(), x.Length);
+        Assert.Equal(x.Length, expected.Length);
+        for (int i = 0; i < x.Length; i++)
+        {
+            float got = NpyExp.Exp(x[i]);
+            uint gb = BitConverter.SingleToUInt32Bits(got), eb = BitConverter.SingleToUInt32Bits(expected[i]);
+            if (gb == eb || (float.IsNaN(got) && float.IsNaN(expected[i]))) continue;
+            Assert.Fail($"exp({x[i]:R} [0x{BitConverter.SingleToUInt32Bits(x[i]):X8}]) = " +
+                        $"0x{gb:X8}, expected 0x{eb:X8}");
+        }
+    }
+
+    [Fact]
+    public void Npy_sigmoid_matches_numpy_float32()
+    {
+        // 1 / (1 + exp(-x)) with numpy's exp, all in float32 — the decoder's ink probability.
+        // The expected values are np.float32(1.0) / (np.float32(1.0) + np.exp(-np.float32(x))).
+        var cases = new (float X, uint Bits)[]
+        {
+            (0f, 0x3F000000), (1f, 0x3F3B26A8), (-1f, 0x3E89B2B0),
+            (37.5f, 0x3F800000), (-37.5f, 0x246EAE2B),
+            (20f, 0x3F800000), (-20f, 0x310DA432),
+            (88.7f, 0x3F800000), (-100f, 0x00000000),
+        };
+        foreach (var (x, bits) in cases)
+        {
+            float got = NpyExp.Sigmoid(x);
+            Assert.Equal(bits, BitConverter.SingleToUInt32Bits(got));
+        }
+    }
+
+    [Fact]
     public void CumSum_matches_numpy()
     {
         var c = Fx.GetProperty("cumsum");

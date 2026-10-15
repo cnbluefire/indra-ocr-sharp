@@ -17,7 +17,7 @@ status. Keep these in sync with `PLAN.md`.
 | [040](040-opencv-primitives.md) | OpenCV primitives (resize, warpAffine, CCL) |
 | [050](050-vocab.md) | Vocab + Unicode helpers |
 | [060](060-ort-sessions.md) | ORT sessions + model set |
-| 070 | det_post |
+| 070 | [det_post](070-det-post.md) |
 | 080 | rec_preproc + line_mask |
 | 090 | orientation + deskew |
 | 095 | adaptive detect |
