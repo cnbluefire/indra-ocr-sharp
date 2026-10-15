@@ -43,8 +43,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   (`docs/070-det-post.md`).
 - [x] `080` `rec_preproc` — `crop_line`, `pad_batch`, `width_batches`
   (`docs/080-rec-preproc.md`).
-- [ ] `085` `line_mask` — CenterMask windowing + `crop_lines` (only reachable when
-  `mask.onnx` is present, which the shipped model set is not).
+- [x] `085` `line_mask` — CenterMask windowing + `crop_lines`, with an `IMaskModel`
+  seam so the masking is testable although the shipped set has no `mask.onnx`
+  (`docs/085-line-mask.md`).
 - [ ] `090` orientation + deskew.
 - [ ] `095` adaptive detect.
 - [ ] `100` recognize (CTC, CJK routing).
@@ -94,7 +95,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`080` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+- Steps `000`–`085` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
   the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
-  with numpy's float32 `exp` reproduced bit-exactly) and the line crop rule + batching
-  (`RecPreproc`). 48 tests green, build clean.
+  with numpy's float32 `exp` reproduced bit-exactly), the line crop rule + batching
+  (`RecPreproc`) and the CenterMask windowing (`LineMask`). 51 tests green, build clean.

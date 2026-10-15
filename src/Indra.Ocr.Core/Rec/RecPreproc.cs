@@ -42,7 +42,20 @@ public static class RecPreproc
                                    int height = LineHeight, double padY = PadY, double padX = PadX,
                                    int maxWidth = 4096)
     {
-        // The reference converts the (float32) box to Python floats - i.e. to double.
+        Span<double> widened = stackalloc double[4];
+        for (int i = 0; i < 4; i++) widened[i] = box[i];
+        return CropLine(gray, widened, out outWidth, height, padY, padX, maxWidth);
+    }
+
+    /// <summary>
+    /// Crops one line whose box is already in double precision. <see cref="LineMask"/> needs
+    /// this: the box it hands over is the detector's box shifted by the window origin, which the
+    /// reference keeps as a list of Python floats (the shift is not representable in float32).
+    /// </summary>
+    public static float[] CropLine(GrayImage gray, ReadOnlySpan<double> box, out int outWidth,
+                                   int height = LineHeight, double padY = PadY, double padX = PadX,
+                                   int maxWidth = 4096)
+    {
         double x0 = box[0], y0 = box[1], x1 = box[2], y1 = box[3];
         double h = Math.Max(1.0, y1 - y0);
         double xLo = x0 - padX * h, xHi = x1 + padX * h;
