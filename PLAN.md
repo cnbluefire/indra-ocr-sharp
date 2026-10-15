@@ -8,7 +8,8 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 ## Decisions (locked)
 
 - Imaging: pure managed C# (replicate OpenCV ops). `Core` carries no image-codec or PDF
-  dependency — its only image input is 8-bit grayscale `BitmapData`. File decoding
+  dependency — its only image input is 8-bit grayscale `GrayImage`, a `ref struct` view it
+  never owns (outputs are caller-provided buffers, decoded one image at a time). File decoding
   (ImageSharp) lives in the host projects `Cli`/`Viewer`; PDF rasterisation
   (`PDFiumCore` + `bblanchon.PDFium`) lives in `Indra.Ocr.Pdf` and emits grayscale directly.
   ONNX: `Microsoft.ML.OnnxRuntime`.
@@ -23,7 +24,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `000` Governance & layout — `AGENTS.md`, `PLAN.md`, `.gitignore`, `docs/` skeleton.
 - [x] `010` Solution, projects, build props, NuGet refs, run-original helper.
 - [x] `012` Project layout: everything .NET under `src/`; `Indra.Ocr.Pdf` split out; `Core`
-  takes `BitmapData` and drops ImageSharp.
+  takes a `GrayImage` view and drops ImageSharp.
 - [x] `015` Test scaffolding — fixtures, comparator, reference runner.
 
 ### Phase 1 — Pure-managed numerics & CV
@@ -42,7 +43,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [ ] `110` `order_post`.
 - [ ] `120` `layout_post`.
 - [ ] `130` assemble / gutter cuts / split.
-- [ ] `135` image inputs (hosts decode files → `BitmapData`).
+- [ ] `135` image inputs (hosts decode files → `GrayImage`).
 
 ### Phase 3 — PDF + Document
 - [ ] `140` `Indra.Ocr.Pdf` PDFium backend (grayscale render + text layer).
@@ -75,5 +76,5 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - ONNX signatures inspected; `det_long_side=1024`, `rec_height=32`, vocab 1677 (latin) /
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
-  free of ImageSharp/PDFium and consumes grayscale `BitmapData`.
+  free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
 - Steps `000`–`030` done: numerics, gray decode/encode parity (17 tests green, build clean).

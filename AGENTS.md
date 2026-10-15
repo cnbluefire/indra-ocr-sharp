@@ -16,9 +16,10 @@ package** (`Microsoft.ML.OnnxRuntime`).
    than one project):
    - `Indra.Ocr.Core` — all core functionality: ONNX Runtime reference, inference-engine
      lifecycle management, the whole OCR pipeline. It has **no** image-codec or PDF
-     dependency: the only image input it accepts is `Indra.Ocr.Imaging.BitmapData`, a
+     dependency: the only image input it accepts is `Indra.Ocr.Imaging.GrayImage`, a
      non-owning `ref struct` view over 8-bit single-channel pixels
-     (`Width` / `Height` / `Stride` / `Data`), so callers can pass padded buffers with no copy.
+     (`Width` / `Height` / `Stride` / `Data`), so callers can pass padded buffers with no
+     copy. It owns and allocates nothing: outputs are caller-provided buffers.
    - `Indra.Ocr.Pdf` — PDF handling (page rasterisation + text layer) via `PDFiumCore`. This
      is the **only** project that references the PDFium package. PDFium renders straight to
      grayscale (`FPDFBitmap_Gray`), so rendered pages come back as `GrayImage` with no
@@ -82,7 +83,7 @@ package** (`Microsoft.ML.OnnxRuntime`).
   **ImageSharp 2.1.13** (the last Apache-2.0 release; 3.x/4.x are under the Six Labors Split
   License, and 4.x refuses Release builds without a key). `Core` never touches a file it
   cannot itself describe as pixels — the hosts decode to grayscale and hand `Core` a
-  `BitmapData`. Reproducing OpenCV 5.0.0's grayscale conversion needs **three different**
+  `GrayImage`. Reproducing OpenCV 5.0.0's grayscale conversion needs **three different**
   fixed-point formulas (one per decoder), documented in `docs/030-image-codecs.md`.
 
 ## Environment

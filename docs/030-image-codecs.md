@@ -9,14 +9,14 @@ managed codec, and define the grayscale contract `Core` consumes.
 
 ## Files
 
-- `src/Indra.Ocr.Core/Imaging/GrayImage.cs` — owning, tightly packed `[H, W]` byte image;
-  `From(BitmapData)` / `AsBitmap()` bridge to the borrowed input contract.
-- `src/Indra.Ocr.Core/Imaging/BitmapData.cs` — the `ref struct` input view (see `012`).
+- `src/Indra.Ocr.Core/Imaging/GrayImage.cs` — the `ref struct` view `Core` consumes
+  (see `012`). It always holds a **tight** `[H, W]` buffer in the decoder, so the pixels
+  arrive without padding.
 - `src/Shared/ImageFiles.cs` — ImageSharp decoder, linked into `Cli` / `Viewer` / tests.
   Reproduces OpenCV's per-decoder grayscale conversion (below) and provides
-  `ReadImages(path)`, `ReadImage(bytes)`, `EncodeJpeg(image, quality)`.
+  `ReadImages(path, consume)`, `ReadImage(bytes)`, `EncodeJpeg(image, quality)`.
 - `tools/scripts/test/gen_image_fixtures.py` → `src/Indra.Ocr.Tests/fixtures/image_decode.json`.
-- `src/Indra.Ocr.Tests/ImageDecodeTests.cs`, `BitmapDataTests.cs`.
+- `src/Indra.Ocr.Tests/ImageDecodeTests.cs`, `GrayImageTests.cs`.
 
 ## Finding: OpenCV 5.0.0 has *three* grayscale formulas
 

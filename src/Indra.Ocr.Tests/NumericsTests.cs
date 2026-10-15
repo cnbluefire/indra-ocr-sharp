@@ -118,31 +118,31 @@ public class NumericsTests
         }
     }
 
-    private static double[,] ToDoubleMatrix(JsonElement e, out int rows, out int cols)
+    private static double[] ToDoubleMatrix(JsonElement e, out int rows, out int cols)
     {
         rows = e.GetArrayLength();
         cols = e[0].GetArrayLength();
-        var m = new double[rows, cols];
+        var m = new double[rows * cols];
         int i = 0;
         foreach (var row in e.EnumerateArray())
         {
             int j = 0;
-            foreach (var v in row.EnumerateArray()) m[i, j++] = v.GetDouble();
+            foreach (var v in row.EnumerateArray()) m[i * cols + j++] = v.GetDouble();
             i++;
         }
         return m;
     }
 
-    private static float[,] ToFloatMatrix(JsonElement e, out int rows, out int cols)
+    private static float[] ToFloatMatrix(JsonElement e, out int rows, out int cols)
     {
         rows = e.GetArrayLength();
         cols = e[0].GetArrayLength();
-        var m = new float[rows, cols];
+        var m = new float[rows * cols];
         int i = 0;
         foreach (var row in e.EnumerateArray())
         {
             int j = 0;
-            foreach (var v in row.EnumerateArray()) m[i, j++] = v.GetSingle();
+            foreach (var v in row.EnumerateArray()) m[i * cols + j++] = v.GetSingle();
             i++;
         }
         return m;
@@ -152,10 +152,10 @@ public class NumericsTests
     public void MatMul_matches_numpy()
     {
         var c = Fx.GetProperty("matmul");
-        double[,] a = ToDoubleMatrix(c.GetProperty("a"), out int m, out int k);
-        double[,] b = ToDoubleMatrix(c.GetProperty("b"), out int k2, out int n);
+        double[] a = ToDoubleMatrix(c.GetProperty("a"), out int m, out int k);
+        double[] b = ToDoubleMatrix(c.GetProperty("b"), out int k2, out int n);
         Assert.Equal(k, k2);
-        var got = Numerics.MatMul(a, b);
+        var got = Numerics.MatMul(a, m, k, b, n);
         int i = 0;
         foreach (var row in c.GetProperty("expected").EnumerateArray())
         {
@@ -171,10 +171,10 @@ public class NumericsTests
     public void MatMulF_matches_numpy_float32()
     {
         var c = Fx.GetProperty("matmulf");
-        float[,] a = ToFloatMatrix(c.GetProperty("a"), out int m, out int k);
-        float[,] b = ToFloatMatrix(c.GetProperty("b"), out int k2, out int n);
+        float[] a = ToFloatMatrix(c.GetProperty("a"), out int m, out int k);
+        float[] b = ToFloatMatrix(c.GetProperty("b"), out int k2, out int n);
         Assert.Equal(k, k2);
-        var got = Numerics.MatMulF(a, b);
+        var got = Numerics.MatMulF(a, m, k, b, n);
         int i = 0;
         foreach (var row in c.GetProperty("expected").EnumerateArray())
         {

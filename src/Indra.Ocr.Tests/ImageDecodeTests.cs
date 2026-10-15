@@ -23,22 +23,22 @@ public class ImageDecodeTests
             File.WriteAllBytes(path, bytes);
 
             var expectedFrames = c.GetProperty("frames").EnumerateArray().ToList();
-            var got = ImageFiles.ReadImages(path);
-
-            Assert.Equal(expectedFrames.Count, got.Count);
-            for (int f = 0; f < got.Count; f++)
+            int frame = 0;
+            ImageFiles.ReadImages(path, got =>
             {
-                var expRows = expectedFrames[f].EnumerateArray().ToList();
-                Assert.Equal(expRows.Count, got[f].Height);
-                Assert.Equal(expRows[0].GetArrayLength(), got[f].Width);
-                for (int y = 0; y < got[f].Height; y++)
+                var expRows = expectedFrames[frame].EnumerateArray().ToList();
+                Assert.Equal(expRows.Count, got.Height);
+                Assert.Equal(expRows[0].GetArrayLength(), got.Width);
+                for (int y = 0; y < got.Height; y++)
                 {
                     var row = Fixtures.IntArray(expRows[y]);
-                    for (int x = 0; x < got[f].Width; x++)
-                        Assert.True(row[x] == got[f][y, x],
-                            $"{name} frame {f} at ({y},{x}): expected {row[x]} got {got[f][y, x]}");
+                    for (int x = 0; x < got.Width; x++)
+                        Assert.True(row[x] == got[y, x],
+                            $"{name} frame {frame} at ({y},{x}): expected {row[x]} got {got[y, x]}");
                 }
-            }
+                frame++;
+            });
+            Assert.Equal(expectedFrames.Count, frame);
         }
     }
 }

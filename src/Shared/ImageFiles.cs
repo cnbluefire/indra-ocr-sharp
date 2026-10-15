@@ -13,10 +13,17 @@ namespace Indra.Ocr.Hosting;
 /// <remarks>
 /// This lives in the host projects (Cli / Viewer) — never in <c>Indra.Ocr.Core</c>, which
 /// deliberately has no image-codec dependency and only consumes
-/// <see cref="BitmapData"/>. The file is shared by linking it into each host project.
+/// <see cref="GrayImage"/>. The file is shared by linking it into each host project.
 /// </remarks>
 public static class ImageFiles
 {
+    /// <summary>
+    /// Receives one decoded page. <see cref="GrayImage"/> is a <c>ref struct</c> view, so it
+    /// cannot be stored: the callback must consume the pixels before returning (images are
+    /// produced and used one at a time, nothing is buffered).
+    /// </summary>
+    public delegate void GrayImageConsumer(GrayImage image);
+
     /// <summary>
     /// Which fixed-point RGB-&gt;Gray conversion OpenCV applies, i.e. which decoder produced
     /// the pixels. OpenCV 5.0.0 does <b>not</b> use one formula for
@@ -68,19 +75,30 @@ public static class ImageFiles
         _ => GrayFormula.Cvt,
     };
 
-    /// <summary>All grayscale pages of an image file (every frame of a multi-page TIFF).</summary>
-    public static List<GrayImage> ReadImages(string path)
+    /// <summary>
+    /// Decodes every frame of an image file (all pages of a multi-page TIFF), handing each to
+    /// <paramref name="consume"/> in order. Only one page's pixels are alive at a time.
+    /// </summary>
+    public static void ReadImages(string path, GrayImageConsumer consume)
     {
+        ArgumentNullException.ThrowIfNull(consume);
         using var stream = File.OpenRead(path);
-        return Decode(stream);
+        using var image = Load(stream, out var formula);
+        for (int fi = 0; fi < image.Frames.Count; fi++)
+        {
+            var (gray, w, h) = ToGray(image.Frames[fi], formula);
+            consume(new GrayImage(w, h, gray));
+        }
     }
 
-    /// <summary>Decodes a single image from bytes (the viewer upload path).</summary>
-    public static GrayImage ReadImage(byte[] bytes)
+    /// <summary>Decodes the first frame of an image held in memory (the viewer upload path).</summary>
+    public static GrayImage ReadImage(ReadOnlySpan<byte> bytes)
     {
-        using var ms = new MemoryStream(bytes, writable: false);
-        var pages = Decode(ms);
-        return pages.Count > 0 ? pages[0] : throw new InvalidDataException("no image frames");
+        using var stream = new MemoryStream(bytes.ToArray(), writable: false);
+        using var image = Load(stream, out var formula);
+        if (image.Frames.Count == 0) throw new InvalidDataException("no image frames");
+        var (gray, w, h) = ToGray(image.Frames[0], formula);
+        return new GrayImage(w, h, gray);
     }
 
     /// <summary>Encodes a grayscale image as JPEG (viewer previews; quality 82 like Python).</summary>
@@ -92,7 +110,12 @@ public static class ImageFiles
         return ms.ToArray();
     }
 
-    private static List<GrayImage> Decode(Stream stream)
+    /// <summary>Loads the whole file and picks the RGB-&gt;gray formula from its format.</summary>
+    /// <remarks>
+    /// NOTE: JPEG is decoded by libjpeg in OpenCV and by ImageSharp here, so colour JPEGs
+    /// cannot be bit-exact; they fall back to the cvtColor coefficients.
+    /// </remarks>
+    private static Image<Rgba32> Load(Stream stream, out GrayFormula formula)
     {
         // Detecting the format needs a seekable stream; buffer if the caller gave us one.
         MemoryStream? buffered = null;
@@ -107,8 +130,12 @@ public static class ImageFiles
         {
             stream.Position = 0;
             var format = Image.DetectFormat(stream);
+            formula = FormulaFor(format?.Name);
             stream.Position = 0;
-            return Decode(stream, FormulaFor(format?.Name));
+            // OpenCV's imread honours EXIF orientation by default; mirror that.
+            var image = Image.Load<Rgba32>(stream);
+            image.Mutate(x => x.AutoOrient());
+            return image;
         }
         finally
         {
@@ -116,34 +143,22 @@ public static class ImageFiles
         }
     }
 
-    private static List<GrayImage> Decode(Stream stream, GrayFormula formula)
+    /// <summary>Converts one frame to a tightly packed grayscale buffer.</summary>
+    private static (byte[] Gray, int Width, int Height) ToGray(ImageFrame<Rgba32> frame, GrayFormula formula)
     {
-        using var image = Image.Load<Rgba32>(stream);
-
-        // OpenCV's imread honours EXIF orientation by default; mirror that.
-        image.Mutate(x => x.AutoOrient());
-
-        // NOTE: JPEG is decoded by libjpeg in OpenCV and by ImageSharp here, so colour JPEGs
-        // cannot be bit-exact; they fall back to the cvtColor coefficients.
-        var pages = new List<GrayImage>(image.Frames.Count);
-        for (int fi = 0; fi < image.Frames.Count; fi++)
+        int w = frame.Width, h = frame.Height;
+        var gray = new byte[w * h];
+        var buffer = frame.PixelBuffer;
+        for (int y = 0; y < h; y++)
         {
-            var frame = image.Frames[fi];
-            int w = frame.Width, h = frame.Height;
-            var gray = new byte[w * h];
-            var buffer = frame.PixelBuffer;
-            for (int y = 0; y < h; y++)
+            var row = buffer.DangerousGetRowSpan(y);
+            int off = y * w;
+            for (int x = 0; x < w; x++)
             {
-                var row = buffer.DangerousGetRowSpan(y);
-                int off = y * w;
-                for (int x = 0; x < w; x++)
-                {
-                    var p = row[x];
-                    gray[off + x] = RgbToGray(p.R, p.G, p.B, formula);
-                }
+                var p = row[x];
+                gray[off + x] = RgbToGray(p.R, p.G, p.B, formula);
             }
-            pages.Add(new GrayImage(w, h, gray));
         }
-        return pages;
+        return (gray, w, h);
     }
 }

@@ -25,28 +25,44 @@ image contract, so the pipeline cannot be coupled to a particular image codec or
    (`<Compile Include="..\Shared\ImageFiles.cs" Link="Hosting\ImageFiles.cs" />`) so there is
    a single implementation without adding a fifth project.
 
-4. **`Core` is fed pixels, not files.** New input contract
-   `Indra.Ocr.Imaging.BitmapData`:
+4. **`Core` is fed pixels, not files.** There is exactly **one** image type,
+   `Indra.Ocr.Imaging.GrayImage`, a borrowed view:
 
    ```csharp
-   public readonly ref struct BitmapData
+   public readonly ref struct GrayImage
    {
+       public GrayImage(int width, int height, int stride, ReadOnlySpan<byte> data);
+       public GrayImage(int width, int height, ReadOnlySpan<byte> data); // stride = width
        public int Width { get; }
        public int Height { get; }
        public int Stride { get; }                 // bytes per row, >= Width
        public ReadOnlySpan<byte> Data { get; }    // 8-bit single channel
        public ReadOnlySpan<byte> Row(int y);
        public byte this[int y, int x] { get; }
+       public GrayImage Slice(int x, int y, int width, int height);
    }
    ```
 
    The `ref struct` shape guarantees a borrowed view can never be stored on the heap, and
    `Stride` lets callers pass padded buffers (e.g. a PDFium bitmap) with no copy.
-   `GrayImage` stays the *owning*, tightly-packed working type; `GrayImage.From(BitmapData)`
-   copies the borrowed pixels in and `GrayImage.AsBitmap()` views them out.
 
-   `Data` is `ReadOnlySpan<byte>` (the sketch in the request had `Span<byte>`) because `Core`
-   only ever *reads* its inputs.
+   The type is a **view only**: it owns nothing and never allocates. Outputs are
+   caller-provided buffers (`Span<byte>` + size), so nothing is copied and no allocation
+   policy is imposed on `Core`. (An earlier draft had a second, owning `GrayImage` class next
+   to the `BitmapData` view; the two were functionally the same thing, so the view absorbed
+   the name and the owning type was deleted.)
+
+   `Data` is `ReadOnlySpan<byte>` (borrowed input) because `Core` only ever *reads* its
+   inputs.
+
+   Because an image can never be stored on the heap there is no `List<GrayImage>`; the host
+   decoders hand images out **one at a time** through a callback
+   (`ImageFiles.ReadImages(path, consume)`). Nothing is cached, and multi-page files are
+   processed page by page.
+
+   Spans stay safe across the pipeline: the ONNX boundary copies pixels into ORT's own
+   `OrtValue` buffer, and every `await` sits *after* that copy, so a `Span`/`ReadOnlySpan`
+   never has to survive an async boundary.
 
 ## Dependency graph
 
@@ -72,9 +88,11 @@ So a single-channel 8-bit buffer is the complete input language of the pipeline.
 ## Verification
 
 - `dotnet build src/Indra.Ocr.slnx` → 0 warnings, 0 errors.
-- `dotnet test src/Indra.Ocr.slnx` → 17 passed.
-- `BitmapDataTests` covers padded rows, `stride < width` and short-buffer rejection.
-- `ImageDecodeTests` still matches the OpenCV reference through the relocated decoder.
+- `dotnet test src/Indra.Ocr.slnx` → 20 passed.
+- `GrayImageTests` covers padded rows, `stride < width`, short buffers, tight views,
+  sub-views and binding a writable `Span<byte>`.
+- `ImageDecodeTests` still matches the OpenCV reference through the relocated, streaming
+  decoder.
 
 ## Notes
 

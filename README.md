@@ -9,7 +9,7 @@ behavioural parity. ONNX inference uses `Microsoft.ML.OnnxRuntime` (NuGet).
 |---|---|
 | `src/Indra.Ocr.slnx` | The .NET solution. |
 | `src/Directory.Build.props`, `src/Directory.Packages.props` | Shared build settings + central package versions. |
-| `src/Indra.Ocr.Core` | Core pipeline (models, detection, recognition, reading order, layout, text layer). Consumes grayscale pixels only (`BitmapData`); no image-codec/PDF dependency. |
+| `src/Indra.Ocr.Core` | Core pipeline (models, detection, recognition, reading order, layout, text layer). Consumes grayscale pixels only (`GrayImage`); no image-codec/PDF dependency. |
 | `src/Indra.Ocr.Pdf` | PDF rasterisation + text layer via PDFium (the only PDFium dependency). |
 | `src/Indra.Ocr.Cli` | `indra-ocr` console app. |
 | `src/Indra.Ocr.Viewer` | `indra-ocr-viewer` local web viewer. |
