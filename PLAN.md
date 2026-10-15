@@ -52,7 +52,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `090` orientation + deskew — `orient.onnx` quarter turns (`IOrientModel`), the
   `estimate_skew` search (numpy's `arange` and float32 reductions reproduced), `rotate_page`,
   `np.rot90`, `unrotate_box` and `upright` (`docs/090-orientation-deskew.md`).
-- [ ] `095` adaptive detect.
+- [x] `095` adaptive detect — `det.onnx` behind an `IDetModel` seam, `_detect_at`/`detect`
+  (`DetectAt`, `AdaptiveLongSide`, `Run`), including the float32 median, the 32-grid candidate,
+  the 2048 cap and the NEP 50 scale/clip tail (`docs/095-adaptive-detect.md`).
 - [ ] `100` recognize (CTC, CJK routing).
 - [ ] `110` `order_post`.
 - [ ] `120` `layout_post`.
@@ -100,8 +102,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`090` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+- Steps `000`–`095` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
   the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
   with numpy's float32 `exp` reproduced bit-exactly), the line crop rule + batching
-  (`RecPreproc`), the CenterMask windowing (`LineMask`) and the page uprighting
-  (`Orientation`: orient.onnx turns, deskew search, rotations). 62 tests green, build clean.
+  (`RecPreproc`), the CenterMask windowing (`LineMask`), the page uprighting
+  (`Orientation`: orient.onnx turns, deskew search, rotations) and line detection
+  (`Detect`: one LineNet pass, the adaptive second pass and the scale/clip tail). 67 tests
+  green, build clean.

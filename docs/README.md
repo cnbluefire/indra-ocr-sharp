@@ -21,7 +21,7 @@ status. Keep these in sync with `PLAN.md`.
 | [080](080-rec-preproc.md) | rec_preproc (line crop + batching) |
 | [085](085-line-mask.md) | line_mask (CenterMask) |
 | [090](090-orientation-deskew.md) | orientation + deskew |
-| 095 | adaptive detect |
+| [095](095-adaptive-detect.md) | adaptive detect |
 | 100 | recognize |
 | 110 | order_post |
 | 120 | layout_post |
