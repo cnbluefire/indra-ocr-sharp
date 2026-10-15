@@ -24,7 +24,7 @@ status. Keep these in sync with `PLAN.md`.
 | [095](095-adaptive-detect.md) | adaptive detect |
 | [100](100-recognize.md) | recognize |
 | [110](110-order-post.md) | order_post |
-| 115 | order seam (IOrderModel + reading_order) |
+| [115](115-reading-order.md) | reading_order |
 | 120 | layout_post |
 | 130 | assemble |
 | 135 | image inputs |

@@ -66,7 +66,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   `_cluster` and `decode_blocks_order`, plus numpy's vectorised float32 `log` (`NpyLog`) and the
   Python `isdigit`/`isupper`/`isspace` predicates (`docs/110-order-post.md`). Training-only
   helpers (`kendall_tau`, `successor_acc`, `block_class`, `label_order`) intentionally omitted.
-- [ ] `115` `order` seam — `IOrderModel`/`OnnxOrderModel` (order/table heads) + `reading_order`.
+- [x] `115` `reading_order` — the driver (`IOrderModel`/`OnnxOrderModel` over `order.onnx`, the
+  XY-cut fallback for short pages and missing models, the pairwise vs layout-head choice and the
+  `table_heads` gate) (`docs/115-reading-order.md`).
 - [ ] `120` `layout_post`.
 - [ ] `130` assemble / gutter cuts / split.
 - [ ] `135` image inputs (hosts decode files → `GrayImage`).
@@ -112,14 +114,15 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`110` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+- Steps `000`–`115` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
   the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
   with numpy's float32 `exp` reproduced bit-exactly), the line crop rule + batching
   (`RecPreproc`), the CenterMask windowing (`LineMask`), the page uprighting
   (`Orientation`: orient.onnx turns, deskew search, rotations), line detection
   (`Detect`: one LineNet pass, the adaptive second pass and the scale/clip tail), line
   recognition (`Recognizer`: cropping, the hanzi routing, width batching, the CTC collapse and
-  the token → page-x mapping) and the reading-order building blocks (`OrderPost`: line features
+  the token → page-x mapping), the reading-order building blocks (`OrderPost`: line features
   over numpy's float32 `log`, pairwise-order decoding, the top-down and XY-cut baselines, the
-  average-linkage block clustering and the layout-head block decoder). 79 tests green, build
-  clean.
+  average-linkage block clustering and the layout-head block decoder) and the reading-order
+  driver (`ReadingOrder` over `order.onnx`, with the XY-cut fallback and the table-heads gate).
+  81 tests green, build clean.

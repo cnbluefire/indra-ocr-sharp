@@ -238,6 +238,7 @@ top_downs: list = []
 xy_cuts: list = []
 clusters: list = []
 block_cases: list = []
+reading_orders: list = []
 stats = {"decode_order": 0, "decode_order_differ": 0, "blocks": 0, "blocks_differ": 0,
          "worst_blocks": 0}
 warning = False
@@ -306,10 +307,43 @@ def block_case(name, a, same, boxes, cls, note=""):
     return expected
 
 
+# --------------------------------------------------------------------------- reading_order
+
+
+class OrderStub:
+    """Only the attributes ``OrtOCR.reading_order`` touches (step 115)."""
+
+    def __init__(self, order, table_heads: bool = False):
+        self.order = order
+        self.table_heads = table_heads
+
+
+def ro_case(name, boxes, texts, wh, order_sess_, model=True, table_heads=False, note=""):
+    """Runs the *real* ``OrtOCR.reading_order`` against a stub carrying just the model."""
+    b = np.ascontiguousarray(boxes, np.float32)
+    stub = OrderStub(order_sess_ if model else None, table_heads)
+    order, layout, logits = OrtOCR.reading_order(stub, b, list(texts), (int(wh[0]), int(wh[1])))
+    fields = {"name": name, "n": int(len(b)), "boxes": f32(b), "texts": list(texts),
+              "page": [int(wh[0]), int(wh[1])], "model": bool(model),
+              "table_heads": bool(table_heads),
+              "order": [int(v) for v in order], "cls": None, "same": None, "tab": None,
+              "logits": None, "note": note}
+    if layout is not None:
+        fields["cls"], fields["same"] = f32(layout[0]), f32(layout[1])
+        if layout[2] is not None:
+            fields["tab"] = f32(layout[2])
+    if logits is not None:
+        fields["logits"] = f32(logits)
+    reading_orders.append(fields)
+    return fields
+
+
 # --------------------------------------------------------------------------- real pages
 
 order_sess = None
 if (MODELS / "order.onnx").exists() and (FIX / "recognize.json").exists():
+    from indra_ocr.pipeline import OrtOCR
+
     order_sess = session("order.onnx")
     rec_doc = json.loads((FIX / "recognize.json").read_text(encoding="utf-8"))
     page_wh = {n: (float(p["w"]), float(p["h"])) for n, p in rec_doc["pages"].items()}
@@ -324,6 +358,8 @@ if (MODELS / "order.onnx").exists() and (FIX / "recognize.json").exists():
         wh = page_wh[case["page"]]
         n = len(boxes)
         print(f"  {name:14s} n={n:3d}")
+        ro_case(name, boxes, texts, wh, order_sess)
+        ro_case(name + "_nomodel", boxes, texts, wh, order_sess, model=False)
         if n == 0:
             feature_case(name + "_empty", boxes, wh, texts, "no lines")
             continue
@@ -343,8 +379,42 @@ if (MODELS / "order.onnx").exists() and (FIX / "recognize.json").exists():
             grid = np.zeros((n, 10), np.float32)
             grid[:, 5] = 1.0
             block_case(name + "_grid", a, same, boxes, grid, "every block a Table (row by row)")
+    # the table-heads gate: only then is outs[3] handed on as layout[2]
+    for name in ("latin", "blank"):
+        case = next(c for c in rec_doc["cases"] if c["name"] == name)
+        raw = np.frombuffer(zlib.decompress(base64.b64decode(case["boxes"])),
+                            np.float32).reshape(-1, 5)
+        boxes = np.ascontiguousarray(raw[:, :4], np.float32)
+        ro_case(name + "_table", boxes, [ln["text"] for ln in case["lines"]],
+                page_wh[case["page"]], order_sess, table_heads=True,
+                note="table_heads on: layout[2] is the model's tab")
+    # the hand-made off-page / degenerate boxes
+    case = next(c for c in rec_doc["cases"] if c["name"] == "handmade")
+    raw = np.frombuffer(zlib.decompress(base64.b64decode(case["boxes"])), np.float32).reshape(-1, 5)
+    ro_case("handmade", np.ascontiguousarray(raw[:, :4], np.float32),
+            [ln["text"] for ln in case["lines"]], page_wh[case["page"]], order_sess,
+            note="off-page and degenerate boxes")
 else:
     print("  order.onnx / recognize.json missing: real cases skipped")
+
+
+# synthetic reading_order cases: the fallbacks (fewer than two lines, or no model at all) and a
+# two-line page that actually runs the model
+one = np.array([[100.0, 100.0, 400.0, 130.0]], np.float32)
+two = np.array([[100.0, 100.0, 400.0, 130.0], [100.0, 200.0, 400.0, 230.0]], np.float32)
+empty_boxes = np.zeros((0, 4), np.float32)
+present = order_sess is not None
+ro_case("single_line", one, ["only line"], (700, 900), order_sess, model=present,
+        note="N=1: XY-cut, the model is never called")
+ro_case("empty", empty_boxes, [], (700, 900), order_sess, model=present, note="N=0")
+ro_case("two_lines_nomodel", two, ["first", "second"], (700, 900), order_sess, model=False,
+        note="N=2 without an order model: XY-cut")
+if present:
+    ro_case("two_lines", two, ["first", "second"], (700, 900), order_sess,
+            note="N=2: the model runs")
+    ro_case("two_lines_table", two, ["first", "second"], (700, 900), order_sess,
+            table_heads=True, note="N=2 with the table heads")
+
 
 
 # --------------------------------------------------------------------------- synthetic features
@@ -619,6 +689,7 @@ doc = {
     "xy_cut": xy_cuts,
     "cluster": clusters,
     "decode_blocks": block_cases,
+    "reading_order": reading_orders,
     "npylog": npylog,
     "stats": stats,
 }
@@ -628,6 +699,7 @@ print(f"  portable simulation: decode_order {stats['decode_order_differ']}/{stat
       f"cases differ, decode_blocks_order {stats['blocks_differ']}/{stats['blocks']} cases differ")
 print(f"wrote {out.name}: {out.stat().st_size} bytes ({len(features)} feature, "
       f"{len(decode_orders)} decode_order, {len(top_downs)} top_down, {len(xy_cuts)} xy_cut, "
-      f"{len(clusters)} cluster, {len(block_cases)} decode_blocks cases)")
+      f"{len(clusters)} cluster, {len(block_cases)} decode_blocks, "
+      f"{len(reading_orders)} reading_order cases)")
 if warning:
     print("  NOTE: the portable simulation disagrees with the reference somewhere (see above)")
