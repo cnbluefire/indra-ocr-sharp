@@ -88,7 +88,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   the invisible-text share; the `IPdfDocument`/`IPdfPage` seam in Core keeps PDFium out of it
   (`docs/140-pdfium.md`).
 - [ ] `145` Unicode bidi class table (`unicodedata.bidirectional` parity, used by `document.py`).
-- [ ] `150` `textlayer`.
+- [x] `150` `textlayer` — the text-layer runs and the verdict on them: the uprightness test
+  through the page affine, the bad-character test (`unicodedata.category`), the
+  invisible-text / broken-font-map / no-ink checks and their messages, over Core's `IPdfPage`
+  (`docs/150-textlayer.md`).
 - [ ] `160` `document` Converter.
 - [ ] `170` `models` model_dir + download.
 
@@ -126,7 +129,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`140` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+- Steps `000`–`150` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
   the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
   with numpy's float32 `exp` reproduced bit-exactly), the line crop rule + batching
   (`RecPreproc`), the CenterMask windowing (`LineMask`), the page uprighting
@@ -144,5 +147,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   and the `Line`/`Page` result), and the PDFium backend (`Indra.Ocr.Pdf`: document open with
   pypdfium2's error text, page size, bit-exact grayscale renders, the text layer's characters,
   the `FPDF_PageToDevice` affine and the invisible-text share, behind Core's
-  `IPdfDocument`/`IPdfPage` seam).
-  112 tests green, build clean.
+  `IPdfDocument`/`IPdfPage` seam), and the text-layer policy (`TextLayerReader`: the runs and
+  the trust verdict — uprightness through the affine, the bad-character test, invisible text,
+  the ink check).
+  116 tests green, build clean.

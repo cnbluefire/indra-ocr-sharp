@@ -163,6 +163,27 @@ public static class UnicodeText
         return start == 0 && end == s.Length ? s : s[start..end];
     }
 
+    /// <summary>
+    /// Python's <c>" ".join(s.split())</c>: every run of Python whitespace becomes one space,
+    /// and leading/trailing whitespace is dropped.
+    /// </summary>
+    public static string CollapseSpaces(string s)
+    {
+        var parts = new List<string>();
+        int i = 0;
+        while (i < s.Length)
+        {
+            while (i < s.Length && IsSpaceCodePoint(s[i]))
+                i++;
+            int start = i;
+            while (i < s.Length && !IsSpaceCodePoint(s[i]))
+                i++;
+            if (i > start)
+                parts.Add(s[start..i]);
+        }
+        return string.Join(" ", parts);
+    }
+
     private static bool InRanges((int Lo, int Hi)[] ranges, int codePoint)
     {
         foreach (var (lo, hi) in ranges)

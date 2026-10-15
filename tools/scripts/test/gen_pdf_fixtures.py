@@ -42,6 +42,32 @@ from pdf_samples import SAMPLES, build_all  # noqa: E402
 OUT = Path("src/Indra.Ocr.Tests/fixtures/pdf.json")
 CHECK_SCALE = 1.0  # document.CHECK_DPI / 72: the resolution of the ink check
 
+# bad_char_count cases, as code points (a JSON string cannot carry a lone surrogate).  The
+# reference's answer for each is recorded, so the C# port is checked on the exact characters:
+# replacement, private use (BMP and astral), lone surrogates, unassigned points, controls,
+# formats and a tab.
+BAD_CHAR_CASES = [
+    [],
+    [0x41],
+    [0xE9],
+    [0xFFFD],
+    [0xE000],
+    [0xD800],
+    [0x0378],
+    [0x01],
+    [0x09],
+    [0x0A],
+    [0x85],
+    [0x00AD],
+    [0x200B],
+    [0x200C],
+    [0x2028],
+    [0x1F600],
+    [0x10FFFF],
+    [0x0F0000],
+    [0x41, 0xFFFD, 0x42],
+]
+
 
 def zbytes(data) -> str:
     return base64.b64encode(zlib.compress(bytes(data), 9)).decode()
@@ -67,6 +93,10 @@ def chars_json(page) -> list:
         return items
     finally:
         tp.close()
+
+
+def stats_json(stats: dict) -> dict:
+    return {k: (int(v) if isinstance(v, int) else float(v)) for k, v in stats.items()}
 
 
 def runs_json(runs) -> list:
@@ -108,7 +138,9 @@ def page_json(page, scales) -> dict:
         # verdict read_text_layer reached on the CHECK_SCALE render above.
         "textlayer": {
             "runs": runs_json(runs),
-            "stats": {k: (int(v) if isinstance(v, int) else float(v)) for k, v in stats.items()},
+            "stats": stats_json(stats),
+            "layer_stats": stats_json(layer.stats),
+            "layer_lines": len(layer.lines),
             "trusted": bool(layer.trusted),
             "reason": layer.reason,
         },
@@ -158,15 +190,24 @@ def main() -> None:
     for e in errors:
         print(f"  error {e['name']:22s} -> {e['message']!r}")
 
+    bad_chars = [
+        {"codes": codes, "count": TL.bad_char_count("".join(chr(c) for c in codes))}
+        for codes in BAD_CHAR_CASES
+    ]
+
     fixture = {
         "note": __doc__.strip().splitlines()[0],
         "check_scale": CHECK_SCALE,
         "documents": docs,
         "errors": errors,
+        "bad_chars": bad_chars,
     }
     text = json.dumps(fixture, ensure_ascii=True, indent=1, sort_keys=False)
     OUT.write_text(text, encoding="utf-8", newline="\n")
-    print(f"wrote {OUT}: {len(text)} bytes ({len(docs)} documents, {len(errors)} error cases)")
+    print(
+        f"wrote {OUT}: {len(text)} bytes "
+        f"({len(docs)} documents, {len(errors)} error cases, {len(bad_chars)} bad-char cases)"
+    )
 
 
 if __name__ == "__main__":

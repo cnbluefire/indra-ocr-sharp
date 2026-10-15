@@ -467,7 +467,7 @@ public sealed class Assembler
             var sb = new System.Text.StringBuilder(toks.Count);
             foreach (var tk in toks)
                 sb.Append(tk.Character);
-            return CollapseSpaces(sb.ToString());
+            return UnicodeText.CollapseSpaces(sb.ToString());
         }
         if (_vocab is null)
             throw new InvalidOperationException("an id-token line needs a vocabulary to decode");
@@ -551,24 +551,6 @@ public sealed class Assembler
                 best = c;
             }
         return best;
-    }
-
-    /// <summary>Python's <c>" ".join(s.split())</c>: runs of Python whitespace become one space.</summary>
-    private static string CollapseSpaces(string s)
-    {
-        var parts = new List<string>();
-        int i = 0;
-        while (i < s.Length)
-        {
-            while (i < s.Length && UnicodeText.IsSpaceCodePoint(s[i]))
-                i++;
-            int start = i;
-            while (i < s.Length && !UnicodeText.IsSpaceCodePoint(s[i]))
-                i++;
-            if (i > start)
-                parts.Add(s[start..i]);
-        }
-        return string.Join(" ", parts);
     }
 
     /// <summary><c>sorted(range(n), key=keys[i])</c>: a stable sort, so ties keep index order.</summary>
