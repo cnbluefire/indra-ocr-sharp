@@ -1,0 +1,254 @@
+{
+ "reference": {
+  "onnxruntime": "1.31.0"
+ },
+ "meta": {
+  "det_long_side": 1024,
+  "rec_height": 32
+ },
+ "vocab_json_len": 9485,
+ "vocab_cjk_json_len": 49860,
+ "present": {
+  "rec": true,
+  "rec.int8": false,
+  "mask": false,
+  "order": true,
+  "orient": true,
+  "script": true,
+  "rec_cjk": true
+ },
+ "models": {
+  "det": {
+   "inputs": [
+    {
+     "name": "x",
+     "type": "tensor(float)",
+     "shape": [
+      1,
+      1,
+      -1,
+      -1
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "name": "out",
+     "type": "tensor(float)",
+     "shape": [
+      1,
+      3,
+      -1,
+      -1
+     ]
+    }
+   ]
+  },
+  "rec": {
+   "inputs": [
+    {
+     "name": "x",
+     "type": "tensor(float)",
+     "shape": [
+      -1,
+      1,
+      32,
+      -1
+     ]
+    },
+    {
+     "name": "widths",
+     "type": "tensor(int64)",
+     "shape": [
+      -1
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "name": "ids",
+     "type": "tensor(int64)",
+     "shape": [
+      -1,
+      -1
+     ]
+    },
+    {
+     "name": "conf",
+     "type": "tensor(float)",
+     "shape": [
+      -1,
+      -1
+     ]
+    },
+    {
+     "name": "lengths",
+     "type": "tensor(int64)",
+     "shape": [
+      -1
+     ]
+    }
+   ]
+  },
+  "order": {
+   "inputs": [
+    {
+     "name": "feats",
+     "type": "tensor(float)",
+     "shape": [
+      1,
+      -1,
+      16
+     ]
+    },
+    {
+     "name": "mask",
+     "type": "tensor(bool)",
+     "shape": [
+      1,
+      -1
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "name": "a",
+     "type": "tensor(float)",
+     "shape": [
+      1,
+      -1,
+      -1
+     ]
+    },
+    {
+     "name": "cls",
+     "type": "tensor(float)",
+     "shape": [
+      1,
+      -1,
+      10
+     ]
+    },
+    {
+     "name": "same",
+     "type": "tensor(float)",
+     "shape": [
+      1,
+      -1,
+      -1
+     ]
+    },
+    {
+     "name": "tab",
+     "type": "tensor(float)",
+     "shape": [
+      1,
+      3,
+      -1,
+      -1
+     ]
+    }
+   ]
+  },
+  "orient": {
+   "inputs": [
+    {
+     "name": "x",
+     "type": "tensor(float)",
+     "shape": [
+      -1,
+      1,
+      768,
+      768
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "name": "p",
+     "type": "tensor(float)",
+     "shape": [
+      -1,
+      4
+     ]
+    }
+   ]
+  },
+  "script": {
+   "inputs": [
+    {
+     "name": "x",
+     "type": "tensor(float)",
+     "shape": [
+      -1,
+      1,
+      32,
+      -1
+     ]
+    },
+    {
+     "name": "widths",
+     "type": "tensor(int64)",
+     "shape": [
+      -1
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "name": "p",
+     "type": "tensor(float)",
+     "shape": [
+      -1
+     ]
+    }
+   ]
+  },
+  "rec_cjk": {
+   "inputs": [
+    {
+     "name": "x",
+     "type": "tensor(float)",
+     "shape": [
+      -1,
+      1,
+      32,
+      -1
+     ]
+    },
+    {
+     "name": "widths",
+     "type": "tensor(int64)",
+     "shape": [
+      -1
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "name": "ids",
+     "type": "tensor(int64)",
+     "shape": [
+      -1,
+      -1
+     ]
+    },
+    {
+     "name": "conf",
+     "type": "tensor(float)",
+     "shape": [
+      -1,
+      -1
+     ]
+    },
+    {
+     "name": "lengths",
+     "type": "tensor(int64)",
+     "shape": [
+      -1
+     ]
+    }
+   ]
+  }
+ }
+}

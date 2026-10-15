@@ -34,7 +34,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `050` Vocab + Unicode helpers.
 
 ### Phase 2 — ONNX pipeline
-- [ ] `060` ORT session infra + meta/vocab load.
+- [x] `060` ORT session infra + meta/vocab load.
 - [ ] `070` `det_post`.
 - [ ] `080` `rec_preproc` + `line_mask`.
 - [ ] `090` orientation + deskew.
@@ -78,5 +78,5 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`050` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives and
-  the recognizer vocabulary (35 tests green, build clean).
+- Steps `000`–`060` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+  the recognizer vocabulary and the ORT model set (38 tests green, build clean).

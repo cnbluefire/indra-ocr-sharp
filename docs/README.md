@@ -16,7 +16,7 @@ status. Keep these in sync with `PLAN.md`.
 | [030](030-image-codecs.md) | Gray image types + host image codecs |
 | [040](040-opencv-primitives.md) | OpenCV primitives (resize, warpAffine, CCL) |
 | [050](050-vocab.md) | Vocab + Unicode helpers |
-| 060 | ORT session infra |
+| [060](060-ort-sessions.md) | ORT sessions + model set |
 | 070 | det_post |
 | 080 | rec_preproc + line_mask |
 | 090 | orientation + deskew |
