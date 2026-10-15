@@ -20,7 +20,7 @@ status. Keep these in sync with `PLAN.md`.
 | [070](070-det-post.md) | det_post (LineNet pre/post-processing) |
 | [080](080-rec-preproc.md) | rec_preproc (line crop + batching) |
 | [085](085-line-mask.md) | line_mask (CenterMask) |
-| 090 | orientation + deskew |
+| [090](090-orientation-deskew.md) | orientation + deskew |
 | 095 | adaptive detect |
 | 100 | recognize |
 | 110 | order_post |

@@ -16,7 +16,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - Parity: bit-exact for deterministic output; tolerance only for timings and <1e-3 floats.
 - numpy's float32 `exp` is not the CRT's `expf`, so the port reproduces numpy's own vector
   kernel (`Indra.Ocr.NpyExp`, with hardware FMA) instead of calling `MathF.Exp`; see
-  `docs/070-det-post.md`.
+  `docs/070-det-post.md`. numpy's contiguous float32 *reductions* are likewise a CPU-specific
+  SIMD kernel, so the port uses numpy's portable pairwise sum (`Numerics.Sum32`/`Mean32`) and
+  documents where the last-ulp difference can show (the `estimate_skew` ranking); see
+  `docs/090-orientation-deskew.md`.
 - Order: Core + Cli first (aligned against `indra-ocr`), then Viewer.
 - Math (`--math`) ported last.
 - `resources/` read-only and gitignored; binaries/temp gitignored.
@@ -46,7 +49,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `085` `line_mask` — CenterMask windowing + `crop_lines`, with an `IMaskModel`
   seam so the masking is testable although the shipped set has no `mask.onnx`
   (`docs/085-line-mask.md`).
-- [ ] `090` orientation + deskew.
+- [x] `090` orientation + deskew — `orient.onnx` quarter turns (`IOrientModel`), the
+  `estimate_skew` search (numpy's `arange` and float32 reductions reproduced), `rotate_page`,
+  `np.rot90`, `unrotate_box` and `upright` (`docs/090-orientation-deskew.md`).
 - [ ] `095` adaptive detect.
 - [ ] `100` recognize (CTC, CJK routing).
 - [ ] `110` `order_post`.
@@ -95,7 +100,8 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`085` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+- Steps `000`–`090` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
   the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
   with numpy's float32 `exp` reproduced bit-exactly), the line crop rule + batching
-  (`RecPreproc`) and the CenterMask windowing (`LineMask`). 51 tests green, build clean.
+  (`RecPreproc`), the CenterMask windowing (`LineMask`) and the page uprighting
+  (`Orientation`: orient.onnx turns, deskew search, rotations). 62 tests green, build clean.

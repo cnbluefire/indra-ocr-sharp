@@ -68,6 +68,55 @@ public static class Numerics
         return s / a.Length;
     }
 
+    /// <summary>
+    /// numpy's <b>float32</b> sum, i.e. <c>np.sum(a)</c> / <c>a.sum(axis)</c> on a float32 array:
+    /// the accumulator is float32 and the order is numpy's <c>pairwise_sum_FLOAT</c>.
+    /// </summary>
+    /// <remarks>
+    /// numpy dispatches contiguous float32 reductions to a CPU-specific SIMD kernel
+    /// (8/16-lane accumulators) whose tree is not part of numpy's contract — the fallback, and
+    /// the code that runs when SIMD is unavailable, is the pairwise sum reproduced here. The
+    /// SIMD tree differs from it only in the last ulp; see <c>docs/090-orientation-deskew.md</c>
+    /// for where that can be observed.
+    /// </remarks>
+    public static float Sum32(ReadOnlySpan<float> a) => PairwiseSum32(a);
+
+    /// <summary>numpy's <c>float32_array.mean()</c>: the float32 pairwise sum divided by the count in float32.</summary>
+    public static float Mean32(ReadOnlySpan<float> a)
+        => a.Length == 0 ? float.NaN : Sum32(a) / a.Length;
+
+    // numpy's npy_pairwise_sum_FLOAT: a straight sum below 8 elements, 8 accumulators up to
+    // PW_BLOCKSIZE=128 elements, and a recursive bisection above it. Every accumulator is
+    // float32, so the result is order-dependent and has to be reproduced exactly.
+    private const int PairwiseBlockSize = 128;
+
+    private static float PairwiseSum32(ReadOnlySpan<float> a)
+    {
+        int n = a.Length;
+        if (n < 8)
+        {
+            float s = 0f;
+            for (int i = 0; i < n; i++) s += a[i];
+            return s;
+        }
+        if (n <= PairwiseBlockSize)
+        {
+            float r0 = a[0], r1 = a[1], r2 = a[2], r3 = a[3];
+            float r4 = a[4], r5 = a[5], r6 = a[6], r7 = a[7];
+            int i = 8, limit = n - (n % 8);
+            for (; i < limit; i += 8)
+            {
+                r0 += a[i]; r1 += a[i + 1]; r2 += a[i + 2]; r3 += a[i + 3];
+                r4 += a[i + 4]; r5 += a[i + 5]; r6 += a[i + 6]; r7 += a[i + 7];
+            }
+            float res = ((r0 + r1) + (r2 + r3)) + ((r4 + r5) + (r6 + r7));
+            for (; i < n; i++) res += a[i];
+            return res;
+        }
+        int n2 = n / 2;
+        return PairwiseSum32(a[..n2]) + PairwiseSum32(a[n2..]);
+    }
+
     // ---------------------------------------------------------------- ordering
 
     public static int ArgMax(ReadOnlySpan<float> a)
