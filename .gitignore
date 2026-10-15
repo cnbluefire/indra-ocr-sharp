@@ -1,0 +1,27 @@
+# External / downloaded material — never committed
+/resources/
+
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+.vs/
+
+# Local tooling and temp
+/tools/pyenv/
+/temp/
+*.log
+
+# Native binaries / model weights (acquired by scripts, not committed)
+*.onnx
+*.safetensors
+*.dll
+*.so
+*.dylib
+
+# NuGet
+*.nupkg
+packages/
