@@ -26,7 +26,7 @@ status. Keep these in sync with `PLAN.md`.
 | [110](110-order-post.md) | order_post |
 | [115](115-reading-order.md) | reading_order |
 | [120](120-layout-post.md) | layout_post |
-| 130 | assemble |
+| [130](130-assemble.md) | assemble |
 | 135 | image inputs |
 | 140 | PDFium backend |
 | 145 | Unicode bidi class table |

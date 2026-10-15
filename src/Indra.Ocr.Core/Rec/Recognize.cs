@@ -66,11 +66,12 @@ public interface IScriptModel
 /// </remarks>
 public readonly struct RecToken
 {
-    public RecToken(long id, string? character, double x)
+    public RecToken(long id, string? character, double x, int? contentIndex = null)
     {
         Id = id;
         Character = character;
         X = x;
+        ContentIndex = contentIndex;
     }
 
     /// <summary>The vocab class id; 0 when <see cref="Character"/> is set.</summary>
@@ -82,9 +83,24 @@ public readonly struct RecToken
     /// <summary>The token's page x (the CTC peak's timestep mapped back through the crop).</summary>
     public double X { get; }
 
+    /// <summary>
+    /// The PDF content index of a text-layer token, else <c>null</c>.
+    /// </summary>
+    /// <remarks>
+    /// The reference's tokens are 2-tuples <c>(id, x)</c> from the recognizer and 3-tuples
+    /// <c>(char, x, content)</c> from the text layer; <c>assemble</c> reads the third element
+    /// only <c>if len(tk) &gt; 2</c> to decide whether the PDF content order may be kept. A
+    /// nullable property is the port of "the third element is there or not".
+    /// </remarks>
+    public int? ContentIndex { get; }
+
     public bool IsCharacter => Character is not null;
 
-    public override string ToString() => IsCharacter ? $"('{Character}', {X})" : $"({Id}, {X})";
+    public override string ToString()
+    {
+        string head = IsCharacter ? $"('{Character}', {X}" : $"({Id}, {X}";
+        return ContentIndex is null ? head + ")" : head + $", {ContentIndex})";
+    }
 }
 
 /// <summary>One recognized line: its text, its confidence and its tokens.</summary>

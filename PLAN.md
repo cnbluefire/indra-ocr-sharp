@@ -74,7 +74,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   table heads), the display-equation path, the furniture rules and `page_blocks`, plus Python's
   `round` (`Numerics.RoundHalfEven`) and `str.strip` (`UnicodeText.Strip`)
   (`docs/120-layout-post.md`).
-- [ ] `130` assemble / gutter cuts / split.
+- [x] `130` `assemble` — the `SPLIT_GAP` / gutter-cut line splitting (`gutter_cuts`, `split_line`),
+  the table-head cell re-split with the second order pass, the text-layer `content_order` override
+  (`order_backtracks`, `pdf_order_coherent`) and the `Line`/`Page` assembly (with `OcrLine`,
+  `OcrPage`) (`docs/130-assemble.md`).
 - [ ] `135` image inputs (hosts decode files → `GrayImage`).
 
 ### Phase 3 — PDF + Document
@@ -118,7 +121,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`120` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+- Steps `000`–`130` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
   the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
   with numpy's float32 `exp` reproduced bit-exactly), the line crop rule + batching
   (`RecPreproc`), the CenterMask windowing (`LineMask`), the page uprighting
@@ -127,9 +130,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   recognition (`Recognizer`: cropping, the hanzi routing, width batching, the CTC collapse and
   the token → page-x mapping), the reading-order building blocks (`OrderPost`: line features
   over numpy's float32 `log`, pairwise-order decoding, the top-down and XY-cut baselines, the
-  average-linkage block clustering and the layout-head block decoder) and the reading-order
-  driver (`ReadingOrder` over `order.onnx`, with the XY-cut fallback and the table-heads gate), and
+  average-linkage block clustering and the layout-head block decoder), the reading-order
+  driver (`ReadingOrder` over `order.onnx`, with the XY-cut fallback and the table-heads gate),
   the page layout (`LayoutPost`: the block split, paragraph/list/section rendering, the geometric
   and head-driven HTML tables, the display-equation path, `page_blocks`/`page_markdown`, plus
-  Python's `round` and `str.strip`).
-  95 tests green, build clean.
+  Python's `round` and `str.strip`), and the page assembly (`Assembler`: the wide-gap and
+  gutter-cut line splitting, the table-head cell re-split, the text-layer content-order override
+  and the `Line`/`Page` result).
+  104 tests green, build clean.
