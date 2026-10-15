@@ -20,7 +20,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 ### Phase 0 — Foundation
 - [x] `000` Governance & layout — `AGENTS.md`, `PLAN.md`, `.gitignore`, `docs/` skeleton.
 - [x] `010` Solution, 3 projects, build props, NuGet refs, run-original helper.
-- [ ] `015` Test scaffolding — fixtures, comparator, reference runner.
+- [x] `015` Test scaffolding — fixtures, comparator, reference runner.
 
 ### Phase 1 — Pure-managed numerics & CV
 - [ ] `020` NumericOps (numpy parity).

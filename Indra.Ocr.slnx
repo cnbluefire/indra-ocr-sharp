@@ -4,4 +4,7 @@
     <Project Path="src/Indra.Ocr.Core/Indra.Ocr.Core.csproj" />
     <Project Path="src/Indra.Ocr.Viewer/Indra.Ocr.Viewer.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Indra.Ocr.Tests/Indra.Ocr.Tests.csproj" />
+  </Folder>
 </Solution>
