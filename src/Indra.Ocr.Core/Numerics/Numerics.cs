@@ -235,8 +235,11 @@ public static class Numerics
         if (double.IsPositiveInfinity(x)) return x;
         double u = 1.0 + x;
         if (u == 1.0) return x;
-        if (u - 1.0 == x) return Math.Log(u) - ((u - 1.0) - x) / u;
-        return Math.Log(u);
+        // The addition may have dropped bits of x (x - (u - 1) is exact); when it did, add the
+        // correction log1p(x) = log(u) + (x - (u - 1)) / u. Applying it only in the branch where
+        // bits were lost is what makes this match the C library's log1p for tiny x.
+        if (u - 1.0 == x) return Math.Log(u);
+        return Math.Log(u) - ((u - 1.0) - x) / u;
     }
 
     /// <summary>numpy.logaddexp(x, y) == log(exp(x) + exp(y)), matching numpy's edge handling.</summary>

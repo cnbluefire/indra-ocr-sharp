@@ -20,6 +20,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   SIMD kernel, so the port uses numpy's portable pairwise sum (`Numerics.Sum32`/`Mean32`) and
   documents where the last-ulp difference can show (the `estimate_skew` ranking); see
   `docs/090-orientation-deskew.md`.
+- numpy's float32 `log` is the same story and gets its own kernel (`Indra.Ocr.NpyLog`), because
+  the reading-order line features feed it to the order model. `np.logaddexp`'s float32 path, by
+  contrast, *does* call the CRT's `expf`/`log1pf` (which is why `OrderPost` uses `MathF.Exp`);
+  see `docs/110-order-post.md`.
 - Order: Core + Cli first (aligned against `indra-ocr`), then Viewer.
 - Math (`--math`) ported last.
 - `resources/` read-only and gitignored; binaries/temp gitignored.
@@ -58,7 +62,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `100` recognize — `recognize` + `hanzi_lines` (`IRecModel`/`IScriptModel` over both
   recognizers and the script classifier), the crop/route/batch loop, the CTC collapse and the
   token → page-x mapping (`docs/100-recognize.md`).
-- [ ] `110` `order_post`.
+- [x] `110` `order_post` — `line_features`, `decode_order`, `order_top_down`, `order_xycut`,
+  `_cluster` and `decode_blocks_order`, plus numpy's vectorised float32 `log` (`NpyLog`) and the
+  Python `isdigit`/`isupper`/`isspace` predicates (`docs/110-order-post.md`). Training-only
+  helpers (`kendall_tau`, `successor_acc`, `block_class`, `label_order`) intentionally omitted.
+- [ ] `115` `order` seam — `IOrderModel`/`OnnxOrderModel` (order/table heads) + `reading_order`.
 - [ ] `120` `layout_post`.
 - [ ] `130` assemble / gutter cuts / split.
 - [ ] `135` image inputs (hosts decode files → `GrayImage`).
@@ -104,11 +112,14 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`100` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+- Steps `000`–`110` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
   the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
   with numpy's float32 `exp` reproduced bit-exactly), the line crop rule + batching
   (`RecPreproc`), the CenterMask windowing (`LineMask`), the page uprighting
   (`Orientation`: orient.onnx turns, deskew search, rotations), line detection
-  (`Detect`: one LineNet pass, the adaptive second pass and the scale/clip tail) and line
+  (`Detect`: one LineNet pass, the adaptive second pass and the scale/clip tail), line
   recognition (`Recognizer`: cropping, the hanzi routing, width batching, the CTC collapse and
-  the token → page-x mapping). 70 tests green, build clean.
+  the token → page-x mapping) and the reading-order building blocks (`OrderPost`: line features
+  over numpy's float32 `log`, pairwise-order decoding, the top-down and XY-cut baselines, the
+  average-linkage block clustering and the layout-head block decoder). 79 tests green, build
+  clean.

@@ -23,7 +23,8 @@ status. Keep these in sync with `PLAN.md`.
 | [090](090-orientation-deskew.md) | orientation + deskew |
 | [095](095-adaptive-detect.md) | adaptive detect |
 | [100](100-recognize.md) | recognize |
-| 110 | order_post |
+| [110](110-order-post.md) | order_post |
+| 115 | order seam (IOrderModel + reading_order) |
 | 120 | layout_post |
 | 130 | assemble |
 | 135 | image inputs |

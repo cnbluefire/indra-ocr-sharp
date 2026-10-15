@@ -46,6 +46,27 @@ public static class UnicodeText
         }
     }
 
+    /// <summary>
+    /// The code point values of a string. An unpaired surrogate yields its own value, which is
+    /// what Python's <c>ord</c> does for it (<see cref="CodePoints"/> cannot: a lone surrogate
+    /// has no valid <c>char.ConvertToUtf32</c>).
+    /// </summary>
+    public static IEnumerable<int> CodePointValues(string s)
+    {
+        for (int i = 0; i < s.Length; i++)
+        {
+            if (char.IsHighSurrogate(s[i]) && i + 1 < s.Length && char.IsLowSurrogate(s[i + 1]))
+            {
+                yield return char.ConvertToUtf32(s[i], s[i + 1]);
+                i++;
+            }
+            else
+            {
+                yield return s[i];
+            }
+        }
+    }
+
     /// <summary>Python's <c>str.isalpha()</c>: non-empty and every code point a letter.</summary>
     public static bool IsAlpha(string s)
     {
@@ -57,13 +78,104 @@ public static class UnicodeText
         return true;
     }
 
-    /// <summary>Python's <c>str.isspace()</c> for the single-character tokens the regex emits.</summary>
+    /// <summary>
+    /// Python's <c>str.isdigit()</c> for one code point. Python's "digit" is the Unicode
+    /// <c>Numeric_Type=Digit</c> property: every decimal digit (<c>Nd</c>) plus a short list of
+    /// "other" digits (superscripts, circled and parenthesised numbers, ...), which
+    /// <see cref="CharUnicodeInfo"/> reports as <c>No</c>. The port adds exactly those extra
+    /// code points (Unicode 16.0.0, what Python 3.14 reports; <c>docs/110-order-post.md</c>
+    /// records the exhaustive check).
+    /// </summary>
+    public static bool IsDigitCodePoint(int codePoint)
+    {
+        if (codePoint < 0 || codePoint > 0x10FFFF)
+            return false;
+        return CharUnicodeInfo.GetUnicodeCategory(codePoint) == UnicodeCategory.DecimalDigitNumber
+            || InRanges(OtherDigits, codePoint);
+    }
+
+    /// <summary>Python's <c>str.isdigit()</c>: non-empty and every code point a digit.</summary>
+    public static bool IsDigit(string s)
+    {
+        if (s.Length == 0)
+            return false;
+        foreach (int cp in CodePointValues(s))
+            if (!IsDigitCodePoint(cp))
+                return false;
+        return true;
+    }
+
+    /// <summary>
+    /// Python's <c>str.isupper()</c> for one code point: every cased character is uppercase.
+    /// That is <c>Lu</c> plus the handful of "Other_Uppercase" code points (Roman numerals,
+    /// circled and squared Latin letters), which .NET reports as <c>Nl</c>/<c>So</c>.
+    /// </summary>
+    /// <remarks>
+    /// Only the one-code-point form is needed: the pipeline's single use is
+    /// <c>t[0].isupper()</c> in <c>line_features</c>. The multi-character form would have to
+    /// count <c>Other_Lowercase</c> code points as cased as well (a whole further table), so it
+    /// is not offered rather than offered approximately.
+    /// </remarks>
+    public static bool IsUpperCodePoint(int codePoint)
+    {
+        if (codePoint < 0 || codePoint > 0x10FFFF)
+            return false;
+        return CharUnicodeInfo.GetUnicodeCategory(codePoint) == UnicodeCategory.UppercaseLetter
+            || InRanges(OtherUppercase, codePoint);
+    }
+
+    private static bool InRanges((int Lo, int Hi)[] ranges, int codePoint)
+    {
+        foreach (var (lo, hi) in ranges)
+            if (lo <= codePoint && codePoint <= hi)
+                return true;
+        return false;
+    }
+
+    // Numeric_Type=Digit code points that are not Nd, and Other_Uppercase code points that are
+    // not Lu (Unicode 16.0.0, the version Python 3.14 reports).
+    private static readonly (int Lo, int Hi)[] OtherDigits =
+    [
+        (0x00B2, 0x00B3), (0x00B9, 0x00B9), (0x1369, 0x1371), (0x19DA, 0x19DA), (0x2070, 0x2070),
+        (0x2074, 0x2079), (0x2080, 0x2089), (0x2460, 0x2468), (0x2474, 0x247C), (0x2488, 0x2490),
+        (0x24EA, 0x24EA), (0x24F5, 0x24FD), (0x24FF, 0x24FF), (0x2776, 0x277E), (0x2780, 0x2788),
+        (0x278A, 0x2792), (0x10A40, 0x10A43), (0x10E60, 0x10E68), (0x11052, 0x1105A),
+        (0x1F100, 0x1F10A),
+    ];
+
+    private static readonly (int Lo, int Hi)[] OtherUppercase =
+    [
+        (0x2160, 0x216F), (0x24B6, 0x24CF), (0x1F130, 0x1F149), (0x1F150, 0x1F169),
+        (0x1F170, 0x1F189),
+    ];
+
+    /// <summary>Python's <c>str.isspace()</c> for one code point.</summary>
+    /// <remarks>
+    /// Python's whitespace set is the Unicode separators (<c>Zs</c>/<c>Zl</c>/<c>Zp</c>) plus the
+    /// C0 controls <c>\t</c>..<c>\r</c> and <c>0x1C</c>..<c>0x1F</c> and <c>0x85</c> (NEL).
+    /// <see cref="char.IsWhiteSpace(char)"/> covers all of that except <c>0x1C</c>..<c>0x1F</c>,
+    /// so the port adds them; the exhaustive check in <c>OrderPostTests</c> pins the set down
+    /// against Python's <c>str.isspace()</c> for all 1 114 112 code points.
+    /// </remarks>
+    public static bool IsSpaceCodePoint(int codePoint)
+    {
+        if (codePoint is >= 0x1C and <= 0x1F)
+            return true;
+        if (codePoint < 0 || codePoint > 0x10FFFF)
+            return false;
+        UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(codePoint);
+        return category is UnicodeCategory.SpaceSeparator or UnicodeCategory.LineSeparator
+                or UnicodeCategory.ParagraphSeparator
+            || codePoint is 0x09 or 0x0A or 0x0B or 0x0C or 0x0D or 0x85;
+    }
+
+    /// <summary>Python's <c>str.isspace()</c>: non-empty and every code point whitespace.</summary>
     public static bool IsSpace(string s)
     {
         if (s.Length == 0)
             return false;
-        foreach (var c in CodePoints(s))
-            if (!char.IsWhiteSpace(c, 0))
+        foreach (int cp in CodePointValues(s))
+            if (!IsSpaceCodePoint(cp))
                 return false;
         return true;
     }
