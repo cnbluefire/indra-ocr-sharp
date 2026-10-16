@@ -175,7 +175,8 @@ internal static class Cli
     /// stops it. A PDF is opened once for its page count (the arithmetic is the caller's, as in
     /// the reference); an image file is one unit that converts the whole file.
     /// </summary>
-    private static List<object> Plan(List<string> paths, int maxPages, string? password)
+    /// <remarks>Internal so the tests can check the plan without a pool (tests/test_inputs.py does).</remarks>
+    internal static List<object> Plan(List<string> paths, int maxPages, string? password)
     {
         var plan = new List<object>();
         foreach (string path in paths)

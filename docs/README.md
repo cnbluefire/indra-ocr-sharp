@@ -47,6 +47,6 @@ status. Keep these in sync with `PLAN.md`.
 | [240](240-viewer-http.md) | Viewer parity surface (command line + concurrency) |
 | [245](245-host-layout.md) | Host layout: argparse + Python helpers back in the CLI |
 | [247](247-console-output.md) | One console class (`PythonInterop` folded into `ConsoleOutput`) |
-| 250 | Port python unit tests |
+| [250](250-reference-tests.md) | The reference's own unit tests, ported (26 of 27) |
 | 260 | End-to-end sweep |
 | 270 | [ONNX backend benchmark (ONNX Runtime vs Lokad.Onnx)](270-onnx-benchmark.md) |

@@ -37,7 +37,23 @@ public static class ModelDownload
         "mathcls.onnx", "math_enc.onnx", "math_dec_init.onnx", "math_dec_step.onnx", "math_meta.json",
     ];
 
-    private const string Host = "https://huggingface.co";
+    private const string DefaultHost = "https://huggingface.co";
+
+    /// <summary>
+    /// The Hub to talk to: <c>HF_ENDPOINT</c> when it is set, else the public one — the same
+    /// override <c>huggingface_hub.constants.ENDPOINT</c> reads (with its trailing slashes
+    /// trimmed). A mirror, or an unreachable one for a test that must not reach the network.
+    /// </summary>
+    private static string Host
+    {
+        get
+        {
+            string? endpoint = Environment.GetEnvironmentVariable("HF_ENDPOINT");
+            return string.IsNullOrEmpty(endpoint)
+                ? DefaultHost
+                : endpoint.TrimEnd('/');
+        }
+    }
 
     /// <summary>The patterns the reference keeps, whatever the model folder.</summary>
     private static readonly string[] Always = ["*.onnx", "meta.json", "config.json"];
@@ -49,12 +65,18 @@ public static class ModelDownload
     /// (default <see cref="HfRevision"/>), creating it if needed. With <paramref name="math"/>,
     /// the math models are downloaded too; without it they are left out.
     /// </summary>
+    /// <returns>
+    /// <c>true</c> when the Hub was reached (the folder now holds what the Hub has); <c>false</c>
+    /// when it was not and the folder's own model set was kept as it is. The distinction is the
+    /// caller's: the reference's <c>model_dir</c> only touches its daily stamp after the online
+    /// call, so an offline run keeps the models <i>and</i> keeps checking every time.
+    /// </returns>
     /// <exception cref="ModelError">
     /// The Hub could not be reached or a file could not be fetched, and the folder does not
     /// already hold the model set (in which case the folder is left as it is: an offline run
     /// keeps the models it has, as the reference does).
     /// </exception>
-    public static void Download(string folder, bool math = false, string? revision = null)
+    public static bool Download(string folder, bool math = false, string? revision = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(folder);
         string rev = revision ?? HfRevision;
@@ -71,7 +93,7 @@ public static class ModelDownload
             // is (the reference's "keep the cached models"); otherwise the caller must be told.
             if (HasModels(folder, math))
             {
-                return;
+                return false;
             }
 
             throw new ModelError(DownloadFailed(e), e);
@@ -95,6 +117,8 @@ public static class ModelDownload
                 throw new ModelError(DownloadFailed(e), e);
             }
         }
+
+        return true;
     }
 
     /// <summary>

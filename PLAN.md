@@ -205,7 +205,14 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   `Indra.Ocr.ArgumentParsing.ConsoleOutput`, which is what both hosts write with (the streams
   and `os.linesep`, Python's float `repr`/`format(x, '.Nf')`, `json.dumps`). No behaviour
   change: 177 tests, 83/83 + 20/20 + 11/11 (`docs/247-console-output.md`).
-- [ ] `250` Port python unit tests.
+- [x] `250` The reference's own unit tests — `tests/test_inputs.py` (10) and
+  `tests/test_textlayer.py` (17) ported case for case into
+  `ReferenceInputsTests`/`ReferenceTextLayerTests` (26 tests; `test_version_flag` stays
+  with the command-line surface that already covers it), over the seams the port has
+  (`SafePage.Read`, `IOrientModel`/`IRecModel`/`IScriptModel`, a local `HF_ENDPOINT`).
+  Two parity fixes came out of it: `HF_ENDPOINT` was ignored, and the daily model-cache
+  stamp was touched on the offline path (the reference only stamps after a real Hub
+  call). 203 tests, 83/83 + 20/20 + 11/11 (`docs/250-reference-tests.md`).
 - [ ] `260` End-to-end parity sweep + docs.
 
 ### Phase 8 — Last
@@ -341,5 +348,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   the streams plus the `os.linesep` translation, Python's float `repr`/`format(x, '.Nf')` and
   `json.dumps` in one class, since all of it is the console's (`docs/247-console-output.md`).
   No behaviour change (177 tests, 83/83 + 20/20 + 11/11).
-- 177 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the viewer's command
+- Step `250` done: the reference's own `tests/` ported — 26 of its 27 cases into
+  `ReferenceInputsTests` (9 inputs; the tenth, `test_version_flag`, is a command-line
+  surface) and `ReferenceTextLayerTests` (17 text-layer), each carrying the reference's
+  test name. It found two parity bugs: `HF_ENDPOINT` was ignored, and the model cache's
+  daily stamp was touched on the offline path (the reference stamps only after a real Hub
+  call). 203 tests, 83/83 + 20/20 + 11/11 (`docs/250-reference-tests.md`).
+- 203 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the viewer's command
   line 20/20 and its HTTP harness 11/11.

@@ -742,7 +742,8 @@ public static class LayoutPost
     }
 
     // _ITEM = re.compile(r"^\s*([•\-–▪◦*·→]|\(?\d{1,3}[.)]|\(?[a-zA-Z][.)])(\s|$)")
-    private static bool IsItem(string text)
+    // Internal so the tests can check the predicate on its own (tests/test_textlayer.py does).
+    internal static bool IsItem(string text)
     {
         int[] cps = ToCodePointArray(text);
         int i = 0;

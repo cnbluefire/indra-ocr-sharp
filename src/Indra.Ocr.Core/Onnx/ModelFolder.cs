@@ -65,8 +65,14 @@ public static class ModelFolder
 
         try
         {
-            ModelDownload.Download(snapshot, math);
-            Touch(stamp);
+            // The stamp is only touched when the Hub was really reached (the reference's `_touch`
+            // sits on the online branch alone): an offline run keeps the cached models and keeps
+            // checking, rather than going quiet for a day.
+            if (ModelDownload.Download(snapshot, math))
+            {
+                Touch(stamp);
+            }
+
             return snapshot;
         }
         catch (ModelError)

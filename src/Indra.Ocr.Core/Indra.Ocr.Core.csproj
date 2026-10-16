@@ -5,6 +5,12 @@
     <AssemblyName>Indra.Ocr.Core</AssemblyName>
   </PropertyGroup>
 
+  <!-- The tests reach two internals: LayoutPost.IsItem (the reference's _ITEM predicate, checked
+       on its own the way tests/test_textlayer.py does) and nothing else. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Indra.Ocr.Tests" />
+  </ItemGroup>
+
   <!-- No third-party image-codec or PDF dependency: Core consumes grayscale pixels
        (Indra.Ocr.Imaging.GrayImage) and samples ONNX models. The two decoders (Indra.Ocr for
        image files, Indra.Ocr.Pdf for PDFs) reference Core; Core references neither. -->
