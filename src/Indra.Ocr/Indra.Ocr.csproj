@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Indra.Ocr.Images</RootNamespace>
+    <AssemblyName>Indra.Ocr</AssemblyName>
+  </PropertyGroup>
+
+  <!-- The encoded-image layer: it decodes image files (ImageSharp) to Core's GrayImage and turns
+       them into pages with the pipeline. Pdf is a sibling that also references Core; the two
+       decoders never reference each other, because both hand Core the same GrayImage. -->
+  <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
+  </ItemGroup>
+
+</Project>

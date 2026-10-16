@@ -12,23 +12,29 @@ package** (`Microsoft.ML.OnnxRuntime`).
 
 ## Hard requirements
 
-1. **Four projects**, all under `src/` (`src/Shared/` holds source files linked into more
-   than one project):
+1. **Five projects**, all under `src/`:
    - `Indra.Ocr.Core` — all core functionality: ONNX Runtime reference, inference-engine
-     lifecycle management, the whole OCR pipeline. It has **no** image-codec or PDF
-     dependency: the only image input it accepts is `Indra.Ocr.Imaging.GrayImage`, a
-     non-owning `ref struct` view over 8-bit single-channel pixels
-     (`Width` / `Height` / `Stride` / `Data`), so callers can pass padded buffers with no
-     copy. It owns and allocates nothing: outputs are caller-provided buffers.
-   - `Indra.Ocr.Pdf` — PDF handling (page rasterisation + text layer) via `PDFiumCore`. This
-     is the **only** project that references the PDFium package. PDFium renders straight to
-     grayscale (`FPDFBitmap_Gray`), so rendered pages come back as `GrayImage` with no
-     decoding. It references `Indra.Ocr.Core`.
-   - `Indra.Ocr.Cli` — console app; commands must match the `indra-ocr` command 1:1. Owns
-     image-file decoding (ImageSharp, `src/Shared/ImageFiles.cs`).
+     lifecycle management, the whole OCR pipeline, and every algorithm that works on an OCR
+     *result* (the text layer's runs and the verdict on them, the reading order, the layout,
+     the assembled page). It has **no** image-codec or PDF dependency: the only image input
+     it accepts is `Indra.Ocr.Imaging.GrayImage`, a non-owning `ref struct` view over 8-bit
+     single-channel pixels (`Width` / `Height` / `Stride` / `Data`), so callers can pass
+     padded buffers with no copy. It owns and allocates nothing: outputs are caller-provided
+     buffers.
+   - `Indra.Ocr` — the encoded-image decoder: image *files* (ImageSharp) to grayscale, one
+     `GrayImageData` per frame (`ImageFiles.ReadImages` / `ReadImage`), plus `ImageConverter`,
+     the image half of `document.convert`. It references `Indra.Ocr.Core`.
+   - `Indra.Ocr.Pdf` — the PDF decoder: page rasterisation + text layer via `PDFiumCore`. This
+     is the **only** project that references the PDFium package, and it holds `PdfConverter`,
+     the PDF half of `document.convert`. PDFium renders straight to grayscale
+     (`FPDFBitmap_Gray`), so rendered pages come back as `GrayImage` with no decoding. It
+     references `Indra.Ocr.Core`.
+   - `Indra.Ocr.Cli` — console app; commands must match the `indra-ocr` command 1:1.
    - `Indra.Ocr.Viewer` — preview project; must match the `indra-ocr-viewer` command 1:1.
-     Reuses the same image-file decoder.
-   `Pdf`, `Cli` and `Viewer` all reference `Core`; `Core` references none of them.
+   `Cli` and `Viewer` reference `Core`, `Indra.Ocr` and `Pdf`; `Indra.Ocr` and `Indra.Ocr.Pdf`
+   do **not** reference each other — both hand Core the same `GrayImage`, so neither needs the
+   other — and `Core` references none of them. The hosts choose a decoder with `OrtOcr.IsPdf`
+   and own no codec themselves.
 2. **`resources/` is read-only.** Never modify anything under `resources/`. It also never
    enters git (it is externally downloaded material).
 3. **ONNX runtime via NuGet.** `Microsoft.ML.OnnxRuntime`.
@@ -79,12 +85,13 @@ package** (`Microsoft.ML.OnnxRuntime`).
   distinct floats (identical results); divergence is only possible when keys tie exactly.
   Python `sorted(...)` calls are stable and are matched exactly.
 - **Scope**: OCR + PDF text layer first; `--math` last.
-- **Image codecs**: the host projects (`Cli` / `Viewer`) decode image files with pure-managed
+- **Image codecs**: the `Indra.Ocr` project decodes image files with pure-managed
   **ImageSharp 2.1.13** (the last Apache-2.0 release; 3.x/4.x are under the Six Labors Split
   License, and 4.x refuses Release builds without a key). `Core` never touches a file it
-  cannot itself describe as pixels — the hosts decode to grayscale and hand `Core` a
-  `GrayImage`. Reproducing OpenCV 5.0.0's grayscale conversion needs **three different**
-  fixed-point formulas (one per decoder), documented in `docs/030-image-codecs.md`.
+  cannot itself describe as pixels — the decoders hand `Core` a `GrayImage` (`Indra.Ocr`
+  through `GrayImageData`, which owns the frame; `Indra.Ocr.Pdf` straight from the render).
+  Reproducing OpenCV 5.0.0's grayscale conversion needs **three different** fixed-point
+  formulas (one per decoder), documented in `docs/030-image-codecs.md`.
 
 ## Environment
 

@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using Indra.Ocr.Document;
 using PDFiumCore;
 
 namespace Indra.Ocr.Pdf;
@@ -21,7 +20,7 @@ namespace Indra.Ocr.Pdf;
 /// (PDFium does not copy them), exactly as pypdfium2 keeps its input buffer alive.
 /// </para>
 /// </remarks>
-public sealed class PdfDocument : ITextDocument
+public sealed class PdfDocument : IDisposable
 {
     private readonly GCHandle _pin;
     private FpdfDocumentT? _document;
@@ -39,7 +38,7 @@ public sealed class PdfDocument : ITextDocument
             if (_document is null || _document.__Instance == IntPtr.Zero || fpdfview.FPDF_GetPageCount(_document) < 1)
             {
                 ulong code = fpdfview.FPDF_GetLastError();
-                throw new TextPageError($"Failed to load document (PDFium: {Pdfium.ErrorText(code)}).", code);
+                throw new PdfiumError($"Failed to load document (PDFium: {Pdfium.ErrorText(code)}).", code);
             }
         }
         catch
@@ -68,18 +67,18 @@ public sealed class PdfDocument : ITextDocument
 
     public (double Width, double Height) PageSize(int index)
     {
-        using ITextPage page = LoadPage(index);
+        using PdfPage page = LoadPage(index);
         return (page.Width, page.Height);
     }
 
     /// <summary>Loads one page (0-based); dispose it when done.</summary>
-    public ITextPage LoadPage(int index)
+    public PdfPage LoadPage(int index)
     {
         ThrowIfDisposed();
         FpdfPageT? raw = fpdfview.FPDF_LoadPage(_document, index);
         if (raw is null || raw.__Instance == IntPtr.Zero)
         {
-            throw new TextPageError("Failed to load page.");
+            throw new PdfiumError("Failed to load page.");
         }
 
         return new PdfPage(raw);

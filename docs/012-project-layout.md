@@ -3,6 +3,13 @@
 **Status:** done. (Recorded after `020`; the number is insert-friendly and reads next to
 `010`, which created the original solution.)
 
+> **Partly superseded by [`165`](165-project-split.md).** The image contract (`GrayImage` as a
+> borrowed `ref struct` view, `Core` free of codecs and PDFium) still holds. What changed: the
+> linked `src/Shared/ImageFiles.cs` and the callback `ReadImages(path, consume)` are gone — the
+> decoder is `Indra.Ocr/Images/ImageFiles.cs`, returns `List<GrayImageData>` (an owning frame with
+> an implicit conversion to `GrayImage`), and `src/Shared/` no longer exists. The dependency graph
+> below is also out of date (five projects; `Indra.Ocr` and `Indra.Ocr.Pdf` are siblings).
+
 ## Goal
 
 Put every .NET artefact in one place and give `Indra.Ocr.Core` a narrow, dependency-free

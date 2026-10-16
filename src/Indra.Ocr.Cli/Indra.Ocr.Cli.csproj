@@ -6,18 +6,12 @@
     <AssemblyName>indra-ocr</AssemblyName>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" />
-  </ItemGroup>
-
+  <!-- The CLI is only a front end: Core holds the pipeline, Pdf and Indra.Ocr the two decoders.
+       It never touches an image codec or PDFium itself. -->
   <ItemGroup>
     <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
     <ProjectReference Include="..\Indra.Ocr.Pdf\Indra.Ocr.Pdf.csproj" />
-  </ItemGroup>
-
-  <!-- Image-file decoding (ImageSharp) is a host concern, shared verbatim with the Viewer. -->
-  <ItemGroup>
-    <Compile Include="..\Shared\ImageFiles.cs" Link="Hosting\ImageFiles.cs" />
+    <ProjectReference Include="..\Indra.Ocr\Indra.Ocr.csproj" />
   </ItemGroup>
 
 </Project>

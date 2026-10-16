@@ -2,6 +2,11 @@
 
 **Status:** done.
 
+> **The types moved to `Indra.Ocr.Text` and the `ITextPage` seam was deleted by
+> [`165`](165-project-split.md).** `TextLayer`/`TextChar`/`TextLine`/`TextLayerStats`/
+> `TextLayerReader` now live in `src/Indra.Ocr.Core/Text/`, and `ExtractRuns` is
+> `PdfPage.ExtractRuns` (the PDFium half), which `ReadTextLayer` calls lazily through a `Func`.
+
 ## Goal
 
 Port `indra_ocr/textlayer.py`'s policy: read a page's text-layer runs and decide whether the

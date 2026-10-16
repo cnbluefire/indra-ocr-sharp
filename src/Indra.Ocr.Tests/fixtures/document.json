@@ -1,0 +1,3718 @@
+{
+ "note": "Generate src/Indra.Ocr.Tests/fixtures/document.json — the parity fixture for step 160",
+ "page_scale": [
+  {
+   "w": 200.0,
+   "h": 120.0,
+   "dpi": 200.0,
+   "scale": 2.7777777777777777
+  },
+  {
+   "w": 612.0,
+   "h": 792.0,
+   "dpi": 200.0,
+   "scale": 2.7777777777777777
+  },
+  {
+   "w": 200.5,
+   "h": 120.25,
+   "dpi": 200.0,
+   "scale": 2.7777777777777777
+  },
+  {
+   "w": 200.0,
+   "h": 120.0,
+   "dpi": 300.0,
+   "scale": 4.166666666666667
+  },
+  {
+   "w": 200.0,
+   "h": 120.0,
+   "dpi": 72.0,
+   "scale": 1.0
+  },
+  {
+   "w": 0.0,
+   "h": 0.0,
+   "dpi": 200.0,
+   "scale": 2.7777777777777777
+  },
+  {
+   "w": 4000.0,
+   "h": 4000.0,
+   "dpi": 200.0,
+   "scale": 2.5
+  },
+  {
+   "w": 5000.0,
+   "h": 5000.0,
+   "dpi": 200.0,
+   "scale": 2.0
+  },
+  {
+   "w": 10000.0,
+   "h": 4000.0,
+   "dpi": 200.0,
+   "scale": 1.5811388300841898
+  },
+  {
+   "w": 20000.0,
+   "h": 20000.0,
+   "dpi": 200.0,
+   "scale": 0.5
+  },
+  {
+   "w": 100000.0,
+   "h": 100000.0,
+   "dpi": 200.0,
+   "scale": 0.1
+  }
+ ],
+ "right_to_left": [
+  {
+   "name": "empty",
+   "cps": [],
+   "rtl": false
+  },
+  {
+   "name": "latin",
+   "cps": [
+    72,
+    101,
+    108,
+    108,
+    111,
+    32,
+    119,
+    111,
+    114,
+    108,
+    100
+   ],
+   "rtl": false
+  },
+  {
+   "name": "arabic",
+   "cps": [
+    1605,
+    1585,
+    1581,
+    1576,
+    1575
+   ],
+   "rtl": true
+  },
+  {
+   "name": "hebrew",
+   "cps": [
+    1513,
+    1500,
+    1493,
+    1501
+   ],
+   "rtl": true
+  },
+  {
+   "name": "hebrew_beats_latin",
+   "cps": [
+    1513,
+    1500,
+    1493,
+    1501,
+    32,
+    97,
+    98
+   ],
+   "rtl": true
+  },
+  {
+   "name": "latin_beats_hebrew",
+   "cps": [
+    1513,
+    1500,
+    1493,
+    1501,
+    32,
+    97,
+    98,
+    99
+   ],
+   "rtl": true
+  },
+  {
+   "name": "tie_is_ltr",
+   "cps": [
+    97,
+    1489
+   ],
+   "rtl": false
+  },
+  {
+   "name": "digits_only",
+   "cps": [
+    49,
+    50,
+    51,
+    52,
+    53
+   ],
+   "rtl": false
+  },
+  {
+   "name": "arabic_indic_digits",
+   "cps": [
+    1633,
+    1634,
+    1635
+   ],
+   "rtl": false
+  },
+  {
+   "name": "punctuation_only",
+   "cps": [
+    40,
+    41,
+    44,
+    46,
+    45
+   ],
+   "rtl": false
+  },
+  {
+   "name": "astral_is_not_one_char",
+   "cps": [
+    119808,
+    97
+   ],
+   "rtl": false
+  },
+  {
+   "name": "lone_surrogate",
+   "cps": [
+    55357,
+    97
+   ],
+   "rtl": false
+  },
+  {
+   "name": "arabic_letters_astral_ignored",
+   "cps": [
+    1605,
+    1585,
+    119808
+   ],
+   "rtl": true
+  }
+ ],
+ "assign_runs": [
+  {
+   "name": "one_run_one_box",
+   "note": "the run's characters stay in PDF order, x is the centre",
+   "k": 1.0,
+   "boxes": "eNpjYICBE04MDAscAQeLAew=",
+   "n": 1,
+   "runs": [
+    {
+     "text": "AB",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        0,
+        0,
+        10,
+        10
+       ]
+      },
+      {
+       "cp": 66,
+       "box": [
+        12,
+        0,
+        22,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 65,
+      "x": 5.0,
+      "ci": 0
+     },
+     {
+      "cp": 66,
+      "x": 17.0,
+      "ci": 0
+     }
+    ]
+   ],
+   "lost": 0
+  },
+  {
+   "name": "space_follows_the_character_before_it",
+   "note": "a space keeps the previous character's x",
+   "k": 1.0,
+   "boxes": "eNpjYICBE04MDAscAQeLAew=",
+   "n": 1,
+   "runs": [
+    {
+     "text": "A B",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        0,
+        0,
+        10,
+        10
+       ]
+      },
+      {
+       "cp": 32,
+       "box": [
+        20,
+        0,
+        25,
+        10
+       ]
+      },
+      {
+       "cp": 66,
+       "box": [
+        30,
+        0,
+        40,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 65,
+      "x": 5.0,
+      "ci": 0
+     },
+     {
+      "cp": 32,
+      "x": 5.0,
+      "ci": 0
+     },
+     {
+      "cp": 66,
+      "x": 35.0,
+      "ci": 0
+     }
+    ]
+   ],
+   "lost": 0
+  },
+  {
+   "name": "a_space_before_any_character_is_dropped",
+   "note": "j is None until a character lands, so the leading space is not a token",
+   "k": 1.0,
+   "boxes": "eNpjYICBE04MDAscAQeLAew=",
+   "n": 1,
+   "runs": [
+    {
+     "text": " A",
+     "chars": [
+      {
+       "cp": 32,
+       "box": [
+        20,
+        0,
+        25,
+        10
+       ]
+      },
+      {
+       "cp": 65,
+       "box": [
+        0,
+        0,
+        10,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 65,
+      "x": 5.0,
+      "ci": 0
+     }
+    ]
+   ],
+   "lost": 0
+  },
+  {
+   "name": "a_run_across_two_cells_splits",
+   "note": "each character goes to the box that contains its centre",
+   "k": 1.0,
+   "boxes": "eNpjYICBE04MDAscITQIeDiD+AA5FQRi",
+   "n": 2,
+   "runs": [
+    {
+     "text": "AB",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        0,
+        0,
+        10,
+        10
+       ]
+      },
+      {
+       "cp": 66,
+       "box": [
+        110,
+        0,
+        120,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 65,
+      "x": 5.0,
+      "ci": 0
+     }
+    ],
+    [
+     {
+      "cp": 66,
+      "x": 115.0,
+      "ci": 0
+     }
+    ]
+   ],
+   "lost": 0
+  },
+  {
+   "name": "characters_outside_every_box_are_lost",
+   "note": "lost counts non-space characters only",
+   "k": 1.0,
+   "boxes": "eNpjYICBE04MDAscAQeLAew=",
+   "n": 1,
+   "runs": [
+    {
+     "text": "AZB",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        0,
+        0,
+        10,
+        10
+       ]
+      },
+      {
+       "cp": 90,
+       "box": [
+        500,
+        500,
+        510,
+        510
+       ]
+      },
+      {
+       "cp": 66,
+       "box": [
+        30,
+        0,
+        40,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 65,
+      "x": 5.0,
+      "ci": 0
+     },
+     {
+      "cp": 66,
+      "x": 35.0,
+      "ci": 0
+     }
+    ]
+   ],
+   "lost": 1
+  },
+  {
+   "name": "no_boxes_at_all",
+   "note": "the early return counts every non-space character of every run",
+   "k": 1.0,
+   "boxes": "eNoDAAAAAAE=",
+   "n": 0,
+   "runs": [
+    {
+     "text": "A B",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        0,
+        0,
+        10,
+        10
+       ]
+      },
+      {
+       "cp": 32,
+       "box": [
+        20,
+        0,
+        25,
+        10
+       ]
+      },
+      {
+       "cp": 66,
+       "box": [
+        30,
+        0,
+        40,
+        10
+       ]
+      }
+     ]
+    },
+    {
+     "text": "C",
+     "chars": [
+      {
+       "cp": 67,
+       "box": [
+        0,
+        0,
+        5,
+        5
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [],
+   "lost": 3
+  },
+  {
+   "name": "smallest_box_wins",
+   "note": "both contain the centre; the smaller area wins",
+   "k": 1.0,
+   "boxes": "eNpjYIABD2cIhvOdQBgAGR4CKw==",
+   "n": 2,
+   "runs": [
+    {
+     "text": "A",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        0,
+        0,
+        10,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [],
+    [
+     {
+      "cp": 65,
+      "x": 5.0,
+      "ci": 0
+     }
+    ]
+   ],
+   "lost": 0
+  },
+  {
+   "name": "area_tie_keeps_the_first",
+   "note": "numpy's argmin returns the first minimum",
+   "k": 1.0,
+   "boxes": "eNpjYIABDycIRuUDABj4Aik=",
+   "n": 2,
+   "runs": [
+    {
+     "text": "A",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        0,
+        0,
+        10,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 65,
+      "x": 5.0,
+      "ci": 0
+     }
+    ],
+    []
+   ],
+   "lost": 0
+  },
+  {
+   "name": "a_centre_below_a_box_edge_rounds_onto_it",
+   "note": "float32 comparison: the centre is 4.9999999, which numpy casts to 5.0 (NEP 50), so it lands inside; a float64 test would call it lost",
+   "k": 1.0,
+   "boxes": "eNpjYFjgwAAGCxxBGAASlgKj",
+   "n": 1,
+   "runs": [
+    {
+     "text": "A",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        0,
+        0,
+        9.9999998,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 65,
+      "x": 4.9999999,
+      "ci": 0
+     }
+    ]
+   ],
+   "lost": 0
+  },
+  {
+   "name": "two_runs_in_one_line_order_by_x",
+   "note": "left to right: the parts sort by their smallest x",
+   "k": 1.0,
+   "boxes": "eNpjYICBE04MDAscAQeLAew=",
+   "n": 1,
+   "runs": [
+    {
+     "text": "B",
+     "chars": [
+      {
+       "cp": 66,
+       "box": [
+        50,
+        0,
+        60,
+        10
+       ]
+      }
+     ]
+    },
+    {
+     "text": "A",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        10,
+        0,
+        20,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 65,
+      "x": 15.0,
+      "ci": 1
+     },
+     {
+      "cp": 32,
+      "x": 15.0,
+      "ci": 0
+     },
+     {
+      "cp": 66,
+      "x": 55.0,
+      "ci": 0
+     }
+    ]
+   ],
+   "lost": 0
+  },
+  {
+   "name": "a_right_to_left_line_orders_by_reverse_x",
+   "note": "the bidi base direction is right-to-left, so the parts sort by the largest x",
+   "k": 1.0,
+   "boxes": "eNpjYICBE04MDAscAQeLAew=",
+   "n": 1,
+   "runs": [
+    {
+     "text": "של",
+     "chars": [
+      {
+       "cp": 1513,
+       "box": [
+        50,
+        0,
+        60,
+        10
+       ]
+      },
+      {
+       "cp": 1500,
+       "box": [
+        40,
+        0,
+        50,
+        10
+       ]
+      }
+     ]
+    },
+    {
+     "text": "A",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        10,
+        0,
+        20,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 1513,
+      "x": 55.0,
+      "ci": 0
+     },
+     {
+      "cp": 1500,
+      "x": 45.0,
+      "ci": 0
+     },
+     {
+      "cp": 32,
+      "x": 45.0,
+      "ci": 1
+     },
+     {
+      "cp": 65,
+      "x": 15.0,
+      "ci": 1
+     }
+    ]
+   ],
+   "lost": 0
+  },
+  {
+   "name": "one_run_in_two_lines_keeps_its_first_seen_order",
+   "note": "line 2 holds parts 0 and 1 in the order the runs were first seen",
+   "k": 1.0,
+   "boxes": "eNpjYICBE04MDAscIWwQDeJ7OAEANaAEYQ==",
+   "n": 2,
+   "runs": [
+    {
+     "text": "AB",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        10,
+        0,
+        20,
+        10
+       ]
+      },
+      {
+       "cp": 66,
+       "box": [
+        10,
+        30,
+        20,
+        40
+       ]
+      }
+     ]
+    },
+    {
+     "text": "C",
+     "chars": [
+      {
+       "cp": 67,
+       "box": [
+        30,
+        30,
+        40,
+        40
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 65,
+      "x": 15.0,
+      "ci": 0
+     }
+    ],
+    [
+     {
+      "cp": 66,
+      "x": 15.0,
+      "ci": 0
+     },
+     {
+      "cp": 32,
+      "x": 15.0,
+      "ci": 1
+     },
+     {
+      "cp": 67,
+      "x": 35.0,
+      "ci": 1
+     }
+    ]
+   ],
+   "lost": 0
+  },
+  {
+   "name": "k_scales_the_character_centres",
+   "note": "points to pixels",
+   "k": 2.0,
+   "boxes": "eNpjYICBE04gDAAH3AIV",
+   "n": 1,
+   "runs": [
+    {
+     "text": "A",
+     "chars": [
+      {
+       "cp": 65,
+       "box": [
+        0,
+        0,
+        10,
+        10
+       ]
+      }
+     ]
+    }
+   ],
+   "toks": [
+    [
+     {
+      "cp": 65,
+      "x": 10.0,
+      "ci": 0
+     }
+    ]
+   ],
+   "lost": 0
+  }
+ ],
+ "readable": [
+  {
+   "name": "latin",
+   "texts": [
+    "Hello world"
+   ],
+   "readable": true
+  },
+  {
+   "name": "cjk",
+   "texts": [
+    "你好世界"
+   ],
+   "readable": true
+  },
+  {
+   "name": "latin_and_cjk",
+   "texts": [
+    "Hello 你好"
+   ],
+   "readable": true
+  },
+  {
+   "name": "empty",
+   "texts": [
+    ""
+   ],
+   "readable": true
+  },
+  {
+   "name": "digits_only",
+   "texts": [
+    "12345"
+   ],
+   "readable": true
+  },
+  {
+   "name": "punctuation_only",
+   "texts": [
+    "(),.-"
+   ],
+   "readable": true
+  },
+  {
+   "name": "emoji_only",
+   "texts": [
+    "😀😁"
+   ],
+   "readable": true
+  },
+  {
+   "name": "cyrillic_is_known",
+   "texts": [
+    "Привет"
+   ],
+   "readable": true
+  },
+  {
+   "name": "greek_is_known",
+   "texts": [
+    "αβγδ"
+   ],
+   "readable": true
+  },
+  {
+   "name": "accented_latin",
+   "texts": [
+    "café déjà"
+   ],
+   "readable": true
+  },
+  {
+   "name": "hebrew_is_unknown",
+   "texts": [
+    "שלום"
+   ],
+   "readable": false
+  },
+  {
+   "name": "arabic_is_unknown",
+   "texts": [
+    "مرحبا"
+   ],
+   "readable": false
+  },
+  {
+   "name": "thai_is_unknown",
+   "texts": [
+    "กขค"
+   ],
+   "readable": false
+  },
+  {
+   "name": "runic_is_unknown",
+   "texts": [
+    "ᚠᚢᚦ"
+   ],
+   "readable": false
+  },
+  {
+   "name": "astral_math_is_unknown",
+   "texts": [
+    "𝐀𝐁𝐂"
+   ],
+   "readable": false
+  },
+  {
+   "name": "cjk_ext_b_is_unknown",
+   "texts": [
+    "𠀀𠀁"
+   ],
+   "readable": false
+  },
+  {
+   "name": "exactly_at_the_threshold",
+   "texts": [
+    "Hello worlᚠ"
+   ],
+   "readable": true
+  },
+  {
+   "name": "just_below_the_threshold",
+   "texts": [
+    "Hello worᚠ"
+   ],
+   "readable": false
+  }
+ ],
+ "pdfs": {
+  "text": "JVBERi0xLjMKJenr8b8KMSAwIG9iago8PAovQ291bnQgMgovS2lkcyBbMyAwIFIKNSAwIFJdCi9NZWRpYUJveCBbMCAwIDIwMC4wMCAxMjAuMDBdCi9UeXBlIC9QYWdlcwo+PgplbmRvYmoKMiAwIG9iago8PAovT3BlbkFjdGlvbiBbMyAwIFIgL0ZpdEggbnVsbF0KL1BhZ2VMYXlvdXQgL09uZUNvbHVtbgovUGFnZXMgMSAwIFIKL1R5cGUgL0NhdGFsb2cKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL0NvbnRlbnRzIDQgMCBSCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA4IDAgUgovVHlwZSAvUGFnZQo+PgplbmRvYmoKNCAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDEwMAo+PgpzdHJlYW0KeJwzUvDiMtAzNVco53IKUdB3M1QwNNIzMFAISVNwDQEJGRmAuBZgMiRFQcMjNScnX6E8vygnRVMhJAukCqLEDEyagEldQzBVlKqQhjDDyBRmRnBqcn5eikJOZl4qzAwAHJgfoAplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwKL0NvbnRlbnRzIDYgMCBSCi9NZWRpYUJveCBbMCAwIDIwMC41MCAxMjAuMjVdCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA5IDAgUgovVHlwZSAvUGFnZQo+PgplbmRvYmoKNiAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDY3Cj4+CnN0cmVhbQp4nDNS8OIy0DM1VyjncgpR0HczVLDUMzBQCElTcA0BiRgagLiWBnpGpgohKQoabkWJySWZ+XmJOZoKIVkgRQDc6g+iCmVuZHN0cmVhbQplbmRvYmoKNyAwIG9iago8PAovQmFzZUZvbnQgL0hlbHZldGljYQovRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZwovU3VidHlwZSAvVHlwZTEKL1R5cGUgL0ZvbnQKPj4KZW5kb2JqCjggMCBvYmoKPDwKL0ZvbnQgPDwvRjEgNyAwIFI+PgovUHJvY1NldCBbL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSV0KPj4KZW5kb2JqCjkgMCBvYmoKPDwKL0ZvbnQgPDwvRjEgNyAwIFI+PgovUHJvY1NldCBbL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSV0KPj4KZW5kb2JqCjEwIDAgb2JqCjw8Ci9DcmVhdGlvbkRhdGUgKEQ6MjAyNjAxMDEwMDAwMDBaKQo+PgplbmRvYmoKeHJlZgowIDExCjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTA4IDAwMDAwIG4gCjAwMDAwMDAyMTEgMDAwMDAgbiAKMDAwMDAwMDI5MSAwMDAwMCBuIAowMDAwMDAwNDYzIDAwMDAwIG4gCjAwMDAwMDA1NzMgMDAwMDAgbiAKMDAwMDAwMDcxMSAwMDAwMCBuIAowMDAwMDAwODA4IDAwMDAwIG4gCjAwMDAwMDA4OTUgMDAwMDAgbiAKMDAwMDAwMDk4MiAwMDAwMCBuIAp0cmFpbGVyCjw8Ci9TaXplIDExCi9Sb290IDIgMCBSCi9JbmZvIDEwIDAgUgovSUQgWzw0RTA3NUY4NTAyN0RGQzA0RTEwRkU3RkQ3OTk0MjJDNz48NEUwNzVGODUwMjdERkMwNEUxMEZFN0ZENzk5NDIyQzc+XQo+PgpzdGFydHhyZWYKMTAzOAolJUVPRgo=",
+  "image": "JVBERi0xLjMKJenr8b8KMSAwIG9iago8PAovQ291bnQgMQovS2lkcyBbMyAwIFJdCi9NZWRpYUJveCBbMCAwIDIwMC4wMCAxMjAuMDBdCi9UeXBlIC9QYWdlcwo+PgplbmRvYmoKMiAwIG9iago8PAovT3BlbkFjdGlvbiBbMyAwIFIgL0ZpdEggbnVsbF0KL1BhZ2VMYXlvdXQgL09uZUNvbHVtbgovUGFnZXMgMSAwIFIKL1R5cGUgL0NhdGFsb2cKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL0NvbnRlbnRzIDQgMCBSCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA3IDAgUgovVHlwZSAvUGFnZQo+PgplbmRvYmoKNCAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDg5Cj4+CnN0cmVhbQp4nDNS8OIy0DM1VyjnKlQwM9AzMFAAQRMwywhMQkSTcxX0PQ0VXPIVArmcQhT03QwVDMESIWkKriEgIYhqY4hgioJGaF5KapFCZm5ieqqmQkgWSBUA2OAYPgplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwKL0JpdHNQZXJDb21wb25lbnQgOAovQ29sb3JTcGFjZSAvRGV2aWNlR3JheQovRGVjb2RlUGFybXMgPDwvUHJlZGljdG9yIDE1IC9Db2xvcnMgMSAvQ29sdW1ucyA2MCAvQml0c1BlckNvbXBvbmVudCA4Pj4KL0ZpbHRlciAvRmxhdGVEZWNvZGUKL0hlaWdodCA0MAovTGVuZ3RoIDQ5MwovU3VidHlwZSAvSW1hZ2UKL1R5cGUgL1hPYmplY3QKL1dpZHRoIDYwCj4+CnN0cmVhbQp4nJ3PBUIQAAADwClId3d3d3d3dylKKKJY2IgBBhiE3d3domAXCoogKha2ILZgYfxh94MDBEUkZBRUNHQMTCxsHFw8fAJCImISUjKG5AwvHDNh8vSZZfMXVi1duXbj1p17Dx49eebcpWs3b7fdf9T58m0PBITFpeWV1bX1jc2t7Z3dvf2Dw6Pjk9MHD8sfWTR+0rTSOfMql9SuWLNhy449B46cOH324tUbt1rvPXz64s27jxASk5JTUtPSMzKzsnNy8/ILCouKS0rLGppXMHrcxKkzZs+tWFyzfPX6zdt37z98vK7hwpXG5jvtHU+ev+7+8AWikrKKqpq6hqaWto6unr6BoZGxiamZ2bkjRo0tnlIyq3zBouplq9Zt2rZr36Fjp+rPX77e1HL3weNnr7ref+4FHf707Qfo8Nfvv0GH+379BR3++WcA6HA/BEGH/wkIgw4PFBIDHR4kKgk6LCIhAzosLi0POiwlpwQ6LKuoCjqsoKIBOqysrg06rKalBzqsqWsIOqxjYAI6rG9sDjpsZGYFOmxqaQs6bGHjADpsbe8MOmzn5AY67OjqCTrs4uEDOuzu7Q867OUXBDrsGxgKOhwQEgE6HBweDTocFhUHOhwZmwg6HJOQAjocn5wOOpyUlgU6nJqZ/R+0CM3tCmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iago8PAovQmFzZUZvbnQgL0hlbHZldGljYQovRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZwovU3VidHlwZSAvVHlwZTEKL1R5cGUgL0ZvbnQKPj4KZW5kb2JqCjcgMCBvYmoKPDwKL0ZvbnQgPDwvRjEgNiAwIFI+PgovUHJvY1NldCBbL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSV0KL1hPYmplY3QgPDwvSTEgNSAwIFI+Pgo+PgplbmRvYmoKOCAwIG9iago8PAovQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikKPj4KZW5kb2JqCnhyZWYKMCA5CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTAyIDAwMDAwIG4gCjAwMDAwMDAyMDUgMDAwMDAgbiAKMDAwMDAwMDI4NSAwMDAwMCBuIAowMDAwMDAwNDQ1IDAwMDAwIG4gCjAwMDAwMDExNzkgMDAwMDAgbiAKMDAwMDAwMTI3NiAwMDAwMCBuIAowMDAwMDAxMzg2IDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgOQovUm9vdCAyIDAgUgovSW5mbyA4IDAgUgovSUQgWzwwREFENjFGQkM0MDk2QjZGQzBERjA2QjBGNzBDQjc1QT48MERBRDYxRkJDNDA5NkI2RkMwREYwNkIwRjcwQ0I3NUE+XQo+PgpzdGFydHhyZWYKMTQ0MQolJUVPRgo=",
+  "rotated": "JVBERi0xLjMKJb/3ov4KMSAwIG9iago8PCAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL0NvbnRlbnRzIDUgMCBSIC9NZWRpYUJveCA2IDAgUiAvUGFyZW50IDQgMCBSIC9SZXNvdXJjZXMgNyAwIFIgL1JvdGF0ZSA5MCAvVHlwZSAvUGFnZSA+PgplbmRvYmoKNCAwIG9iago8PCAvQ291bnQgMSAvS2lkcyBbIDMgMCBSIF0gL1R5cGUgL1BhZ2VzID4+CmVuZG9iago1IDAgb2JqCjw8IC9GaWx0ZXIgL0ZsYXRlRGVjb2RlIC9MZW5ndGggNjYgPj4Kc3RyZWFtCnicM1Lw4jLQMzVXKOdyClHQdzNUMDTSMzBQCElTcA0BCRkZgLgWYDIkRUHDIzUnJ1+hPL8oJ0VTISQLpAoA9tEP/gplbmRzdHJlYW0KZW5kb2JqCjYgMCBvYmoKWyAwIDAgMjAwLjAwIDEyMC4wMCBdCmVuZG9iago3IDAgb2JqCjw8IC9Gb250IDw8IC9GMSA4IDAgUiA+PiAvUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXSA+PgplbmRvYmoKOCAwIG9iago8PCAvQmFzZUZvbnQgL0hlbHZldGljYSAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyAvU3VidHlwZSAvVHlwZTEgL1R5cGUgL0ZvbnQgPj4KZW5kb2JqCnhyZWYKMCA5CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTIwIDAwMDAwIG4gCjAwMDAwMDAxNzUgMDAwMDAgbiAKMDAwMDAwMDI4MiAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCjAwMDAwMDA0NzggMDAwMDAgbiAKMDAwMDAwMDUxNSAwMDAwMCBuIAowMDAwMDAwNjA2IDAwMDAwIG4gCnRyYWlsZXIgPDwgL0luZm8gMiAwIFIgL1Jvb3QgMSAwIFIgL1NpemUgOSAvSUQgWzwwOWYzNDZlNzdhZmE0YWFkZDkxM2M1ZWQ2ZWNiYmU4Nz48MmY3ZDU2YTk1NDFiNzhhYTljNTgxOWNlOWVhOGQ4YWI+XSA+PgpzdGFydHhyZWYKNzAzCiUlRU9GCg==",
+  "cropped": "JVBERi0xLjMKJb/3ov4KMSAwIG9iago8PCAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL0NvbnRlbnRzIDUgMCBSIC9Dcm9wQm94IFsgMjAgMTAgMTgwIDExMCBdIC9NZWRpYUJveCA2IDAgUiAvUGFyZW50IDQgMCBSIC9SZXNvdXJjZXMgNyAwIFIgL1R5cGUgL1BhZ2UgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0NvdW50IDEgL0tpZHMgWyAzIDAgUiBdIC9UeXBlIC9QYWdlcyA+PgplbmRvYmoKNSAwIG9iago8PCAvRmlsdGVyIC9GbGF0ZURlY29kZSAvTGVuZ3RoIDY2ID4+CnN0cmVhbQp4nDNS8OIy0DM1VyjncgpR0HczVDA00jMwUAhJU3ANAQkZGYC4FmAyJEVBwyM1JydfoTy/KCdFUyEkC6QKAPbRD/4KZW5kc3RyZWFtCmVuZG9iago2IDAgb2JqClsgMCAwIDIwMC4wMCAxMjAuMDAgXQplbmRvYmoKNyAwIG9iago8PCAvRm9udCA8PCAvRjEgOCAwIFIgPj4gL1Byb2NTZXQgWyAvUERGIC9UZXh0IC9JbWFnZUIgL0ltYWdlQyAvSW1hZ2VJIF0gPj4KZW5kb2JqCjggMCBvYmoKPDwgL0Jhc2VGb250IC9IZWx2ZXRpY2EgL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcgL1N1YnR5cGUgL1R5cGUxIC9UeXBlIC9Gb250ID4+CmVuZG9iagp4cmVmCjAgOQowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDEyMCAwMDAwMCBuIAowMDAwMDAwMTc1IDAwMDAwIG4gCjAwMDAwMDAyOTggMDAwMDAgbiAKMDAwMDAwMDM1NyAwMDAwMCBuIAowMDAwMDAwNDk0IDAwMDAwIG4gCjAwMDAwMDA1MzEgMDAwMDAgbiAKMDAwMDAwMDYyMiAwMDAwMCBuIAp0cmFpbGVyIDw8IC9JbmZvIDIgMCBSIC9Sb290IDEgMCBSIC9TaXplIDkgL0lEIFs8MDlmMzQ2ZTc3YWZhNGFhZGQ5MTNjNWVkNmVjYmJlODc+PDBjZThlYmVlMzJmYzlkNGM0ZDM0MDg2OWI3NTJiYmFlPl0gPj4Kc3RhcnR4cmVmCjcxOQolJUVPRgo=",
+  "invisible": "JVBERi0xLjMKJb/3ov4KMSAwIG9iago8PCAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL0NvbnRlbnRzIFsgNSAwIFIgNiAwIFIgXSAvTWVkaWFCb3ggNyAwIFIgL1BhcmVudCA0IDAgUiAvUmVzb3VyY2VzIDggMCBSIC9UeXBlIC9QYWdlID4+CmVuZG9iago0IDAgb2JqCjw8IC9Db3VudCAxIC9LaWRzIFsgMyAwIFIgXSAvVHlwZSAvUGFnZXMgPj4KZW5kb2JqCjUgMCBvYmoKPDwgL0ZpbHRlciAvRmxhdGVEZWNvZGUgL0xlbmd0aCA2NiA+PgpzdHJlYW0KeJwzUvDiMtAzNVco53IKUdB3M1QwNNIzMFAISVNwDQEJGRmAuBZgMiRFQcMjNScnX6E8vygnRVMhJAukCgD20Q/+CmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iago8PCAvTGVuZ3RoIDU2IC9GaWx0ZXIgL0ZsYXRlRGVjb2RlID4+CnN0cmVhbQp4nHMKUdB3M1QwNFIISVMwVggpUjAyULAwUAhJUdDIyExJSc1TyEmsTC3SVAjJUnAN4QIAHxAMkAplbmRzdHJlYW0KZW5kb2JqCjcgMCBvYmoKWyAwIDAgMjAwLjAwIDEyMC4wMCBdCmVuZG9iago4IDAgb2JqCjw8IC9Gb250IDw8IC9GMSA5IDAgUiA+PiAvUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXSA+PgplbmRvYmoKOSAwIG9iago8PCAvQmFzZUZvbnQgL0hlbHZldGljYSAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyAvU3VidHlwZSAvVHlwZTEgL1R5cGUgL0ZvbnQgPj4KZW5kb2JqCnhyZWYKMCAxMAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDEyMCAwMDAwMCBuIAowMDAwMDAwMTc1IDAwMDAwIG4gCjAwMDAwMDAyODEgMDAwMDAgbiAKMDAwMDAwMDM0MCAwMDAwMCBuIAowMDAwMDAwNDc3IDAwMDAwIG4gCjAwMDAwMDA2MDQgMDAwMDAgbiAKMDAwMDAwMDY0MSAwMDAwMCBuIAowMDAwMDAwNzMyIDAwMDAwIG4gCnRyYWlsZXIgPDwgL0luZm8gMiAwIFIgL1Jvb3QgMSAwIFIgL1NpemUgMTAgL0lEIFs8MDlmMzQ2ZTc3YWZhNGFhZGQ5MTNjNWVkNmVjYmJlODc+PDZhMmYzMjcwODcwODE0N2YxNDdjMGE4NmFmYmUyZjQ3Pl0gPj4Kc3RhcnR4cmVmCjgyOQolJUVPRgo=",
+  "empty": "JVBERi0xLjMKJenr8b8KMSAwIG9iago8PAovQ291bnQgMQovS2lkcyBbMyAwIFJdCi9NZWRpYUJveCBbMCAwIDIwMC4wMCAxMjAuMDBdCi9UeXBlIC9QYWdlcwo+PgplbmRvYmoKMiAwIG9iago8PAovT3BlbkFjdGlvbiBbMyAwIFIgL0ZpdEggbnVsbF0KL1BhZ2VMYXlvdXQgL09uZUNvbHVtbgovUGFnZXMgMSAwIFIKL1R5cGUgL0NhdGFsb2cKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL0NvbnRlbnRzIDQgMCBSCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA1IDAgUgovVHlwZSAvUGFnZQo+PgplbmRvYmoKNCAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDUxCj4+CnN0cmVhbQp4nDNS8OIy0DM1VyjnMtAztzAxVkClitK5jAz0DAwUDA3AlBmY1DUBU0WpCmlcAKrCDPoKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjw8Ci9Qcm9jU2V0IFsvUERGIC9UZXh0IC9JbWFnZUIgL0ltYWdlQyAvSW1hZ2VJXQo+PgplbmRvYmoKNiAwIG9iago8PAovQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikKPj4KZW5kb2JqCnhyZWYKMCA3CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTAyIDAwMDAwIG4gCjAwMDAwMDAyMDUgMDAwMDAgbiAKMDAwMDAwMDI4NSAwMDAwMCBuIAowMDAwMDAwNDA3IDAwMDAwIG4gCjAwMDAwMDA0NzQgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSA3Ci9Sb290IDIgMCBSCi9JbmZvIDYgMCBSCi9JRCBbPEVGOEY5NDQ4QjBCNTkxMkYxMTNBQkY4NUM3M0M5RjIzPjxFRjhGOTQ0OEIwQjU5MTJGMTEzQUJGODVDNzNDOUYyMz5dCj4+CnN0YXJ0eHJlZgo1MjkKJSVFT0YK",
+  "broken": "JVBERi0xLjMKJb/3ov4KMSAwIG9iago8PCAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIChEOjIwMjYwMTAxMDAwMDAwWikgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL0NvbnRlbnRzIDUgMCBSIC9NZWRpYUJveCA2IDAgUiAvUGFyZW50IDQgMCBSIC9SZXNvdXJjZXMgNyAwIFIgL1R5cGUgL1BhZ2UgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0NvdW50IDEgL0tpZHMgWyAzIDAgUiBdIC9UeXBlIC9QYWdlcyA+PgplbmRvYmoKNSAwIG9iago8PCAvRmlsdGVyIC9GbGF0ZURlY29kZSAvTGVuZ3RoIDY2ID4+CnN0cmVhbQp4nDNS8OIy0DM1VyjncgpR0HczVDA00jMwUAhJU3ANAQkZGYC4FmAyJEVBwyM1JydfoTy/KCdFUyEkC6QKAPbRD/4KZW5kc3RyZWFtCmVuZG9iago2IDAgb2JqClsgMCAwIDIwMC4wMCAxMjAuMDAgXQplbmRvYmoKNyAwIG9iago8PCAvRm9udCA8PCAvRjEgOCAwIFIgPj4gL1Byb2NTZXQgWyAvUERGIC9UZXh0IC9JbWFnZUIgL0ltYWdlQyAvSW1hZ2VJIF0gPj4KZW5kb2JqCjggMCBvYmoKPDwgL0Jhc2VGb250IC9IZWx2ZXRpY2EgL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcgL1N1YnR5cGUgL1R5cGUxIC9Ub1VuaWNvZGUgOSAwIFIgL1R5cGUgL0ZvbnQgPj4KZW5kb2JqCjkgMCBvYmoKPDwgL0xlbmd0aCAyNDEgL0ZpbHRlciAvRmxhdGVEZWNvZGUgPj4Kc3RyZWFtCnicXVC7bsQgEOz5ii3vKmxfLkqBLEVcLLnIQ3HyARjWDlIMCOPCfx8e1hUpQDOwM7uzlPe33ugA9MNbOWCASRvlcbWblwgjztqQugGlZThYvuUiHKH8Vbg3sSBQvq3BLqBwKq9fu0NoDt7fhn0NuPRmssAY0M9osQa/w+lZ2RHPQN+9Qq/NDKdvPkQ+bM794oImQAVtm43qMoC0ClcnJHphZiSsqlpgXdcSNOrf37Uoxkn+CE/Yw1OsfKmigLDHa8F1wrzgJuGu4EvETXKuck30PlxSlxT+nl1u3sc584Zy9jSsNnhforMuqfL5Ay0Dc+AKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgMTAKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDE1IDAwMDAwIG4gCjAwMDAwMDAxMjAgMDAwMDAgbiAKMDAwMDAwMDE3NSAwMDAwMCBuIAowMDAwMDAwMjcxIDAwMDAwIG4gCjAwMDAwMDAzMzAgMDAwMDAgbiAKMDAwMDAwMDQ2NyAwMDAwMCBuIAowMDAwMDAwNTA0IDAwMDAwIG4gCjAwMDAwMDA1OTUgMDAwMDAgbiAKMDAwMDAwMDcwOSAwMDAwMCBuIAp0cmFpbGVyIDw8IC9JbmZvIDIgMCBSIC9Sb290IDEgMCBSIC9TaXplIDEwIC9JRCBbPDA5ZjM0NmU3N2FmYTRhYWRkOTEzYzVlZDZlY2JiZTg3PjxiZjkyODhiNzlmZWY3Mzc0OGNmNzRjMzNlOTVlNzdiYz5dID4+CnN0YXJ0eHJlZgoxMDIyCiUlRU9GCg==",
+  "locked": "JVBERi0xLjcKJb/3ov4KMSAwIG9iago8PCAvRXh0ZW5zaW9ucyA8PCAvQURCRSA8PCAvQmFzZVZlcnNpb24gLzEuNyAvRXh0ZW5zaW9uTGV2ZWwgOCA+PiA+PiAvT3BlbkFjdGlvbiBbIDMgMCBSIC9GaXRIIG51bGwgXSAvUGFnZUxheW91dCAvT25lQ29sdW1uIC9QYWdlcyA0IDAgUiAvVHlwZSAvQ2F0YWxvZyA+PgplbmRvYmoKMiAwIG9iago8PCAvQ3JlYXRpb25EYXRlIDxkOTUwNzVmYTUwZTc4M2NiOTA5ZjA5MDNlZTRiMTkwOGUzNGFkMmY5ZmFmNjhiMDQ3NTAwMjQyZmZkM2YwNWYyOWE5M2Y4Y2Q0M2Q0ZDU5NDIzMzdlNTZkN2ZiMThjZDY+ID4+CmVuZG9iagozIDAgb2JqCjw8IC9Db250ZW50cyA1IDAgUiAvTWVkaWFCb3ggNiAwIFIgL1BhcmVudCA0IDAgUiAvUmVzb3VyY2VzIDcgMCBSIC9UeXBlIC9QYWdlID4+CmVuZG9iago0IDAgb2JqCjw8IC9Db3VudCAxIC9LaWRzIFsgMyAwIFIgXSAvVHlwZSAvUGFnZXMgPj4KZW5kb2JqCjUgMCBvYmoKPDwgL0ZpbHRlciAvRmxhdGVEZWNvZGUgL0xlbmd0aCA5NiA+PgpzdHJlYW0KPAW3/ui+F1h/Z860Li8MRCQYiQ6pQmAsXXkGEzVU6elrowxJP+7waYD8ZkicI8foskiA4iH7cgtkdO9TlCN2UwGyj++EzFxMxx+8P1p8I4xtzPDSkea43/Jnr7gNNdPhCmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iagpbIDAgMCAyMDAuMDAgMTIwLjAwIF0KZW5kb2JqCjcgMCBvYmoKPDwgL0ZvbnQgPDwgL0YxIDggMCBSID4+IC9Qcm9jU2V0IFsgL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSSBdID4+CmVuZG9iago4IDAgb2JqCjw8IC9CYXNlRm9udCAvSGVsdmV0aWNhIC9FbmNvZGluZyAvV2luQW5zaUVuY29kaW5nIC9TdWJ0eXBlIC9UeXBlMSAvVHlwZSAvRm9udCA+PgplbmRvYmoKOSAwIG9iago8PCAvQ0YgPDwgL1N0ZENGIDw8IC9BdXRoRXZlbnQgL0RvY09wZW4gL0NGTSAvQUVTVjMgL0xlbmd0aCAzMiA+PiA+PiAvRmlsdGVyIC9TdGFuZGFyZCAvTGVuZ3RoIDI1NiAvTyA8ZGY1OTE5MjMwOWJlZGM3NTQ4MWY1MTk5YjY3Mjk2YWI4MGM1YTZmM2Q4NzZhNGI5NmZjYTY2MzE1ZjdiMTQ0ZmZiZDM5ZmZhODliNWI4ZDJjM2VmYTMyNzE1ZjU0NWE3PiAvT0UgPDRiOGEyNGQzZjc1MzRkNzRhM2Y0NDQ0ZmNhNDc1N2RkOWU3MDYzZjMxMmM4Njg4YjAxMDhkN2JkN2NjOTc4ZGI+IC9QIC0xMDI4IC9QZXJtcyA8NDU0NzhlMDYyOTk2MzI0NzVhOGQ1MzRmN2M4NDcwYTY+IC9SIDYgL1N0bUYgL1N0ZENGIC9TdHJGIC9TdGRDRiAvVSA8NGZhOTgwZTBmMmZlZjczNjNiMDY4ZGFkYmFjY2Q0MjUzYWUwNTdhNjczYmNiZGY2Mjg4MDEwMjk0NWRlZWQwYTkzNmM2YTI2MGIxMzhmYzhmYmNkNDc0N2VjZmRkZjY4PiAvVUUgPGUzMzhmYzI1MjgwMzAxNzI0Zjc4YmJmM2EwMWY3NWY3NTQ2MGI4NzA1MDBlMzUyZjAwNmMwNDE5ZDk0ZDc5MTQ+IC9WIDUgPj4KZW5kb2JqCnhyZWYKMCAxMAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDE4NiAwMDAwMCBuIAowMDAwMDAwMzIwIDAwMDAwIG4gCjAwMDAwMDA0MTYgMDAwMDAgbiAKMDAwMDAwMDQ3NSAwMDAwMCBuIAowMDAwMDAwNjQyIDAwMDAwIG4gCjAwMDAwMDA2NzkgMDAwMDAgbiAKMDAwMDAwMDc3MCAwMDAwMCBuIAowMDAwMDAwODY3IDAwMDAwIG4gCnRyYWlsZXIgPDwgL0luZm8gMiAwIFIgL1Jvb3QgMSAwIFIgL1NpemUgMTAgL0lEIFs8MDlmMzQ2ZTc3YWZhNGFhZGQ5MTNjNWVkNmVjYmJlODc+PDRiNjUxN2UyZDQzYmJiOWNiNWNmYzQwYmM4NmNlNjgyPl0gL0VuY3J5cHQgOSAwIFIgPj4Kc3RhcnR4cmVmCjE0MTcKJSVFT0YK",
+  "corrupt": "JVBERi0xLjQKbm90IGEgcmVhbCBkb2N1bWVudAo="
+ },
+ "pdf_cases": [
+  {
+   "name": "text",
+   "pdf": "text",
+   "options": {},
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world",
+        "conf": 1.0
+       },
+       {
+        "box": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "## Hello world\n\n## Second line",
+      "blocks": [
+       {
+        "label": "Section-Header",
+        "bbox": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line"
+       }
+      ],
+      "source": "text",
+      "note": "order=pdf",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    },
+    {
+     "index": 1,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         28.8,
+         65.7,
+         138.7,
+         84.1
+        ],
+        "text": "Fractional",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "Fractional",
+      "blocks": [],
+      "source": "text",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "text_mode=ocr",
+   "pdf": "text",
+   "options": {
+    "mode": "ocr"
+   },
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world",
+        "conf": 0.9992
+       },
+       {
+        "box": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line",
+        "conf": 0.9987
+       }
+      ],
+      "markdown": "## Hello world\n\n## Second line",
+      "blocks": [
+       {
+        "label": "Section-Header",
+        "bbox": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line"
+       }
+      ],
+      "source": "ocr",
+      "note": "mode=ocr; order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "render_ms",
+       "orient_ms",
+       "det_ms",
+       "rec_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    },
+    {
+     "index": 1,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         28.8,
+         65.7,
+         138.7,
+         84.1
+        ],
+        "text": "Fractional",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "Fractional",
+      "blocks": [],
+      "source": "ocr",
+      "note": "mode=ocr; order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "render_ms",
+       "orient_ms",
+       "det_ms",
+       "rec_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "text_mode=text",
+   "pdf": "text",
+   "options": {
+    "mode": "text"
+   },
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world",
+        "conf": 1.0
+       },
+       {
+        "box": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "## Hello world\n\n## Second line",
+      "blocks": [
+       {
+        "label": "Section-Header",
+        "bbox": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line"
+       }
+      ],
+      "source": "text",
+      "note": "order=pdf",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    },
+    {
+     "index": 1,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         28.8,
+         65.7,
+         138.7,
+         84.1
+        ],
+        "text": "Fractional",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "Fractional",
+      "blocks": [],
+      "source": "text",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "text_pdf_order=False",
+   "pdf": "text",
+   "options": {
+    "pdf_order": false
+   },
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world",
+        "conf": 1.0
+       },
+       {
+        "box": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "## Hello world\n\n## Second line",
+      "blocks": [
+       {
+        "label": "Section-Header",
+        "bbox": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line"
+       }
+      ],
+      "source": "text",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    },
+    {
+     "index": 1,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         28.8,
+         65.7,
+         138.7,
+         84.1
+        ],
+        "text": "Fractional",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "Fractional",
+      "blocks": [],
+      "source": "text",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "text_dpi=100.0",
+   "pdf": "text",
+   "options": {
+    "dpi": 100.0
+   },
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         26.4,
+         43.8,
+         110.5,
+         56.3
+        ],
+        "text": "Hello world",
+        "conf": 1.0
+       },
+       {
+        "box": [
+         27.4,
+         119.6,
+         115.9,
+         132.2
+        ],
+        "text": "Second line",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "## Hello world\n\n## Second line",
+      "blocks": [
+       {
+        "label": "Section-Header",
+        "bbox": [
+         26.4,
+         43.8,
+         110.5,
+         56.3
+        ],
+        "text": "Hello world"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         27.4,
+         119.6,
+         115.9,
+         132.2
+        ],
+        "text": "Second line"
+       }
+      ],
+      "source": "text",
+      "note": "order=pdf",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    },
+    {
+     "index": 1,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         14.4,
+         32.9,
+         68.9,
+         42.0
+        ],
+        "text": "Fractional",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "Fractional",
+      "blocks": [],
+      "source": "text",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "text_image_ocr=False",
+   "pdf": "text",
+   "options": {
+    "image_ocr": false
+   },
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world",
+        "conf": 1.0
+       },
+       {
+        "box": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "## Hello world\n\n## Second line",
+      "blocks": [
+       {
+        "label": "Section-Header",
+        "bbox": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line"
+       }
+      ],
+      "source": "text",
+      "note": "order=pdf",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    },
+    {
+     "index": 1,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         28.8,
+         65.7,
+         138.7,
+         84.1
+        ],
+        "text": "Fractional",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "Fractional",
+      "blocks": [],
+      "source": "text",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "text_max_pages=1",
+   "pdf": "text",
+   "options": {},
+   "password": null,
+   "max_pages": 1,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world",
+        "conf": 1.0
+       },
+       {
+        "box": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "## Hello world\n\n## Second line",
+      "blocks": [
+       {
+        "label": "Section-Header",
+        "bbox": [
+         52.7,
+         86.6,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         54.9,
+         239.2,
+         230.7,
+         264.1
+        ],
+        "text": "Second line"
+       }
+      ],
+      "source": "text",
+      "note": "order=pdf",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "image",
+   "pdf": "image",
+   "options": {},
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         53.7,
+         230.3,
+         216.7,
+         255.7
+        ],
+        "text": "Under image",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "Under image",
+      "blocks": [],
+      "source": "text",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "image_image_ocr=False",
+   "pdf": "image",
+   "options": {
+    "image_ocr": false
+   },
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         53.7,
+         230.3,
+         216.7,
+         255.7
+        ],
+        "text": "Under image",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "Under image",
+      "blocks": [],
+      "source": "text",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "rotated",
+   "pdf": "rotated",
+   "options": {},
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         226.2,
+         81.8,
+         232.0,
+         93.8
+        ],
+        "text": "",
+        "conf": 0.3824
+       },
+       {
+        "box": [
+         226.3,
+         82.4,
+         238.5,
+         94.1
+        ],
+        "text": "(D",
+        "conf": 0.993
+       },
+       {
+        "box": [
+         223.9,
+         115.0,
+         236.5,
+         128.0
+        ],
+        "text": "O",
+        "conf": 0.6866
+       },
+       {
+        "box": [
+         226.3,
+         203.8,
+         238.5,
+         215.8
+        ],
+        "text": "O",
+        "conf": 0.7435
+       }
+      ],
+      "markdown": "(D\n\nO\n\nO",
+      "blocks": [
+       {
+        "label": "Text",
+        "bbox": [
+         226.2,
+         81.8,
+         238.5,
+         94.1
+        ],
+        "text": "\n(D"
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         223.9,
+         115.0,
+         236.5,
+         128.0
+        ],
+        "text": "O"
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         226.3,
+         203.8,
+         238.5,
+         215.8
+        ],
+        "text": "O"
+       }
+      ],
+      "source": "ocr",
+      "note": "no text layer; order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "orient_ms",
+       "det_ms",
+       "rec_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "cropped",
+   "pdf": "cropped",
+   "options": {},
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         0.0,
+         59.3,
+         165.2,
+         82.8
+        ],
+        "text": "Hello world",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "Hello world",
+      "blocks": [],
+      "source": "text",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "invisible",
+   "pdf": "invisible",
+   "options": {},
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         52.7,
+         86.7,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world",
+        "conf": 0.9992
+       }
+      ],
+      "markdown": "Hello world",
+      "blocks": [],
+      "source": "ocr",
+      "note": "invisible text 50% (OCR layer); order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "orient_ms",
+       "det_ms",
+       "rec_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "empty",
+   "pdf": "empty",
+   "options": {},
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [],
+      "markdown": "",
+      "blocks": [],
+      "source": "ocr",
+      "note": "no text layer; order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "orient_ms",
+       "det_ms",
+       "rec_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "empty_mode=text",
+   "pdf": "empty",
+   "options": {
+    "mode": "text"
+   },
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [],
+      "markdown": "",
+      "blocks": [],
+      "source": "ocr",
+      "note": "no text layer; order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "orient_ms",
+       "det_ms",
+       "rec_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "broken",
+   "pdf": "broken",
+   "options": {},
+   "password": null,
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         52.7,
+         86.7,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world",
+        "conf": 0.9992
+       }
+      ],
+      "markdown": "Hello world",
+      "blocks": [],
+      "source": "ocr",
+      "note": "broken font map; order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "orient_ms",
+       "det_ms",
+       "rec_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "locked",
+   "pdf": "locked",
+   "options": {},
+   "password": "secret",
+   "max_pages": 0,
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         52.7,
+         86.7,
+         220.9,
+         111.5
+        ],
+        "text": "Hello world",
+        "conf": 1.0
+       }
+      ],
+      "markdown": "Hello world",
+      "blocks": [],
+      "source": "text",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "text_ms",
+       "render_ms",
+       "det_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  }
+ ],
+ "error_cases": [
+  {
+   "name": "locked_no_password",
+   "pdf": "locked",
+   "password": null,
+   "message": "password-protected PDF (pass password=, or --password)"
+  },
+  {
+   "name": "corrupt_no_password",
+   "pdf": "corrupt",
+   "password": null,
+   "message": "cannot open the PDF (Failed to load document (PDFium: Data format error).)"
+  }
+ ],
+ "image_cases": [
+  {
+   "name": "multi_column",
+   "file": "indra-src/assets/examples/multi_column.png",
+   "sha256": "c9f80ee321b48685e63024ca0649e8977daf93f07bb0fd38818541edf9ab58b3",
+   "options": {},
+   "pages": [
+    {
+     "index": 0,
+     "page": {
+      "lines": [
+       {
+        "box": [
+         273.2,
+         23.2,
+         344.2,
+         34.5
+        ],
+        "text": "Page-Header ",
+        "conf": 0.9247
+       },
+       {
+        "box": [
+         837.0,
+         23.0,
+         900.0,
+         35.1
+        ],
+        "text": "Page-Heade",
+        "conf": 0.9724
+       },
+       {
+        "box": [
+         270.8,
+         37.0,
+         628.6,
+         49.3
+        ],
+        "text": "|J.M. Morais Neto et al. / Marine and Petroleum Geology 26 (2009) 1070–1086.",
+        "conf": 0.9728
+       },
+       {
+        "box": [
+         35.4,
+         51.7,
+         67.1,
+         64.3
+        ],
+        "text": "|Text",
+        "conf": 0.88
+       },
+       {
+        "box": [
+         834.7,
+         37.2,
+         866.3,
+         49.4
+        ],
+        "text": "1073",
+        "conf": 0.9993
+       },
+       {
+        "box": [
+         35.3,
+         67.7,
+         437.7,
+         80.7
+        ],
+        "text": "sand content and maturity of turbidite deposits. Such predictions",
+        "conf": 0.9938
+       },
+       {
+        "box": [
+         37.6,
+         84.1,
+         435.4,
+         97.4
+        ],
+        "text": "require information about the history of topography generation,",
+        "conf": 0.9997
+       },
+       {
+        "box": [
+         37.7,
+         100.8,
+         435.3,
+         113.7
+        ],
+        "text": "modification, and denudation. Continental landscapes are",
+        "conf": 0.9873
+       },
+       {
+        "box": [
+         37.6,
+         117.3,
+         437.7,
+         130.4
+        ],
+        "text": "constantly in a state of flux as drainage systems evolve and interact",
+        "conf": 0.9974
+       },
+       {
+        "box": [
+         37.6,
+         133.8,
+         435.4,
+         146.9
+        ],
+        "text": "via the process of river capture during the denudation of topog-",
+        "conf": 0.9964
+       },
+       {
+        "box": [
+         37.6,
+         150.3,
+         435.4,
+         163.5
+        ],
+        "text": "raphy. In turn, any post-rift tectonics that modifies or generates",
+        "conf": 0.9884
+       },
+       {
+        "box": [
+         37.7,
+         166.8,
+         437.7,
+         179.8
+        ],
+        "text": "topography will play a major role in this landscape evolution",
+        "conf": 0.9976
+       },
+       {
+        "box": [
+         37.6,
+         183.3,
+         435.4,
+         196.4
+        ],
+        "text": "process, controlling the transport and delivery of clastics by fluvial",
+        "conf": 0.9931
+       },
+       {
+        "box": [
+         35.3,
+         199.7,
+         435.3,
+         212.7
+        ],
+        "text": "systems to the margins. Rivers represent point sources of clastics",
+        "conf": 0.9998
+       },
+       {
+        "box": [
+         37.7,
+         216.2,
+         437.7,
+         229.0
+        ],
+        "text": "along margins, however, their distribution, energy, and sediment",
+        "conf": 0.9923
+       },
+       {
+        "box": [
+         37.7,
+         232.8,
+         435.3,
+         245.6
+        ],
+        "text": "content are prime functions of topography generation and distri-",
+        "conf": 0.991
+       },
+       {
+        "box": [
+         37.7,
+         249.3,
+         435.3,
+         262.1
+        ],
+        "text": "bution. Once deposition takes place, marine processes such as",
+        "conf": 0.9921
+       },
+       {
+        "box": [
+         37.6,
+         265.8,
+         435.4,
+         279.1
+        ],
+        "text": "alongshore drift rework and redistribute the sediments along the",
+        "conf": 0.9735
+       },
+       {
+        "box": [
+         37.7,
+         282.4,
+         437.7,
+         295.3
+        ],
+        "text": "margin. During eustatic falls, margins associated with relatively",
+        "conf": 0.9969
+       },
+       {
+        "box": [
+         37.6,
+         299.0,
+         435.4,
+         312.2
+        ],
+        "text": "large fluvial systems will tend to be associated with significant",
+        "conf": 0.9964
+       },
+       {
+        "box": [
+         37.7,
+         315.9,
+         437.7,
+         328.8
+        ],
+        "text": "drainage rejuvenation, river incision of the exposed shelf, canyon",
+        "conf": 0.9962
+       },
+       {
+        "box": [
+         37.7,
+         332.4,
+         437.7,
+         345.4
+        ],
+        "text": "development, and given suitable conditions, the deposition of",
+        "conf": 0.986
+       },
+       {
+        "box": [
+         37.7,
+         348.8,
+         437.7,
+         361.8
+        ],
+        "text": "turbidities. A corollary of this study is to provide suggestions about",
+        "conf": 0.9972
+       },
+       {
+        "box": [
+         37.7,
+         365.2,
+         437.7,
+         378.2
+        ],
+        "text": "when clastics from the eroding Borborema topography, as modified.",
+        "conf": 0.9908
+       },
+       {
+        "box": [
+         37.7,
+         381.9,
+         435.3,
+         394.8
+        ],
+        "text": "by the development and interaction of intracontinental drainage",
+        "conf": 0.9939
+       },
+       {
+        "box": [
+         37.7,
+         398.4,
+         435.3,
+         411.1
+        ],
+        "text": "systems, should be delivered to the northern and northeastern",
+        "conf": 0.9991
+       },
+       {
+        "box": [
+         37.6,
+         414.5,
+         435.4,
+         427.6
+        ],
+        "text": "Brazilian basins. While this is a local study of the Borborema",
+        "conf": 0.9982
+       },
+       {
+        "box": [
+         37.7,
+         431.2,
+         435.3,
+         443.8
+        ],
+        "text": "Province of northeastern Brazil, the implications of this work have",
+        "conf": 0.9939
+       },
+       {
+        "box": [
+         37.6,
+         447.7,
+         435.4,
+         461.0
+        ],
+        "text": "far reaching consequences for the stratigraphy of rifted continental",
+        "conf": 0.9808
+       },
+       {
+        "box": [
+         37.6,
+         464.2,
+         402.8,
+         477.5
+        ],
+        "text": "margins through the development of hinterland topography.",
+        "conf": 0.9872
+       },
+       {
+        "box": [
+         35.4,
+         481.1,
+         125.4,
+         493.5
+        ],
+        "text": "Section-Header",
+        "conf": 0.9898
+       },
+       {
+        "box": [
+         35.2,
+         496.6,
+         174.5,
+         510.2
+        ],
+        "text": "2. Geological setting",
+        "conf": 0.994
+       },
+       {
+        "box": [
+         35.5,
+         514.5,
+         64.7,
+         526.4
+        ],
+        "text": "|Text",
+        "conf": 0.9686
+       },
+       {
+        "box": [
+         51.8,
+         530.7,
+         439.8,
+         542.5
+        ],
+        "text": "|The Precambrian Borborema Province in northeastern Brazil.",
+        "conf": 0.9737
+       },
+       {
+        "box": [
+         37.7,
+         547.2,
+         435.3,
+         559.7
+        ],
+        "text": "(Fig. 1) consists of a gigantic fan-like system of right-lateral strike-",
+        "conf": 0.9822
+       },
+       {
+        "box": [
+         37.7,
+         563.8,
+         435.3,
+         576.7
+        ],
+        "text": "slip shear zones, juxtaposing Archean to Mesoproterozoic crystal-",
+        "conf": 0.999
+       },
+       {
+        "box": [
+         37.7,
+         580.4,
+         435.3,
+         593.1
+        ],
+        "text": "line massifs against belts of Neoproterozoic metasediments (Van",
+        "conf": 0.9897
+       },
+       {
+        "box": [
+         37.6,
+         596.9,
+         437.7,
+         610.0
+        ],
+        "text": "Schmus et al., 1998; Dantas et al., 1998). The Borborema strike-slip.",
+        "conf": 0.9875
+       },
+       {
+        "box": [
+         37.7,
+         613.4,
+         435.3,
+         626.3
+        ],
+        "text": "system corresponds to the west-central portion of the Pan-African/",
+        "conf": 0.9904
+       },
+       {
+        "box": [
+         37.7,
+         630.1,
+         435.3,
+         643.0
+        ],
+        "text": "Brasiliano orogenic collage formed during the Neoproterozoic",
+        "conf": 0.9944
+       },
+       {
+        "box": [
+         35.4,
+         646.4,
+         435.3,
+         659.2
+        ],
+        "text": "assembly of West Gondwana (600–580 Ma). The main shear zones",
+        "conf": 0.993
+       },
+       {
+        "box": [
+         37.7,
+         662.9,
+         435.4,
+         675.9
+        ],
+        "text": "of the system, namely the Pernambuco, Patos, Portalegre, Picuí-",
+        "conf": 0.9865
+       },
+       {
+        "box": [
+         35.4,
+         679.7,
+         435.3,
+         692.4
+        ],
+        "text": "João Câmara, Santa Mônica, Remígio-Pocinhos and Senador",
+        "conf": 0.9901
+       },
+       {
+        "box": [
+         37.7,
+         696.1,
+         437.7,
+         709.0
+        ],
+        "text": "Pompeu shear systems, show orientations varying between E-W",
+        "conf": 0.974
+       },
+       {
+        "box": [
+         37.7,
+         712.4,
+         435.3,
+         725.2
+        ],
+        "text": "and NE–SW (Fig. 1). These structures seem to accommodate large",
+        "conf": 0.9867
+       },
+       {
+        "box": [
+         35.4,
+         728.9,
+         435.3,
+         741.5
+        ],
+        "text": "strains in a context of continental collisions involving lithospheric",
+        "conf": 0.9965
+       },
+       {
+        "box": [
+         37.7,
+         745.5,
+         437.7,
+         758.4
+        ],
+        "text": "segments of distinct rheological properties; in such continental",
+        "conf": 0.9968
+       },
+       {
+        "box": [
+         37.7,
+         762.0,
+         435.3,
+         774.8
+        ],
+        "text": "collisions, rheological competent blocks act as indentors that",
+        "conf": 0.9964
+       },
+       {
+        "box": [
+         37.6,
+         778.4,
+         435.4,
+         791.5
+        ],
+        "text": "generate strong shear zone systems as the rheological weaker",
+        "conf": 0.9949
+       },
+       {
+        "box": [
+         37.7,
+         794.9,
+         435.3,
+         807.9
+        ],
+        "text": "blocks are squeezed out or “escape\" laterally (Jardim de Sá, 1994;",
+        "conf": 0.9882
+       },
+       {
+        "box": [
+         35.3,
+         811.5,
+         309.6,
+         824.9
+        ],
+        "text": "hez et al., 1995; Brito Neves et al., 2000).",
+        "conf": 0.9788
+       },
+       {
+        "box": [
+         51.7,
+         828.6,
+         437.6,
+         841.4
+        ],
+        "text": "|The fragmentation of Gondwana in the Mesozoic is recorded in",
+        "conf": 0.9899
+       },
+       {
+        "box": [
+         37.7,
+         845.1,
+         435.3,
+         858.0
+        ],
+        "text": "northeastern Brazil by a series of tectonic and magmatic events,",
+        "conf": 0.9883
+       },
+       {
+        "box": [
+         37.7,
+         861.6,
+         435.3,
+         874.3
+        ],
+        "text": "including the development of basins in the continent interior and",
+        "conf": 0.9942
+       },
+       {
+        "box": [
+         37.7,
+         878.1,
+         437.6,
+         890.8
+        ],
+        "text": "the Atlantic passive margin. The WNW-ESE and N-S trending",
+        "conf": 0.9907
+       },
+       {
+        "box": [
+         37.7,
+         894.7,
+         435.3,
+         907.4
+        ],
+        "text": "segments of the Brazilian continental margin are commonly",
+        "conf": 0.9959
+       },
+       {
+        "box": [
+         37.7,
+         911.1,
+         435.3,
+         923.9
+        ],
+        "text": "referred to as Equatorial and Eastern margins, respectively (Fig. 1).",
+        "conf": 0.9897
+       },
+       {
+        "box": [
+         37.6,
+         927.3,
+         435.4,
+         940.4
+        ],
+        "text": "These segments, which meet in the region northeast of the Bor-",
+        "conf": 0.9894
+       },
+       {
+        "box": [
+         37.7,
+         944.0,
+         435.3,
+         956.6
+        ],
+        "text": "borema Province, experienced distinct tectonic histories, reflecting",
+        "conf": 0.9981
+       },
+       {
+        "box": [
+         37.7,
+         960.4,
+         435.3,
+         973.4
+        ],
+        "text": "two distinct tectonic regimes. The Equatorial segment corresponds",
+        "conf": 0.9969
+       },
+       {
+        "box": [
+         37.7,
+         977.0,
+         435.3,
+         990.0
+        ],
+        "text": "to a transform margin, whereas the Eastern segment evolved as",
+        "conf": 0.9863
+       },
+       {
+        "box": [
+         37.6,
+         993.4,
+         356.2,
+         1006.6
+        ],
+        "text": "sical divergent, “passive\" margin (Matos, 1999).",
+        "conf": 0.9913
+       },
+       {
+        "box": [
+         461.9,
+         53.0,
+         488.8,
+         64.9
+        ],
+        "text": "Text",
+        "conf": 0.998
+       },
+       {
+        "box": [
+         54.0,
+         1010.1,
+         437.6,
+         1022.7
+        ],
+        "text": "The structuring of the Eastern and Equatorial Margins started",
+        "conf": 0.999
+       },
+       {
+        "box": [
+         37.7,
+         1026.5,
+         437.7,
+         1039.5
+        ],
+        "text": "with intense crustal stretching during the Mesozoic, which led to",
+        "conf": 0.9932
+       },
+       {
+        "box": [
+         37.7,
+         1043.2,
+         435.3,
+         1056.0
+        ],
+        "text": "the formation of three main Neocomian rift systems in north-",
+        "conf": 0.9902
+       },
+       {
+        "box": [
+         37.7,
+         1059.8,
+         435.3,
+         1072.6
+        ],
+        "text": "eastern Brazil: Recôncavo–Tucano–Jatobá and Sergipe-Alagoas, as",
+        "conf": 0.9827
+       },
+       {
+        "box": [
+         37.6,
+         1075.9,
+         435.4,
+         1089.4
+        ],
+        "text": "well as the basins along the Cariri–Potiguar Trend (Figs. 1 and 3).",
+        "conf": 0.9787
+       },
+       {
+        "box": [
+         37.7,
+         1092.9,
+         435.3,
+         1105.6
+        ],
+        "text": "The geometry of these basins was controlled and compartmental-",
+        "conf": 0.9931
+       },
+       {
+        "box": [
+         37.6,
+         1109.3,
+         379.4,
+         1122.4
+        ],
+        "text": "ized by the complex network of Proterozoic shear zones.",
+        "conf": 0.9886
+       },
+       {
+        "box": [
+         56.3,
+         1125.9,
+         435.4,
+         1139.0
+        ],
+        "text": "The Cariri–Potiguar Trend (Matos, 1992) is formed by several",
+        "conf": 0.9874
+       },
+       {
+        "box": [
+         35.3,
+         1142.3,
+         440.0,
+         1155.5
+        ],
+        "text": "intracontinental rift basins along a NE–SW axis in the northwestern",
+        "conf": 0.9911
+       },
+       {
+        "box": [
+         461.7,
+         67.7,
+         861.7,
+         80.7
+        ],
+        "text": "ivicinity of the Borborema Plateau. This trend encompasses small",
+        "conf": 0.9801
+       },
+       {
+        "box": [
+         464.0,
+         84.1,
+         861.8,
+         97.3
+        ],
+        "text": "Neocomian (140–118 Ma) basins such as the Rio do Peixe, Iguatu",
+        "conf": 0.9783
+       },
+       {
+        "box": [
+         461.7,
+         100.6,
+         864.1,
+         113.7
+        ],
+        "text": "(and Icó, and the sub-surface rift sections of the Araripe and Potiguar!",
+        "conf": 0.9657
+       },
+       {
+        "box": [
+         464.0,
+         117.2,
+         861.8,
+         130.5
+        ],
+        "text": "Basins (Fig. 1), which were aborted during the Barremian in favor of",
+        "conf": 0.9838
+       },
+       {
+        "box": [
+         464.1,
+         133.8,
+         861.8,
+         146.8
+        ],
+        "text": "eventual crustal breaching and ocean crust generation to the north",
+        "conf": 0.9953
+       },
+       {
+        "box": [
+         464.1,
+         150.5,
+         861.8,
+         163.5
+        ],
+        "text": "and east. The Sergipe-Alagoas Basin on the Eastern continental",
+        "conf": 0.9906
+       },
+       {
+        "box": [
+         464.1,
+         166.9,
+         861.8,
+         179.9
+        ],
+        "text": "margin (Fig. 1) is composed of a series of half-graben bounded by",
+        "conf": 0.9949
+       },
+       {
+        "box": [
+         464.1,
+         183.3,
+         864.1,
+         196.3
+        ],
+        "text": "N–S, NW- and NE-trending faults (Lana, 1990), also formed during)",
+        "conf": 0.9833
+       },
+       {
+        "box": [
+         464.1,
+         199.8,
+         861.7,
+         212.4
+        ],
+        "text": "the Neocomian and contains a complete record of both syn-rift and.",
+        "conf": 0.9876
+       },
+       {
+        "box": [
+         464.2,
+         216.5,
+         861.6,
+         228.7
+        ],
+        "text": "post-rift sediments. Pre-rift sediments include Paleozoic and",
+        "conf": 0.9935
+       },
+       {
+        "box": [
+         461.8,
+         233.0,
+         861.7,
+         245.5
+        ],
+        "text": "Jurassic intracratonic sediments. The Recôncavo–Tucano–Jatobá rift",
+        "conf": 0.9835
+       },
+       {
+        "box": [
+         464.1,
+         249.4,
+         861.7,
+         262.0
+        ],
+        "text": "system (Fig. 1), also formed during the Neocomian, extends to",
+        "conf": 0.9952
+       },
+       {
+        "box": [
+         461.7,
+         265.8,
+         861.8,
+         278.9
+        ],
+        "text": "400 km in N-S direction in the region south of the Borborema",
+        "conf": 0.9806
+       },
+       {
+        "box": [
+         461.8,
+         282.5,
+         861.7,
+         295.3
+        ],
+        "text": "|Province (Fig. 1). This system consists of asymmetric grabens",
+        "conf": 0.9935
+       },
+       {
+        "box": [
+         461.7,
+         299.3,
+         861.7,
+         312.2
+        ],
+        "text": "separated by basement highs and accommodation zones (Magnavita",
+        "conf": 0.981
+       },
+       {
+        "box": [
+         461.9,
+         316.8,
+         535.4,
+         328.6
+        ],
+        "text": "(et al., 1994).",
+        "conf": 0.9707
+       },
+       {
+        "box": [
+         459.7,
+         333.2,
+         549.3,
+         344.6
+        ],
+        "text": "Section-Header",
+        "conf": 0.9895
+       },
+       {
+        "box": [
+         461.7,
+         348.6,
+         689.3,
+         361.6
+        ],
+        "text": "3. Continental rifting and breakup",
+        "conf": 0.9998
+       },
+       {
+        "box": [
+         459.5,
+         365.5,
+         491.2,
+         378.0
+        ],
+        "text": "Text",
+        "conf": 0.9606
+       },
+       {
+        "box": [
+         480.4,
+         381.7,
+         864.1,
+         394.7
+        ],
+        "text": "|In the northeastern portion of the Borborema Province, the",
+        "conf": 0.976
+       },
+       {
+        "box": [
+         464.1,
+         398.3,
+         864.0,
+         411.0
+        ],
+        "text": "breakup of Western Gondwana was preceded by the outpouring of",
+        "conf": 0.9945
+       },
+       {
+        "box": [
+         464.1,
+         414.7,
+         861.7,
+         427.6
+        ],
+        "text": "the Rio Ceará-Mirim tholeiites from the late Jurassic to Barremian",
+        "conf": 0.9933
+       },
+       {
+        "box": [
+         461.8,
+         431.1,
+         861.7,
+         443.9
+        ],
+        "text": "(145–125 Ma; Fig. 1). South of the Potiguar Basin, this magmatism is",
+        "conf": 0.986
+       },
+       {
+        "box": [
+         461.7,
+         447.6,
+         859.5,
+         460.9
+        ],
+        "text": "represented by an extensive E–W-trending dike swarm (Figs. 1",
+        "conf": 0.9821
+       },
+       {
+        "box": [
+         461.7,
+         464.1,
+         861.8,
+         477.3
+        ],
+        "text": "and 4). O'Connor and Duncan (1990), Wilson (1992), Lima Neto",
+        "conf": 0.9774
+       },
+       {
+        "box": [
+         464.0,
+         480.9,
+         861.8,
+         494.2
+        ],
+        "text": "(1998b) and Oliveira (1998), for instance, argued that this igneous",
+        "conf": 0.9933
+       },
+       {
+        "box": [
+         461.7,
+         497.4,
+         861.7,
+         510.3
+        ],
+        "text": "(activity was mantle plume induced. It was further suggested that",
+        "conf": 0.9896
+       },
+       {
+        "box": [
+         464.0,
+         513.9,
+         861.8,
+         527.3
+        ],
+        "text": "these plumes (possibly the Saint Helena and Ascension plumes)",
+        "conf": 0.9907
+       },
+       {
+        "box": [
+         464.1,
+         530.7,
+         861.8,
+         543.7
+        ],
+        "text": "might have played an important role in the weakening of the",
+        "conf": 0.9869
+       },
+       {
+        "box": [
+         464.1,
+         547.2,
+         861.8,
+         560.3
+        ],
+        "text": "lithosphere and in the extension and breakup of the South Amer-",
+        "conf": 0.9864
+       },
+       {
+        "box": [
+         464.0,
+         563.6,
+         861.8,
+         576.8
+        ],
+        "text": "ican and African plates. As such, the Eastern Brazilian margin",
+        "conf": 0.9904
+       },
+       {
+        "box": [
+         464.1,
+         580.3,
+         861.7,
+         593.2
+        ],
+        "text": "represents a volcanic rifted margin, a classification supported by",
+        "conf": 0.9931
+       },
+       {
+        "box": [
+         464.0,
+         596.8,
+         861.8,
+         610.1
+        ],
+        "text": "the existence of seaward dipping reflectors within the Sergipe-",
+        "conf": 0.9866
+       },
+       {
+        "box": [
+         461.7,
+         613.2,
+         861.8,
+         626.4
+        ],
+        "text": "(Alagoas Basin (Mohriak et al., 1998, 2002), and by syn-rift volcanic",
+        "conf": 0.9754
+       },
+       {
+        "box": [
+         461.7,
+         629.7,
+         861.8,
+         643.0
+        ],
+        "text": "(activity within the Pernambuco–Paraíba Basin (Jardim de Sá et al.,",
+        "conf": 0.9831
+       },
+       {
+        "box": [
+         459.4,
+         646.3,
+         631.1,
+         659.5
+        ],
+        "text": "@; Almeida et al., 2005).",
+        "conf": 0.9338
+       },
+       {
+        "box": [
+         482.7,
+         662.9,
+         861.8,
+         676.1
+        ],
+        "text": "North of the Potiguar Basin (Fig. 1), continental breakup and",
+        "conf": 0.995
+       },
+       {
+        "box": [
+         461.8,
+         679.6,
+         861.7,
+         692.5
+        ],
+        "text": "seafloor spreading is interpreted to have commenced in the Late",
+        "conf": 0.9878
+       },
+       {
+        "box": [
+         461.7,
+         696.0,
+         859.4,
+         709.0
+        ],
+        "text": "Aptian/Early Albian. In the Pernambuco sub-basin (the southern-",
+        "conf": 0.987
+       },
+       {
+        "box": [
+         464.1,
+         712.4,
+         859.4,
+         725.4
+        ],
+        "text": "most portion of the Pernambuco–Paraíba Basin; Fig. 1), a late syn-",
+        "conf": 0.9803
+       },
+       {
+        "box": [
+         464.1,
+         728.9,
+         861.7,
+         741.6
+        ],
+        "text": "rift magmatic event generated granites and alkali volcanics dated",
+        "conf": 0.9949
+       },
+       {
+        "box": [
+         464.1,
+         745.4,
+         861.7,
+         758.1
+        ],
+        "text": "between 105 and 97 Ma (Long et al., 1986; Jardim de Sá et al., 2004).",
+        "conf": 0.9753
+       },
+       {
+        "box": [
+         464.2,
+         762.0,
+         861.7,
+         774.3
+        ],
+        "text": "The establishment of open marine conditions between eastern",
+        "conf": 0.9947
+       },
+       {
+        "box": [
+         461.7,
+         778.2,
+         861.8,
+         791.2
+        ],
+        "text": "South America and Africa is considered to be of Late Albian age",
+        "conf": 0.9941
+       },
+       {
+        "box": [
+         459.5,
+         795.4,
+         582.0,
+         807.8
+        ],
+        "text": " tsoukos, 1992).",
+        "conf": 0.9398
+       },
+       {
+        "box": [
+         482.7,
+         812.2,
+         861.7,
+         824.9
+        ],
+        "text": "After continental breakup, the margin underwent lithospheric",
+        "conf": 0.9911
+       },
+       {
+        "box": [
+         464.1,
+         828.7,
+         861.7,
+         841.5
+        ],
+        "text": "cooling and subsidence, as recorded in the Potiguar Basin (Fig. 3) by",
+        "conf": 0.988
+       },
+       {
+        "box": [
+         464.1,
+         845.3,
+         861.7,
+         857.9
+        ],
+        "text": "a lower Albian–Campanian transgressive sequence and by an upper",
+        "conf": 0.9852
+       },
+       {
+        "box": [
+         461.8,
+         861.7,
+         861.7,
+         874.3
+        ],
+        "text": "Campanian to Recent regressive megasequence (Araripe and Feijó,",
+        "conf": 0.9847
+       },
+       {
+        "box": [
+         464.1,
+         877.9,
+         861.7,
+         890.5
+        ],
+        "text": "1994; Cremonini et al., 1998; Soares et al., 2003). Major hiatuses|",
+        "conf": 0.9758
+       },
+       {
+        "box": [
+         464.1,
+         894.6,
+         861.7,
+         907.2
+        ],
+        "text": "exist within the transgressive megasequence in the Potiguar Basin",
+        "conf": 0.9762
+       },
+       {
+        "box": [
+         461.8,
+         910.9,
+         861.7,
+         923.6
+        ],
+        "text": "(Pereira, 1994; Gil, 1996); these authors have interpreted a Late",
+        "conf": 0.996
+       },
+       {
+        "box": [
+         464.1,
+         927.2,
+         859.4,
+         940.3
+        ],
+        "text": "Turonian (ca. 89 Ma) subaerial unconformity developed across the",
+        "conf": 0.9911
+       },
+       {
+        "box": [
+         461.8,
+         943.9,
+         861.7,
+         956.4
+        ],
+        "text": "Jandaíra Formation carbonate platform to be the result of tectoni-|",
+        "conf": 0.9943
+       },
+       {
+        "box": [
+         461.8,
+         960.3,
+         861.7,
+         973.2
+        ],
+        "text": "cally-induced uplift and erosion across the margin. A short",
+        "conf": 0.9923
+       },
+       {
+        "box": [
+         461.7,
+         976.8,
+         861.7,
+         989.8
+        ],
+        "text": "magmatic event (the “Cuó Volcanism\") in the onshore Potiguar",
+        "conf": 0.9885
+       },
+       {
+        "box": [
+         464.1,
+         993.4,
+         861.7,
+         1006.3
+        ],
+        "text": "Basin around 93 Ma (Oliveira, 1998; Souza et al., 2004) has been",
+        "conf": 0.9849
+       },
+       {
+        "box": [
+         459.5,
+         1010.1,
+         803.4,
+         1022.8
+        ],
+        "text": " preted to be the consequence of this tectonic event.",
+        "conf": 0.9754
+       },
+       {
+        "box": [
+         480.4,
+         1026.7,
+         864.0,
+         1039.4
+        ],
+        "text": "Further, the formation of a widespread erosive unconformity at.",
+        "conf": 0.9815
+       },
+       {
+        "box": [
+         464.1,
+         1043.1,
+         861.7,
+         1055.8
+        ],
+        "text": "about 78 Ma across both the onshore and offshore Potiguar Basin",
+        "conf": 0.9924
+       },
+       {
+        "box": [
+         464.1,
+         1059.4,
+         861.7,
+         1072.4
+        ],
+        "text": "has been attributed to plate tectonic reorganization of the central",
+        "conf": 0.9881
+       },
+       {
+        "box": [
+         461.7,
+         1075.8,
+         861.8,
+         1089.0
+        ],
+        "text": "(Atlantic (Gil, 1996). Cremonini and Karner (1995) and Cremonini",
+        "conf": 0.9923
+       },
+       {
+        "box": [
+         461.8,
+         1092.6,
+         864.1,
+         1105.5
+        ],
+        "text": "(1996) pointed out that during the mid Campanian, the passage of",
+        "conf": 0.9948
+       },
+       {
+        "box": [
+         464.0,
+         1109.1,
+         861.8,
+         1122.3
+        ],
+        "text": "an oceanic spreading center along the Equatorial Margin might",
+        "conf": 0.9919
+       },
+       {
+        "box": [
+         464.0,
+         1125.8,
+         861.8,
+         1138.9
+        ],
+        "text": "have caused regional heating, uplift and erosion, as well as tectonic",
+        "conf": 0.9921
+       },
+       {
+        "box": [
+         461.7,
+         1142.1,
+         864.1,
+         1155.5
+        ],
+        "text": "reactivation. The main expression of this event would be the raising.",
+        "conf": 0.9794
+       }
+      ],
+      "markdown": "|Text\n\nsand content and maturity of turbidite deposits. Such predictions require information about the history of topography generation, modification, and denudation. Continental landscapes are constantly in a state of flux as drainage systems evolve and interact via the process of river capture during the denudation of topography. In turn, any post-rift tectonics that modifies or generates topography will play a major role in this landscape evolution process, controlling the transport and delivery of clastics by fluvial systems to the margins. Rivers represent point sources of clastics along margins, however, their distribution, energy, and sediment content are prime functions of topography generation and distribution. Once deposition takes place, marine processes such as alongshore drift rework and redistribute the sediments along the margin. During eustatic falls, margins associated with relatively large fluvial systems will tend to be associated with significant drainage rejuvenation, river incision of the exposed shelf, canyon development, and given suitable conditions, the deposition of turbidities. A corollary of this study is to provide suggestions about when clastics from the eroding Borborema topography, as modified. by the development and interaction of intracontinental drainage systems, should be delivered to the northern and northeastern Brazilian basins. While this is a local study of the Borborema Province of northeastern Brazil, the implications of this work have far reaching consequences for the stratigraphy of rifted continental margins through the development of hinterland topography.\n\n## Section-Header\n\n## 2. Geological setting\n\n## |Text\n\n|The Precambrian Borborema Province in northeastern Brazil. (Fig. 1) consists of a gigantic fan-like system of right-lateral strikeslip shear zones, juxtaposing Archean to Mesoproterozoic crystalline massifs against belts of Neoproterozoic metasediments (Van Schmus et al., 1998; Dantas et al., 1998). The Borborema strike-slip. system corresponds to the west-central portion of the Pan-African/ Brasiliano orogenic collage formed during the Neoproterozoic assembly of West Gondwana (600–580 Ma). The main shear zones of the system, namely the Pernambuco, Patos, Portalegre, Picuí- João Câmara, Santa Mônica, Remígio-Pocinhos and Senador Pompeu shear systems, show orientations varying between E-W and NE–SW (Fig. 1). These structures seem to accommodate large strains in a context of continental collisions involving lithospheric segments of distinct rheological properties; in such continental collisions, rheological competent blocks act as indentors that generate strong shear zone systems as the rheological weaker blocks are squeezed out or “escape\" laterally (Jardim de Sá, 1994; hez et al., 1995; Brito Neves et al., 2000).\n\n|The fragmentation of Gondwana in the Mesozoic is recorded in northeastern Brazil by a series of tectonic and magmatic events, including the development of basins in the continent interior and the Atlantic passive margin. The WNW-ESE and N-S trending segments of the Brazilian continental margin are commonly referred to as Equatorial and Eastern margins, respectively (Fig. 1). These segments, which meet in the region northeast of the Borborema Province, experienced distinct tectonic histories, reflecting two distinct tectonic regimes. The Equatorial segment corresponds to a transform margin, whereas the Eastern segment evolved as sical divergent, “passive\" margin (Matos, 1999).\n\nThe structuring of the Eastern and Equatorial Margins started with intense crustal stretching during the Mesozoic, which led to the formation of three main Neocomian rift systems in northeastern Brazil: Recôncavo–Tucano–Jatobá and Sergipe-Alagoas, as well as the basins along the Cariri–Potiguar Trend (Figs. 1 and 3). The geometry of these basins was controlled and compartmentalized by the complex network of Proterozoic shear zones. The Cariri–Potiguar Trend (Matos, 1992) is formed by several intracontinental rift basins along a NE–SW axis in the northwestern\n\nivicinity of the Borborema Plateau. This trend encompasses small Neocomian (140–118 Ma) basins such as the Rio do Peixe, Iguatu (and Icó, and the sub-surface rift sections of the Araripe and Potiguar! Basins (Fig. 1), which were aborted during the Barremian in favor of eventual crustal breaching and ocean crust generation to the north and east. The Sergipe-Alagoas Basin on the Eastern continental margin (Fig. 1) is composed of a series of half-graben bounded by N–S, NW- and NE-trending faults (Lana, 1990), also formed during) the Neocomian and contains a complete record of both syn-rift and. post-rift sediments. Pre-rift sediments include Paleozoic and Jurassic intracratonic sediments. The Recôncavo–Tucano–Jatobá rift system (Fig. 1), also formed during the Neocomian, extends to 400 km in N-S direction in the region south of the Borborema |Province (Fig. 1). This system consists of asymmetric grabens separated by basement highs and accommodation zones (Magnavita (et al., 1994).\n\nSection-Header\n\n## 3. Continental rifting and breakup\n\n## Text\n\n|In the northeastern portion of the Borborema Province, the breakup of Western Gondwana was preceded by the outpouring of the Rio Ceará-Mirim tholeiites from the late Jurassic to Barremian (145–125 Ma; Fig. 1). South of the Potiguar Basin, this magmatism is represented by an extensive E–W-trending dike swarm (Figs. 1 and 4). O'Connor and Duncan (1990), Wilson (1992), Lima Neto (1998b) and Oliveira (1998), for instance, argued that this igneous (activity was mantle plume induced. It was further suggested that these plumes (possibly the Saint Helena and Ascension plumes) might have played an important role in the weakening of the lithosphere and in the extension and breakup of the South American and African plates. As such, the Eastern Brazilian margin represents a volcanic rifted margin, a classification supported by the existence of seaward dipping reflectors within the Sergipe- (Alagoas Basin (Mohriak et al., 1998, 2002), and by syn-rift volcanic (activity within the Pernambuco–Paraíba Basin (Jardim de Sá et al., @; Almeida et al., 2005).\n\nNorth of the Potiguar Basin (Fig. 1), continental breakup and seafloor spreading is interpreted to have commenced in the Late Aptian/Early Albian. In the Pernambuco sub-basin (the southernmost portion of the Pernambuco–Paraíba Basin; Fig. 1), a late synrift magmatic event generated granites and alkali volcanics dated between 105 and 97 Ma (Long et al., 1986; Jardim de Sá et al., 2004). The establishment of open marine conditions between eastern South America and Africa is considered to be of Late Albian age tsoukos, 1992).\n\nAfter continental breakup, the margin underwent lithospheric cooling and subsidence, as recorded in the Potiguar Basin (Fig. 3) by a lower Albian–Campanian transgressive sequence and by an upper Campanian to Recent regressive megasequence (Araripe and Feijó, 1994; Cremonini et al., 1998; Soares et al., 2003). Major hiatuses| exist within the transgressive megasequence in the Potiguar Basin (Pereira, 1994; Gil, 1996); these authors have interpreted a Late Turonian (ca. 89 Ma) subaerial unconformity developed across the Jandaíra Formation carbonate platform to be the result of tectoni-| cally-induced uplift and erosion across the margin. A short magmatic event (the “Cuó Volcanism\") in the onshore Potiguar Basin around 93 Ma (Oliveira, 1998; Souza et al., 2004) has been preted to be the consequence of this tectonic event.\n\nFurther, the formation of a widespread erosive unconformity at. about 78 Ma across both the onshore and offshore Potiguar Basin has been attributed to plate tectonic reorganization of the central (Atlantic (Gil, 1996). Cremonini and Karner (1995) and Cremonini (1996) pointed out that during the mid Campanian, the passage of an oceanic spreading center along the Equatorial Margin might have caused regional heating, uplift and erosion, as well as tectonic reactivation. The main expression of this event would be the raising.",
+      "blocks": [
+       {
+        "label": "Page-Header",
+        "bbox": [
+         273.2,
+         23.2,
+         344.2,
+         34.5
+        ],
+        "text": "Page-Header "
+       },
+       {
+        "label": "Page-Header",
+        "bbox": [
+         837.0,
+         23.0,
+         900.0,
+         35.1
+        ],
+        "text": "Page-Heade"
+       },
+       {
+        "label": "Page-Header",
+        "bbox": [
+         270.8,
+         37.0,
+         628.6,
+         49.3
+        ],
+        "text": "|J.M. Morais Neto et al. / Marine and Petroleum Geology 26 (2009) 1070–1086."
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         35.4,
+         51.7,
+         67.1,
+         64.3
+        ],
+        "text": "|Text"
+       },
+       {
+        "label": "Page-Header",
+        "bbox": [
+         834.7,
+         37.2,
+         866.3,
+         49.4
+        ],
+        "text": "1073"
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         35.3,
+         67.7,
+         437.7,
+         477.5
+        ],
+        "text": "sand content and maturity of turbidite deposits. Such predictions\nrequire information about the history of topography generation,\nmodification, and denudation. Continental landscapes are\nconstantly in a state of flux as drainage systems evolve and interact\nvia the process of river capture during the denudation of topog-\nraphy. In turn, any post-rift tectonics that modifies or generates\ntopography will play a major role in this landscape evolution\nprocess, controlling the transport and delivery of clastics by fluvial\nsystems to the margins. Rivers represent point sources of clastics\nalong margins, however, their distribution, energy, and sediment\ncontent are prime functions of topography generation and distri-\nbution. Once deposition takes place, marine processes such as\nalongshore drift rework and redistribute the sediments along the\nmargin. During eustatic falls, margins associated with relatively\nlarge fluvial systems will tend to be associated with significant\ndrainage rejuvenation, river incision of the exposed shelf, canyon\ndevelopment, and given suitable conditions, the deposition of\nturbidities. A corollary of this study is to provide suggestions about\nwhen clastics from the eroding Borborema topography, as modified.\nby the development and interaction of intracontinental drainage\nsystems, should be delivered to the northern and northeastern\nBrazilian basins. While this is a local study of the Borborema\nProvince of northeastern Brazil, the implications of this work have\nfar reaching consequences for the stratigraphy of rifted continental\nmargins through the development of hinterland topography."
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         35.4,
+         481.1,
+         125.4,
+         493.5
+        ],
+        "text": "Section-Header"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         35.2,
+         496.6,
+         174.5,
+         510.2
+        ],
+        "text": "2. Geological setting"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         35.5,
+         514.5,
+         64.7,
+         526.4
+        ],
+        "text": "|Text"
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         35.3,
+         530.7,
+         439.8,
+         824.9
+        ],
+        "text": "|The Precambrian Borborema Province in northeastern Brazil.\n(Fig. 1) consists of a gigantic fan-like system of right-lateral strike-\nslip shear zones, juxtaposing Archean to Mesoproterozoic crystal-\nline massifs against belts of Neoproterozoic metasediments (Van\nSchmus et al., 1998; Dantas et al., 1998). The Borborema strike-slip.\nsystem corresponds to the west-central portion of the Pan-African/\nBrasiliano orogenic collage formed during the Neoproterozoic\nassembly of West Gondwana (600–580 Ma). The main shear zones\nof the system, namely the Pernambuco, Patos, Portalegre, Picuí-\nJoão Câmara, Santa Mônica, Remígio-Pocinhos and Senador\nPompeu shear systems, show orientations varying between E-W\nand NE–SW (Fig. 1). These structures seem to accommodate large\nstrains in a context of continental collisions involving lithospheric\nsegments of distinct rheological properties; in such continental\ncollisions, rheological competent blocks act as indentors that\ngenerate strong shear zone systems as the rheological weaker\nblocks are squeezed out or “escape\" laterally (Jardim de Sá, 1994;\nhez et al., 1995; Brito Neves et al., 2000)."
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         37.6,
+         828.6,
+         437.6,
+         1006.6
+        ],
+        "text": "|The fragmentation of Gondwana in the Mesozoic is recorded in\nnortheastern Brazil by a series of tectonic and magmatic events,\nincluding the development of basins in the continent interior and\nthe Atlantic passive margin. The WNW-ESE and N-S trending\nsegments of the Brazilian continental margin are commonly\nreferred to as Equatorial and Eastern margins, respectively (Fig. 1).\nThese segments, which meet in the region northeast of the Bor-\nborema Province, experienced distinct tectonic histories, reflecting\ntwo distinct tectonic regimes. The Equatorial segment corresponds\nto a transform margin, whereas the Eastern segment evolved as\nsical divergent, “passive\" margin (Matos, 1999)."
+       },
+       {
+        "label": "Page-Header",
+        "bbox": [
+         461.9,
+         53.0,
+         488.8,
+         64.9
+        ],
+        "text": "Text"
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         35.3,
+         1010.1,
+         440.0,
+         1155.5
+        ],
+        "text": "The structuring of the Eastern and Equatorial Margins started\nwith intense crustal stretching during the Mesozoic, which led to\nthe formation of three main Neocomian rift systems in north-\neastern Brazil: Recôncavo–Tucano–Jatobá and Sergipe-Alagoas, as\nwell as the basins along the Cariri–Potiguar Trend (Figs. 1 and 3).\nThe geometry of these basins was controlled and compartmental-\nized by the complex network of Proterozoic shear zones.\nThe Cariri–Potiguar Trend (Matos, 1992) is formed by several\nintracontinental rift basins along a NE–SW axis in the northwestern"
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         461.7,
+         67.7,
+         864.1,
+         328.6
+        ],
+        "text": "ivicinity of the Borborema Plateau. This trend encompasses small\nNeocomian (140–118 Ma) basins such as the Rio do Peixe, Iguatu\n(and Icó, and the sub-surface rift sections of the Araripe and Potiguar!\nBasins (Fig. 1), which were aborted during the Barremian in favor of\neventual crustal breaching and ocean crust generation to the north\nand east. The Sergipe-Alagoas Basin on the Eastern continental\nmargin (Fig. 1) is composed of a series of half-graben bounded by\nN–S, NW- and NE-trending faults (Lana, 1990), also formed during)\nthe Neocomian and contains a complete record of both syn-rift and.\npost-rift sediments. Pre-rift sediments include Paleozoic and\nJurassic intracratonic sediments. The Recôncavo–Tucano–Jatobá rift\nsystem (Fig. 1), also formed during the Neocomian, extends to\n400 km in N-S direction in the region south of the Borborema\n|Province (Fig. 1). This system consists of asymmetric grabens\nseparated by basement highs and accommodation zones (Magnavita\n(et al., 1994)."
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         459.7,
+         333.2,
+         549.3,
+         344.6
+        ],
+        "text": "Section-Header"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         461.7,
+         348.6,
+         689.3,
+         361.6
+        ],
+        "text": "3. Continental rifting and breakup"
+       },
+       {
+        "label": "Section-Header",
+        "bbox": [
+         459.5,
+         365.5,
+         491.2,
+         378.0
+        ],
+        "text": "Text"
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         459.4,
+         381.7,
+         864.1,
+         659.5
+        ],
+        "text": "|In the northeastern portion of the Borborema Province, the\nbreakup of Western Gondwana was preceded by the outpouring of\nthe Rio Ceará-Mirim tholeiites from the late Jurassic to Barremian\n(145–125 Ma; Fig. 1). South of the Potiguar Basin, this magmatism is\nrepresented by an extensive E–W-trending dike swarm (Figs. 1\nand 4). O'Connor and Duncan (1990), Wilson (1992), Lima Neto\n(1998b) and Oliveira (1998), for instance, argued that this igneous\n(activity was mantle plume induced. It was further suggested that\nthese plumes (possibly the Saint Helena and Ascension plumes)\nmight have played an important role in the weakening of the\nlithosphere and in the extension and breakup of the South Amer-\nican and African plates. As such, the Eastern Brazilian margin\nrepresents a volcanic rifted margin, a classification supported by\nthe existence of seaward dipping reflectors within the Sergipe-\n(Alagoas Basin (Mohriak et al., 1998, 2002), and by syn-rift volcanic\n(activity within the Pernambuco–Paraíba Basin (Jardim de Sá et al.,\n@; Almeida et al., 2005)."
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         459.5,
+         662.9,
+         861.8,
+         807.8
+        ],
+        "text": "North of the Potiguar Basin (Fig. 1), continental breakup and\nseafloor spreading is interpreted to have commenced in the Late\nAptian/Early Albian. In the Pernambuco sub-basin (the southern-\nmost portion of the Pernambuco–Paraíba Basin; Fig. 1), a late syn-\nrift magmatic event generated granites and alkali volcanics dated\nbetween 105 and 97 Ma (Long et al., 1986; Jardim de Sá et al., 2004).\nThe establishment of open marine conditions between eastern\nSouth America and Africa is considered to be of Late Albian age\n tsoukos, 1992)."
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         459.5,
+         812.2,
+         861.7,
+         1022.8
+        ],
+        "text": "After continental breakup, the margin underwent lithospheric\ncooling and subsidence, as recorded in the Potiguar Basin (Fig. 3) by\na lower Albian–Campanian transgressive sequence and by an upper\nCampanian to Recent regressive megasequence (Araripe and Feijó,\n1994; Cremonini et al., 1998; Soares et al., 2003). Major hiatuses|\nexist within the transgressive megasequence in the Potiguar Basin\n(Pereira, 1994; Gil, 1996); these authors have interpreted a Late\nTuronian (ca. 89 Ma) subaerial unconformity developed across the\nJandaíra Formation carbonate platform to be the result of tectoni-|\ncally-induced uplift and erosion across the margin. A short\nmagmatic event (the “Cuó Volcanism\") in the onshore Potiguar\nBasin around 93 Ma (Oliveira, 1998; Souza et al., 2004) has been\n preted to be the consequence of this tectonic event."
+       },
+       {
+        "label": "Text",
+        "bbox": [
+         461.7,
+         1026.7,
+         864.1,
+         1155.5
+        ],
+        "text": "Further, the formation of a widespread erosive unconformity at.\nabout 78 Ma across both the onshore and offshore Potiguar Basin\nhas been attributed to plate tectonic reorganization of the central\n(Atlantic (Gil, 1996). Cremonini and Karner (1995) and Cremonini\n(1996) pointed out that during the mid Campanian, the passage of\nan oceanic spreading center along the Equatorial Margin might\nhave caused regional heating, uplift and erosion, as well as tectonic\nreactivation. The main expression of this event would be the raising."
+       }
+      ],
+      "source": "ocr",
+      "note": "order=model",
+      "rotation": 0,
+      "skew": 0.0,
+      "timings": [
+       "orient_ms",
+       "det_ms",
+       "rec_ms",
+       "order_ms",
+       "total_ms"
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -9,10 +9,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 
 - Imaging: pure managed C# (replicate OpenCV ops). `Core` carries no image-codec or PDF
   dependency — its only image input is 8-bit grayscale `GrayImage`, a `ref struct` view it
-  never owns (outputs are caller-provided buffers, decoded one image at a time). File decoding
-  (ImageSharp) lives in the host projects `Cli`/`Viewer`; PDF rasterisation
-  (`PDFiumCore` + `bblanchon.PDFium`) lives in `Indra.Ocr.Pdf` and emits grayscale directly.
-  ONNX: `Microsoft.ML.OnnxRuntime`.
+  never owns (outputs are caller-provided buffers). The encoded-image decoder (ImageSharp) is
+  the `Indra.Ocr` project (`Images/ImageFiles.cs`, one owning `GrayImageData` per frame) and
+  PDF rasterisation (`PDFiumCore` + `bblanchon.PDFium`) is `Indra.Ocr.Pdf`, which emits
+  grayscale directly. The two are siblings: neither references the other, and the host picks one
+  with `OrtOcr.IsPdf` (`docs/165-project-split.md`). ONNX: `Microsoft.ML.OnnxRuntime`.
 - Parity: bit-exact for deterministic output; tolerance only for timings and <1e-3 floats.
 - numpy's float32 `exp` is not the CRT's `expf`, so the port reproduces numpy's own vector
   kernel (`Indra.Ocr.NpyExp`, with hardware FMA) instead of calling `MathF.Exp`; see
@@ -77,27 +78,34 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   the table-head cell re-split with the second order pass, the text-layer `content_order` override
   (`order_backtracks`, `pdf_order_coherent`) and the `Line`/`Page` assembly (with `OcrLine`,
   `OcrPage`) (`docs/130-assemble.md`).
-- [x] `135` image inputs — folded into `030`: the hosts decode files to `GrayImage` in
-  `src/Shared/ImageFiles.cs`, covered by `ImageDecodeTests`.
+- [x] `135` image inputs — folded into `030`: `Indra.Ocr/Images/ImageFiles.cs` decodes files to
+  `List<GrayImageData>` (an owning frame per image frame), covered by `ImageDecodeTests`.
 
 ### Phase 3 — PDF + Document
 - [x] `140` `Indra.Ocr.Pdf` PDFium backend — document open (path/bytes/password) with
   pypdfium2's error text, page size, the grayscale render (`FPDFBitmap_Gray`, packed, white,
   `FPDF_ANNOT|FPDF_GRAYSCALE`), the text layer's characters, the `FPDF_PageToDevice` affine and
-  the invisible-text share; the `ITextDocument`/`ITextPage` seam in Core keeps PDFium out of it
-  (`docs/140-pdfium.md`).
+  the invisible-text share (`docs/140-pdfium.md`; the `ITextDocument`/`ITextPage` seam it first
+  introduced was deleted in `165`).
 - [x] `145` Unicode bidi class table (`unicodedata.bidirectional` parity, used by
   `document.py`): 2 300 generated ranges, checked at every code point
   (`docs/145-bidi-classes.md`).
 - [x] `150` `textlayer` — the text-layer runs and the verdict on them: the uprightness test
   through the page affine, the bad-character test (`unicodedata.category`), the
-  invisible-text / broken-font-map / no-ink checks and their messages, over Core's `ITextPage`
-  (`docs/150-textlayer.md`).
+  invisible-text / broken-font-map / no-ink checks and their messages, in Core
+  (`Indra.Ocr.Text.TextLayerReader`, over `PdfPage.ExtractRuns`; `docs/150-textlayer.md`).
 - [x] `155` `OrtOCR` — the whole-page pipeline over a model folder: turn upright
   (`orientation`/`upright`), `detect`, `recognize` (incl. `hanzi_lines`), `assemble`
   (`gutter_cuts`/`split_line`/`reading_order`/`_decode`), `__call__`'s box mapping and timings
   (`docs/155-ortocr.md`).
-- [ ] `160` `document` Converter.
+- [x] `160` `document` Converter — `PdfConverter` (text layer where sound, OCR elsewhere, the
+  timings merge, the error paths) and `ImageConverter` (every frame is a page), with `SafePage`,
+  `IsPdf` and the run-level helpers (`readable`, `right_to_left`, `assign_runs`)
+  (`docs/160-document.md`).
+- [x] `165` Three-way split — `Indra.Ocr` (ImageSharp, `GrayImageData`), `Indra.Ocr.Pdf`
+  (PDFium + `ExtractRuns`), `Core` (every algorithm over a result); `src/Shared/`,
+  `ITextPage`/`ITextDocument`, `GrayImageConsumer` and the callback `ReadImages` deleted
+  (`docs/165-project-split.md`).
 - [ ] `170` `models` model_dir + download.
 
 ### Phase 4 — CLI
@@ -132,9 +140,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - Original CLI `--help` captured for both `indra-ocr` and `indra-ocr-viewer`.
 - ONNX signatures inspected; `det_long_side=1024`, `rec_height=32`, vocab 1677 (latin) /
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
-- Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
-  free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`155` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+- Layout settled: five projects under `src/` — `Indra.Ocr` (ImageSharp), `Indra.Ocr.Pdf`
+  (PDFium), `Indra.Ocr.Core` (ONNX only), `Indra.Ocr.Cli`, `Indra.Ocr.Viewer`. `Core` is free of
+  ImageSharp/PDFium and consumes grayscale `GrayImage`; the two decoders are siblings
+  (`docs/165-project-split.md`). `src/Shared/` no longer exists.
+- Steps `000`–`165` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
   the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
   with numpy's float32 `exp` reproduced bit-exactly), the line crop rule + batching
   (`RecPreproc`), the CenterMask windowing (`LineMask`), the page uprighting
@@ -151,9 +161,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   gutter-cut line splitting, the table-head cell re-split, the text-layer content-order override
   and the `Line`/`Page` result), and the PDFium backend (`Indra.Ocr.Pdf`: document open with
   pypdfium2's error text, page size, bit-exact grayscale renders, the text layer's characters,
-  the `FPDF_PageToDevice` affine and the invisible-text share, behind Core's
-  `ITextDocument`/`ITextPage` seam), the text-layer policy (`TextLayerReader`: the runs and
-  the trust verdict — uprightness through the affine, the bad-character test, invisible text,
-  the ink check), and the whole-page driver (`OrtOcr`: upright → detect → recognize → assemble,
-  with the page's boxes, markdown, blocks, source and timings).
-  121 tests green, build clean.
+  the `FPDF_PageToDevice` affine and the invisible-text share), the text-layer policy
+  (`TextLayerReader`: the runs and the trust verdict — uprightness through the affine, the
+  bad-character test, invisible text, the ink check), the whole-page driver (`OrtOcr`: upright →
+  detect → recognize → assemble, with the page's boxes, markdown, blocks, source and timings), the
+  document layer (`PdfConverter` + `ImageConverter`: the text layer where it can be trusted and
+  OCR elsewhere, `page_scale`, `readable`/`right_to_left`/`assign_runs`, `_safe`'s error pages and
+  the `is_pdf` dispatch), and the three-way project split (`docs/165-project-split.md`).
+  128 tests green, build clean.

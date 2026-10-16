@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 using Indra.Ocr.Imaging;
-using Indra.Ocr.Document;
+using Indra.Ocr.Text;
 using PDFiumCore;
 
 namespace Indra.Ocr.Pdf;
@@ -12,7 +12,13 @@ namespace Indra.Ocr.Pdf;
 /// <c>page.render(scale=..., grayscale=True)</c> and the affine is
 /// <c>FPDF_PageToDevice</c> sampled at 1000 device units per point.
 /// </summary>
-public sealed class PdfPage : ITextPage
+/// <remarks>
+/// <see cref="ExtractRuns"/> is the PDFium half of <c>textlayer.extract_runs</c>: it reads the
+/// characters, their angles and boxes off the page and hands back the shared
+/// <see cref="TextLine"/>s and <see cref="TextLayerStats"/>; the verdict on them
+/// (<see cref="TextLayerReader"/>) lives in Core.
+/// </remarks>
+public sealed class PdfPage : IDisposable
 {
     // PDFium constants (fpdfview.h / fpdf_edit.h); the managed wrapper renames but does
     // not otherwise expose them.
@@ -39,7 +45,7 @@ public sealed class PdfPage : ITextPage
         FpdfTextpageT? textPage = fpdf_text.FPDFTextLoadPage(_page);
         if (textPage is null || textPage.__Instance == IntPtr.Zero)
         {
-            throw new TextPageError("Failed to load text page.");
+            throw new PdfiumError("Failed to load text page.");
         }
 
         try
@@ -114,7 +120,177 @@ public sealed class PdfPage : ITextPage
         return total == 0 ? 0.0 : (double)invisible / total;
     }
 
-    public GrayPixels Render(double scale)
+    /// <summary>
+    /// The upright text runs of this page, in content order, with the statistics
+    /// (<c>textlayer.extract_runs</c>): the PDFium reading half of the module.
+    /// </summary>
+    public (List<TextLine> Runs, TextLayerStats Stats) ExtractRuns()
+    {
+        IReadOnlyList<PageChar> source = ReadChars();
+        // The linear part of the page-to-frame map: a character is upright when its baseline
+        // runs left to right once mapped through it (any /Rotate, any mirroring).
+        double[,] affine = DeviceAffine();
+
+        var upright = new Dictionary<double, bool>();
+        var bad = new Dictionary<string, int>();
+        var chars = new List<string>();
+        var rawBoxes = new List<double[]>();
+        var breaks = new List<int>(); // run ends after these positions
+        int nChars = 0, nRotated = 0, nBad = 0;
+
+        for (int i = 0; i < source.Count; i++)
+        {
+            PageChar pc = source[i];
+            string c = Chr(pc.Code);
+            if (c is "\r" or "\n")
+            {
+                breaks.Add(chars.Count);
+                continue;
+            }
+
+            if (c == "\x02")
+            {
+                c = "-"; // pdfium's mark for a hyphen at a line break
+            }
+
+            if (!UnicodeText.IsSpace(c))
+            {
+                nChars++;
+                if (!bad.TryGetValue(c, out int k))
+                {
+                    k = TextLayerReader.BadCharCount(c);
+                    bad[c] = k;
+                }
+
+                nBad += k;
+                double a = pc.Angle;
+                if (!upright.TryGetValue(a, out bool up))
+                {
+                    double cos = Math.Cos(a), sin = Math.Sin(a);
+                    double dx = affine[0, 0] * cos + affine[0, 1] * sin;
+                    double dy = affine[1, 0] * cos + affine[1, 1] * sin;
+                    up = !(dx <= 0 || Math.Abs(dy) > 1e-3 * Math.Max(Math.Abs(dx), 1e-9));
+                    upright[a] = up;
+                }
+
+                if (!up)
+                {
+                    nRotated++; // not upright on the rendered page
+                    breaks.Add(chars.Count);
+                    continue;
+                }
+            }
+
+            chars.Add(c);
+            if (!pc.HasBox)
+            {
+                throw new PdfiumError("Failed to get charbox.");
+            }
+
+            rawBoxes.Add([pc.Left, pc.Bottom, pc.Right, pc.Top]); // l, b, r, t
+        }
+
+        TextLayerStats stats = new() { Chars = nChars, Rotated = nRotated, Bad = nBad };
+        if (chars.Count == 0)
+        {
+            return ([], stats);
+        }
+
+        // Page space -> rendered frame, all characters at once: the four corners of each box
+        // (l,b), (r,b), (l,t), (r,t), then their bounding box.
+        int m = chars.Count;
+        var boxes = new double[m][];
+        var visible = new bool[m];
+        int offPage = 0;
+        double pageWidth = Width, pageHeight = Height;
+        for (int i = 0; i < m; i++)
+        {
+            double l = rawBoxes[i][0], b = rawBoxes[i][1], r = rawBoxes[i][2], t = rawBoxes[i][3];
+            double x0 = affine[0, 0] * l + affine[0, 1] * b + affine[0, 2];
+            double x1 = affine[0, 0] * r + affine[0, 1] * b + affine[0, 2];
+            double x2 = affine[0, 0] * l + affine[0, 1] * t + affine[0, 2];
+            double x3 = affine[0, 0] * r + affine[0, 1] * t + affine[0, 2];
+            double y0 = affine[1, 0] * l + affine[1, 1] * b + affine[1, 2];
+            double y1 = affine[1, 0] * r + affine[1, 1] * b + affine[1, 2];
+            double y2 = affine[1, 0] * l + affine[1, 1] * t + affine[1, 2];
+            double y3 = affine[1, 0] * r + affine[1, 1] * t + affine[1, 2];
+            var box = new[]
+            {
+                Math.Min(Math.Min(x0, x1), Math.Min(x2, x3)),
+                Math.Min(Math.Min(y0, y1), Math.Min(y2, y3)),
+                Math.Max(Math.Max(x0, x1), Math.Max(x2, x3)),
+                Math.Max(Math.Max(y0, y1), Math.Max(y2, y3)),
+            };
+            boxes[i] = box;
+
+            // Characters outside the rendered frame (beyond a crop box) are not on the page:
+            // they are dropped, not read.
+            double cx = (box[0] + box[2]) / 2, cy = (box[1] + box[3]) / 2;
+            visible[i] = cx >= 0 && cx <= pageWidth && cy >= 0 && cy <= pageHeight;
+            if (!visible[i])
+            {
+                offPage++;
+            }
+        }
+
+        stats = stats with { OffPage = offPage };
+
+        // A run is pdfium's own segment: the breaks it emits, plus the end of the text.
+        var cuts = new List<int>(breaks) { m };
+        cuts.Sort();
+        var runs = new List<TextLine>();
+        int start = 0;
+        foreach (int end in cuts)
+        {
+            var seg = new List<TextChar>();
+            for (int i = start; i < end; i++)
+            {
+                if (visible[i])
+                {
+                    seg.Add(new TextChar(chars[i], boxes[i]));
+                }
+            }
+
+            start = end;
+            double minX = double.PositiveInfinity, minY = double.PositiveInfinity;
+            double maxX = double.NegativeInfinity, maxY = double.NegativeInfinity;
+            bool anyInk = false;
+            foreach (TextChar sc in seg)
+            {
+                if (UnicodeText.IsSpace(sc.Character))
+                {
+                    continue;
+                }
+
+                anyInk = true;
+                minX = Math.Min(minX, sc.Bbox[0]);
+                minY = Math.Min(minY, sc.Bbox[1]);
+                maxX = Math.Max(maxX, sc.Bbox[2]);
+                maxY = Math.Max(maxY, sc.Bbox[3]);
+            }
+
+            if (!anyInk)
+            {
+                continue;
+            }
+
+            var text = new System.Text.StringBuilder();
+            foreach (TextChar sc in seg)
+            {
+                text.Append(sc.Character);
+            }
+
+            runs.Add(new TextLine([minX, minY, maxX, maxY], UnicodeText.CollapseSpaces(text.ToString()), seg));
+        }
+
+        return (runs, stats);
+    }
+
+    /// <summary>
+    /// Rasterises the page (<c>page.render(scale=..., grayscale=True)</c>). The returned image
+    /// owns its pixels, so it outlives this call and the page.
+    /// </summary>
+    public GrayImage Render(double scale)
     {
         ThrowIfDisposed();
         // page.render(scale=..., grayscale=True) with no rotation and no crop:
@@ -131,7 +307,7 @@ public sealed class PdfPage : ITextPage
                 width, height, BitmapGray, pin.AddrOfPinnedObject(), width);
             if (bitmap is null || bitmap.__Instance == IntPtr.Zero)
             {
-                throw new TextPageError("Failed to create bitmap.");
+                throw new PdfiumError("Failed to create bitmap.");
             }
 
             try
@@ -139,7 +315,7 @@ public sealed class PdfPage : ITextPage
                 // fill_color=(255, 255, 255, 255) -> 0xFFFFFFFF whatever the byte order.
                 if (fpdfview.FPDFBitmapFillRect(bitmap, 0, 0, width, height, 0xFFFFFFFFUL) == 0)
                 {
-                    throw new TextPageError("Failed to fill bitmap rectangle.");
+                    throw new PdfiumError("Failed to fill bitmap rectangle.");
                 }
 
                 fpdfview.FPDF_RenderPageBitmap(
@@ -150,7 +326,7 @@ public sealed class PdfPage : ITextPage
                 int stride = fpdfview.FPDFBitmapGetStride(bitmap);
                 if (stride == width)
                 {
-                    return new GrayPixels(width, height, pixels);
+                    return new GrayImage(width, height, pixels);
                 }
 
                 var packed = new byte[width * height];
@@ -159,7 +335,7 @@ public sealed class PdfPage : ITextPage
                     Buffer.BlockCopy(pixels, y * stride, packed, y * width, width);
                 }
 
-                return new GrayPixels(width, height, packed);
+                return new GrayImage(width, height, packed);
             }
             finally
             {
@@ -182,6 +358,13 @@ public sealed class PdfPage : ITextPage
     }
 
     /// <summary>
+    /// Python's <c>chr</c>: one code unit, or a surrogate pair for an astral code point.
+    /// <c>FPDFText_GetUnicode</c> hands out UTF-16 code units, so lone surrogates are normal.
+    /// </summary>
+    private static string Chr(uint code)
+        => code <= 0xFFFF ? ((char)code).ToString() : char.ConvertFromUtf32((int)code);
+
+    /// <summary>
     /// Walks the page's object tree the way <c>page.get_objects(max_depth=...)</c> does:
     /// objects in order, form objects descended into after themselves.
     /// </summary>
@@ -195,7 +378,7 @@ public sealed class PdfPage : ITextPage
             : fpdf_edit.FPDFFormObjCountObjects(form);
         if (count < 0)
         {
-            throw new TextPageError("Failed to get number of pageobjects.");
+            throw new PdfiumError("Failed to get number of pageobjects.");
         }
 
         for (int i = 0; i < count; i++)
@@ -205,7 +388,7 @@ public sealed class PdfPage : ITextPage
                 : fpdf_edit.FPDFFormObjGetObject(form, (ulong)i);
             if (obj is null || obj.__Instance == IntPtr.Zero)
             {
-                throw new TextPageError("Failed to get pageobject.");
+                throw new PdfiumError("Failed to get pageobject.");
             }
 
             int type = fpdf_edit.FPDFPageObjGetType(obj);

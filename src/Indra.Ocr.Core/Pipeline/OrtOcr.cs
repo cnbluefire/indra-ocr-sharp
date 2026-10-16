@@ -122,6 +122,22 @@ public sealed class OrtOcr : IDisposable
 
     // ------------------------------------------------------------------ the steps
 
+    /// <summary>
+    /// <c>is_pdf</c>: the file's own bytes say PDF (the header may follow a little junk).
+    /// </summary>
+    /// <remarks>
+    /// The reference's <c>is_pdf</c> is a module function of <c>pipeline.py</c>; it lives here
+    /// because this class is that module's other half. A file that cannot be read at all throws
+    /// (the caller checks it exists first).
+    /// </remarks>
+    public static bool IsPdf(string path)
+    {
+        using FileStream stream = File.OpenRead(path);
+        var head = new byte[1024];
+        int n = stream.ReadAtLeast(head, head.Length, throwOnEndOfStream: false);
+        return head.AsSpan(0, n).IndexOf("%PDF-"u8) >= 0;
+    }
+
     /// <summary><c>detect</c>: the page's visual lines, <c>[N, 5]</c> (<c>x0 y0 x1 y1 score</c>)
     /// in page pixels.</summary>
     public float[] Detect(GrayImage gray) => Detector.Run(_det, gray, LongSide, Adaptive);
@@ -141,15 +157,16 @@ public sealed class OrtOcr : IDisposable
     /// <c>upright</c>: the page turned upright (orientation model) and straightened (skew search).
     /// </summary>
     /// <returns>
-    /// The upright page — or <c>null</c> when the page did not change, in which case the caller's
-    /// buffer is still the page (the reference returns the same array object then) — the quarter
-    /// turns undone, and the degrees of skew undone.
+    /// The upright page — the caller's own view when the page did not change (the reference
+    /// returns the same array object then) — the quarter turns undone, and the degrees of skew
+    /// undone. A changed page is backed by the buffer the deskew/rotation produced, which the
+    /// result keeps alive.
     /// </returns>
-    public (GrayPixels? Page, int Turns, double Skew) Upright(GrayImage gray, bool turn = true)
+    public UprightPage Upright(GrayImage gray, bool turn = true)
     {
         byte[]? page = Orient.Upright(turn ? _orient : null, gray,
                                       out int width, out int height, out int turns, out double skew);
-        return (page is null ? null : new GrayPixels(width, height, page), turns, skew);
+        return new UprightPage(page is null ? gray : new GrayImage(width, height, page), turns, skew);
     }
 
     /// <summary><c>assemble</c>: lines split at wide gaps, reading order, markdown.</summary>
@@ -210,11 +227,11 @@ public sealed class OrtOcr : IDisposable
     {
         var timings = new Dictionary<string, double>();
         var clock = Stopwatch.StartNew();
-        (GrayPixels? uprightPage, int turns, double skew) = Upright(gray, turn);
+        UprightPage up = Upright(gray, turn);
         timings["orient_ms"] = clock.Elapsed.TotalMilliseconds;
         clock.Restart();
 
-        GrayImage upright = uprightPage is null ? gray : uprightPage.View;
+        GrayImage upright = up.Page;
         float[] boxes = Detect(upright);
         timings["det_ms"] = clock.Elapsed.TotalMilliseconds;
         clock.Restart();
@@ -228,21 +245,21 @@ public sealed class OrtOcr : IDisposable
         // Boxes back on the page as turned, before the deskew.
         IReadOnlyList<OcrLine> lines = assembled.Lines;
         IReadOnlyList<LayoutBlock> blocks = assembled.Blocks;
-        if (skew != 0)
+        if (up.Skew != 0)
         {
             Span<double> box = stackalloc double[4];
 
             var unrotatedLines = new List<OcrLine>(lines.Count);
             foreach (OcrLine line in lines)
             {
-                Orient.UnrotateBox(line.Box.ToArray(), skew, upright.Width, upright.Height, box);
+                Orient.UnrotateBox(line.Box.ToArray(), up.Skew, upright.Width, upright.Height, box);
                 unrotatedLines.Add(new OcrLine(box.ToArray(), line.Text, line.Confidence));
             }
 
             var unrotatedBlocks = new List<LayoutBlock>(blocks.Count);
             foreach (LayoutBlock block in blocks)
             {
-                Orient.UnrotateBox(block.Bbox, skew, upright.Width, upright.Height, box);
+                Orient.UnrotateBox(block.Bbox, up.Skew, upright.Width, upright.Height, box);
                 unrotatedBlocks.Add(new LayoutBlock(block.Label, box.ToArray(), block.Text));
             }
 
@@ -251,7 +268,8 @@ public sealed class OrtOcr : IDisposable
         }
 
         return new OcrPage(lines, assembled.Timings, assembled.Markdown, assembled.Source,
-                           assembled.Note, blocks, 90 * turns, Numerics.RoundHalfEven(skew, 2));
+                           assembled.Note, blocks, 90 * up.Turns,
+                           Numerics.RoundHalfEven(up.Skew, 2));
     }
 
     public void Dispose()
@@ -261,4 +279,34 @@ public sealed class OrtOcr : IDisposable
         _disposed = true;
         _models.Dispose();
     }
+}
+
+/// <summary>
+/// What <see cref="OrtOcr.Upright"/> produced: the page as it should be read, the quarter turns
+/// undone and the degrees of skew undone.
+/// </summary>
+/// <remarks>
+/// The reference returns the tuple <c>(gray, k, skew)</c>, where <c>gray</c> is the very array it
+/// was given when nothing changed. A tuple cannot carry a <see cref="GrayImage"/>
+/// (<c>ref struct</c>s are not valid type arguments), hence this type; <see cref="Page"/> is the
+/// caller's own view in the unchanged case and a memory-backed image over the new buffer
+/// otherwise.
+/// </remarks>
+public readonly ref struct UprightPage
+{
+    public UprightPage(GrayImage page, int turns, double skew)
+    {
+        Page = page;
+        Turns = turns;
+        Skew = skew;
+    }
+
+    /// <summary>The page to detect and recognize: upright and straightened.</summary>
+    public GrayImage Page { get; }
+
+    /// <summary>Quarter turns undone (<c>Page.rotation</c> is <c>90 * Turns</c>).</summary>
+    public int Turns { get; }
+
+    /// <summary>Degrees of skew undone (the boxes are mapped back through it).</summary>
+    public double Skew { get; }
 }

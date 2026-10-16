@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Indra.Ocr.Hosting;
+using Indra.Ocr.Images;
 using Indra.Ocr.Imaging;
 
 namespace Indra.Ocr.Tests;
@@ -23,9 +23,11 @@ public class ImageDecodeTests
             File.WriteAllBytes(path, bytes);
 
             var expectedFrames = c.GetProperty("frames").EnumerateArray().ToList();
-            int frame = 0;
-            ImageFiles.ReadImages(path, got =>
+            var frames = ImageFiles.ReadImages(path);
+            Assert.Equal(expectedFrames.Count, frames.Count);
+            for (int frame = 0; frame < frames.Count; frame++)
             {
+                GrayImage got = frames[frame];
                 var expRows = expectedFrames[frame].EnumerateArray().ToList();
                 Assert.Equal(expRows.Count, got.Height);
                 Assert.Equal(expRows[0].GetArrayLength(), got.Width);
@@ -36,9 +38,7 @@ public class ImageDecodeTests
                         Assert.True(row[x] == got[y, x],
                             $"{name} frame {frame} at ({y},{x}): expected {row[x]} got {got[y, x]}");
                 }
-                frame++;
-            });
-            Assert.Equal(expectedFrames.Count, frame);
+            }
         }
     }
 }

@@ -13,7 +13,7 @@ status. Keep these in sync with `PLAN.md`.
 | [012](012-project-layout.md) | Project layout: `src/`, `Indra.Ocr.Pdf`, `GrayImage`, no codec in Core |
 | [015](015-test-scaffolding.md) | Test scaffolding |
 | [020](020-numeric-ops.md) | NumericOps (numpy parity) |
-| [030](030-image-codecs.md) | Gray image types + host image codecs |
+| [030](030-image-codecs.md) | Gray image types + image codecs (`Indra.Ocr`) |
 | [040](040-opencv-primitives.md) | OpenCV primitives (resize, warpAffine, CCL) |
 | [050](050-vocab.md) | Vocab + Unicode helpers |
 | [060](060-ort-sessions.md) | ORT sessions + model set |
@@ -32,7 +32,8 @@ status. Keep these in sync with `PLAN.md`.
 | [145](145-bidi-classes.md) | Unicode bidi class table |
 | [150](150-textlayer.md) | textlayer |
 | [155](155-ortocr.md) | OrtOCR (whole-page driver) |
-| 160 | document Converter |
+| [160](160-document.md) | document Converter (PDF + image) |
+| [165](165-project-split.md) | Three-way split: `Indra.Ocr` / `Indra.Ocr.Pdf` / `Core` |
 | 170 | models |
 | 180 | CLI |
 | 190 | convert_many + output |

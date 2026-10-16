@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text.Json;
-using Indra.Ocr.Hosting;
+using Indra.Ocr.Images;
 using Indra.Ocr.Imaging;
 using Indra.Ocr.Pipeline;
 using Indra.Ocr.Rec;
@@ -71,7 +71,7 @@ public class OrtOcrTests
     }
 
     /// <summary>Decodes the example page with the host decoder and checks what was recorded.</summary>
-    private static GrayPixels Decode(JsonElement input)
+    private static GrayImage Decode(JsonElement input)
     {
         string name = input.GetProperty("name").GetString()!;
         string path = Path.Combine(Resources!, input.GetProperty("file").GetString()!);
@@ -79,37 +79,41 @@ public class OrtOcrTests
         Assert.True(Sha256(bytes) == input.GetProperty("sha256").GetString(),
                     $"{name}: the example page changed — regenerate fixtures/pipeline.json");
 
-        var frames = new List<GrayPixels>();
-        ImageFiles.ReadImages(path, image =>
-            frames.Add(new GrayPixels(image.Width, image.Height, image.Data.ToArray())));
-        Assert.True(frames.Count == 1, $"{name}: {frames.Count} frames");
-        GrayPixels gray = frames[0];
-        Assert.True(gray.Height == input.GetProperty("h").GetInt32() &&
-                    gray.Width == input.GetProperty("w").GetInt32(),
-                    $"{name}: decoded {gray.Height}x{gray.Width}, expected " +
+        byte[]? pixels = null;
+        int w = 0, h = 0, frames = 0;
+        foreach (GrayImageData frame in ImageFiles.ReadImages(path))
+        {
+            frames++;
+            pixels = frame.Data.ToArray();
+            w = frame.Width;
+            h = frame.Height;
+        }
+        Assert.True(frames == 1, $"{name}: {frames} frames");
+        Assert.True(h == input.GetProperty("h").GetInt32() && w == input.GetProperty("w").GetInt32(),
+                    $"{name}: decoded {h}x{w}, expected " +
                     $"{input.GetProperty("h").GetInt32()}x{input.GetProperty("w").GetInt32()}");
-        return gray;
+        return new GrayImage(w, h, pixels!);
     }
 
     /// <summary>Applies the case's derivation, exactly as the generator did.</summary>
-    private static GrayPixels Derive(GrayPixels gray, JsonElement derive)
+    private static GrayImage Derive(GrayImage gray, JsonElement derive)
     {
         if (derive.ValueKind == JsonValueKind.Null)
             return gray;
         if (derive.TryGetProperty("rot90", out var turnsElement))
         {
             int turns = turnsElement.GetInt32();
-            var rotated = new byte[gray.Pixels.Length];
-            Orientation.Rotate90(gray.View, rotated, turns);
+            var rotated = new byte[gray.PixelCount];
+            Orientation.Rotate90(gray, rotated, turns);
             bool swapped = turns % 2 != 0;
-            return new GrayPixels(swapped ? gray.Height : gray.Width,
-                                  swapped ? gray.Width : gray.Height, rotated);
+            return new GrayImage(swapped ? gray.Height : gray.Width,
+                                 swapped ? gray.Width : gray.Height, rotated);
         }
 
         double degrees = derive.GetProperty("rotate_page").GetDouble();
-        var tilted = new byte[gray.Pixels.Length];
-        Orientation.RotatePage(gray.View, degrees, tilted, gray.Width);
-        return new GrayPixels(gray.Width, gray.Height, tilted);
+        var tilted = new byte[gray.PixelCount];
+        Orientation.RotatePage(gray, degrees, tilted, gray.Width);
+        return new GrayImage(gray.Width, gray.Height, tilted);
     }
 
     private static OrtOcr Open(JsonElement options)
@@ -237,17 +241,17 @@ public class OrtOcrTests
         foreach (var c in Fx.GetProperty("cases").EnumerateArray())
         {
             string name = c.GetProperty("name").GetString()!;
-            GrayPixels gray = Derive(Decode(Input(c.GetProperty("input").GetString()!)),
+            GrayImage gray = Derive(Decode(Input(c.GetProperty("input").GetString()!)),
                                      c.GetProperty("derive"));
-            Assert.True(Sha256(gray.Pixels) == c.GetProperty("gray_sha256").GetString(),
+            Assert.True(Sha256(gray.Data) == c.GetProperty("gray_sha256").GetString(),
                         $"{name}: the derived page differs — regenerate fixtures/pipeline.json");
 
             var options = c.GetProperty("options");
             bool turn = options.GetProperty("turn").GetBoolean();
             using var ocr = Open(options);
 
-            var (upright, _, _) = ocr.Upright(gray.View, turn);
-            GrayImage view = upright is null ? gray.View : upright.View;
+            UprightPage upright = ocr.Upright(gray, turn);
+            GrayImage view = upright.Page;
 
             float[] boxes = ocr.Detect(view);
             var wantDetect = c.GetProperty("detect");
@@ -257,7 +261,7 @@ public class OrtOcrTests
                        $"{name}: detect");
 
             AssertRecognition(c.GetProperty("rec"), ocr.Recognize(view, boxes), name);
-            AssertPage(c.GetProperty("page"), ocr.Call(gray.View, turn), name);
+            AssertPage(c.GetProperty("page"), ocr.Call(gray, turn), name);
             cases++;
         }
 

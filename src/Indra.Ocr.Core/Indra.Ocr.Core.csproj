@@ -5,8 +5,9 @@
     <AssemblyName>Indra.Ocr.Core</AssemblyName>
   </PropertyGroup>
 
-  <!-- No third-party image-codec or PDF dependency: Core consumes handwritten grayscale
-       pixels (Indra.Ocr.Imaging.BitmapData) and samples ONNX models. -->
+  <!-- No third-party image-codec or PDF dependency: Core consumes grayscale pixels
+       (Indra.Ocr.Imaging.GrayImage) and samples ONNX models. The two decoders (Indra.Ocr for
+       image files, Indra.Ocr.Pdf for PDFs) reference Core; Core references neither. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
   </ItemGroup>

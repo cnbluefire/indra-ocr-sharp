@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Indra.Ocr.Imaging;
 using Indra.Ocr.Pdf;
-using Indra.Ocr.Document;
+using Indra.Ocr.Text;
 
 namespace Indra.Ocr.Tests;
 
@@ -120,8 +120,8 @@ public class TextLayerTests
             int i = 0;
             foreach (var pageJson in doc.GetProperty("pages").EnumerateArray())
             {
-                using ITextPage page = pdf.LoadPage(i++);
-                var (runs, stats) = TextLayerReader.ExtractRuns(page);
+                using PdfPage page = pdf.LoadPage(i++);
+                var (runs, stats) = page.ExtractRuns();
                 var want = pageJson.GetProperty("textlayer");
                 AssertStats(want.GetProperty("stats"), stats);
                 AssertRuns(want.GetProperty("runs"), runs);
@@ -138,11 +138,13 @@ public class TextLayerTests
             int i = 0;
             foreach (var pageJson in doc.GetProperty("pages").EnumerateArray())
             {
-                using ITextPage page = pdf.LoadPage(i++);
+                using PdfPage page = pdf.LoadPage(i++);
                 var want = pageJson.GetProperty("textlayer");
 
                 var render = page.Render(CheckScale);
-                TextLayer layer = TextLayerReader.ReadTextLayer(page, render.View, CheckScale);
+                TextLayer layer = TextLayerReader.ReadTextLayer(
+                    render, CheckScale, page.InvisibleTextFraction(), (page.Width, page.Height),
+                    () => page.ExtractRuns());
 
                 var size = Fixtures.DoubleArray(pageJson.GetProperty("size"));
                 Same(size[0], layer.Size.Width);
@@ -175,24 +177,26 @@ public class TextLayerTests
     {
         var doc = Documents().Single(d => d.Name == "text").Doc;
         using PdfDocument pdf = Open(doc);
-        using ITextPage page = pdf.LoadPage(0);
-        var (runs, _) = TextLayerReader.ExtractRuns(page);
+        using PdfPage page = pdf.LoadPage(0);
+        var (runs, _) = page.ExtractRuns();
         Assert.True(runs.Count > 0);
 
         var white = new byte[200 * 120];
         Array.Fill(white, (byte)255);
-        var gray = new GrayPixels(200, 120, white).View;
+        var gray = new GrayImage(200, 120, white);
 
         Same(1.0, TextLayerReader.NoInkFraction(gray, runs, 1.0));
 
-        TextLayer layer = TextLayerReader.ReadTextLayer(page, gray, 1.0);
+        TextLayer layer = TextLayerReader.ReadTextLayer(
+            gray, 1.0, page.InvisibleTextFraction(), (page.Width, page.Height),
+            () => page.ExtractRuns());
         Assert.False(layer.Trusted);
         Assert.Equal("100% of text runs have no ink", layer.Reason);
         Same(1.0, layer.Stats.NoInk!.Value);
 
         // And the real render of the page does have ink under every run.
         var real = page.Render(CheckScale);
-        Same(0.0, TextLayerReader.NoInkFraction(real.View, runs, CheckScale));
+        Same(0.0, TextLayerReader.NoInkFraction(real, runs, CheckScale));
     }
 
     [Fact]

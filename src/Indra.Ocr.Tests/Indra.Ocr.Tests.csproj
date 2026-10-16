@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
@@ -16,11 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
     <ProjectReference Include="..\Indra.Ocr.Pdf\Indra.Ocr.Pdf.csproj" />
-  </ItemGroup>
-
-  <!-- The host-side image decoder, shared verbatim with Cli / Viewer. -->
-  <ItemGroup>
-    <Compile Include="..\Shared\ImageFiles.cs" Link="Hosting\ImageFiles.cs" />
+    <ProjectReference Include="..\Indra.Ocr\Indra.Ocr.csproj" />
   </ItemGroup>
 
   <ItemGroup>

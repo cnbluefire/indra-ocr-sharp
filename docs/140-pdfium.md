@@ -2,6 +2,11 @@
 
 **Status:** done.
 
+> **The `ITextDocument`/`ITextPage` seam was deleted by [`165`](165-project-split.md).**
+> `PdfDocument`/`PdfPage` implement `IDisposable` directly, `PageChar` and `PdfiumError` stay in
+> this project, `LoadPage` returns `PdfPage`, and the text-layer policy moved to Core
+> (`Indra.Ocr.Text.TextLayerReader`), which takes `Func<...>` so the runs are still read lazily.
+
 ## Goal
 
 The `Indra.Ocr.Pdf` project: open a PDF (path or bytes, with an optional password) and expose
