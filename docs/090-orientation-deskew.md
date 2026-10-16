@@ -82,9 +82,10 @@ Ported pieces:
   Verified against numpy 2.5.4: 0 mismatches over both angle grids for every `b` on the 0.5
   grid, and over 4000 random triples.
 - **The float32 sums** (`Numerics.Sum32`, `Mean32`). `r.sum(1)`, `(d**2).sum()` and `ink.mean()`
-  are float32 reductions, i.e. order-dependent. The port uses numpy's own *pairwise* algorithm
-  (`npy_pairwise_sum_FLOAT`: plain sum below 8, eight accumulators up to 128, then bisection) —
-  numpy's portable implementation. See the deviation below.
+  are float32 reductions, i.e. order-dependent, so the port transcribes numpy's own pairwise
+  algorithm exactly (`npy_pairwise_sum_FLOAT`: plain sum below 8, eight accumulators up to 128,
+  then a bisection whose split is rounded down to a multiple of 8). Contiguous 1-D reductions are
+  **bit-exact** — see the note below.
 - **`**2`** is exactly `x*x` for float32 in numpy (verified: `d**2 == d*d` over random data), so
   the port squares in place.
 - **`getRotationMatrix2D`** rounds its centre to `Point2f` (step `040`); the centre is always a
@@ -126,20 +127,25 @@ case where the reference hands back the same array object. The `turn` flag is `m
 
 ## Deviations
 
-- **numpy's SIMD float32 reduction.** For a *contiguous* float32 reduction numpy dispatches to a
-  CPU-specific SIMD kernel (8 or 16 lanes, several accumulators, an unrolled loop), not to the
-  pairwise function above. The two agree for `n <= 8` and coincide at 128 by construction; above
-  that they differ in the last ulp (probes on this AVX2 machine: sizes 130, 200, 800, 640000 all
-  differ). The tree is an implementation detail that changes with the CPU and the numpy build —
-  the reference loses reproducibility there just as it does with `argsort` (see `AGENTS.md`) — so
-  the port fixes the portable numpy algorithm instead and the *input* to the comparison is where
-  it could show: `estimate_skew` ranks 32 candidate angles by their sharpness. The fixture
-  asserts every candidate's sharpness to within `1e-5` relative (worst observed: **2.3e-7**) and
-  asserts the angle the search picks — the value the pipeline prints and acts on — **exactly**,
-  on 9 pages, including a random-noise page (mean ink 0.50) whose profile has no real peak.
-  `ink.mean() < 0.003` is likewise a float32 reduction, so a page whose mean is within ~1e-7 of
-  the cut could take the other branch; the fixture pins the decision on a blank page (mean
-  exactly 0) and on 11 real ones.
+- **Float32 reductions are bit-exact** (corrected in step `155`; this was listed here as a "numpy
+  SIMD kernel" deviation, which it was not). `PairwiseSum32` was missing numpy's `n2 -= n2 % 8`
+  in its recursive case, and *that* is what produced the last-ulp differences the earlier probe
+  saw above ~130 elements. numpy's contiguous float32 reduction *is* that pairwise tree — the
+  eight accumulators are AVX2's eight float32 lanes, so a vectorised build keeps the same tree.
+  With the rounding restored, `Numerics.Sum32`/`Mean32` reproduce numpy bit for bit: 0 mismatches
+  over 404 sizes (1..400, 512, 1000, 4096, 65536, 640000) and over 2-D row sums, pinned by
+  `fixtures/numerics.json` (`sum32`). `estimate_skew`'s sharpness profile and the
+  `ink.mean() < 0.003` decision are exact too; the fixture keeps its `1e-5` relative allowance on
+  the sharpness values as headroom for the scalar `WarpAffine32f` below, and its observed
+  deviation is now **0**. `fixtures/pipeline.json` (step `155`) compares the recognizer's
+  confidence — the other pipeline use of a float32 mean — exactly, on 10 cases.
+- **numpy's *strided* 2-D mean is a different iteration**, and is not reproduced. Only the test's
+  stand-in for `orient.onnx` (`gen_orient_fixtures.py`'s `standin_p`: `ink[:h, :w].mean()` of a
+  768×768 ink map, i.e. a 2-D view carrying the parent's row stride) uses one. The port sums each
+  quadrant's rows with the contiguous tree and differs in the last ulp (probe: 2 of 4 quadrants),
+  so that fixture keeps its `1e-5` tolerance — while asserting the stand-in's *decision* exactly.
+  No pipeline code reduces a strided axis: the recognizer's confidence is a masked contiguous
+  slice, and the order model's logits are contiguous rows.
 - **`np.exp`-style kernel differences do not apply here.** `CvWarpAffine.WarpAffine32f` is
   scalar (step `040` noted that OpenCV's FMA vector path can differ in the last bit), which
   feeds the same sharpness tolerance.

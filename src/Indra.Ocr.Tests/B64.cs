@@ -43,6 +43,24 @@ public static class B64
         return a;
     }
 
+    /// <summary>Inflated little-endian int32 array.</summary>
+    public static int[] ZInts(string s)
+    {
+        var raw = Inflate(s);
+        var a = new int[raw.Length / 4];
+        for (int i = 0; i < a.Length; i++) a[i] = BinaryPrimitives.ReadInt32LittleEndian(raw.AsSpan(i * 4));
+        return a;
+    }
+
+    /// <summary>Inflated little-endian float64 array.</summary>
+    public static double[] ZDoubles(string s)
+    {
+        var raw = Inflate(s);
+        var a = new double[raw.Length / 8];
+        for (int i = 0; i < a.Length; i++) a[i] = BinaryPrimitives.ReadDoubleLittleEndian(raw.AsSpan(i * 8));
+        return a;
+    }
+
     /// <summary>Reads a 16-character little-endian hex string (``struct.pack('&lt;d', x).hex()``)
     /// as a double, so fixtures can carry exact bit patterns including <c>-0.0</c>.</summary>
     public static double HexDouble(string s) => BinaryPrimitives.ReadDoubleLittleEndian(Convert.FromHexString(s));

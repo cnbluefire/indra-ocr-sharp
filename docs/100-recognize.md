@@ -118,16 +118,13 @@ Port notes:
 
 ## Deviations
 
-- **The confidence is a float32 mean** (`pm[keep].mean()`), i.e. numpy's CPU-specific SIMD
-  reduction again (see `docs/090-orientation-deskew.md` and `AGENTS.md`): the port uses numpy's
-  portable pairwise sum (`Numerics.Mean32`). A probe over uniform random float32 arrays in
-  `[0.55, 0.95]` (sizes 1-200) found 9.6% of means differing, worst **2.4e-7** relative, and none
-  below 8 elements; on the fixture's 61 real lines none differ. Unlike `estimate_skew`'s ranking,
-  this value reaches the output: `cli.py` writes `asdict(line)` into the JSON, so a machine whose
-  numpy build sums differently could show a last-ulp difference in a line's `"conf"`. The related
-  risk is the `MIN_CONF` gate itself — a line whose mean sits within an ulp of `0.5` could be
-  printed by one side and blanked by the other; the fixture's closest is 2.245e-3, and the mean of
-  a real line concentrates around the model's own confidence, so this stays a curiosity rather than
-  a practical divergence.
+- **The confidence is a float32 mean** (`pm[keep].mean()`), i.e. numpy's contiguous pairwise
+  reduction, which the port now reproduces bit for bit (`Numerics.Mean32`; step `155` added the
+  `n2 % 8` rounding the transcription had lost — see `docs/090-orientation-deskew.md`). `pm[keep]`
+  is a boolean-masked gather, so it is contiguous, and the `MIN_CONF` gate and the `"conf"` the
+  CLI prints are exact. (This used to be listed as a deviation: a probe over uniform random
+  float32 arrays in `[0.55, 0.95]`, sizes 1-200, found 9.6% of means differing, worst **2.4e-7**
+  relative — all of it the missing rounding. `fixtures/pipeline.json` now compares every line's
+  confidence exactly, on 10 cases over the example pages.)
 - Nothing else: the crops, the batching, the ids, the token x positions and the texts are compared
   exactly.

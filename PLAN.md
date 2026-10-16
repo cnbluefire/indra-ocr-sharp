@@ -16,10 +16,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - Parity: bit-exact for deterministic output; tolerance only for timings and <1e-3 floats.
 - numpy's float32 `exp` is not the CRT's `expf`, so the port reproduces numpy's own vector
   kernel (`Indra.Ocr.NpyExp`, with hardware FMA) instead of calling `MathF.Exp`; see
-  `docs/070-det-post.md`. numpy's contiguous float32 *reductions* are likewise a CPU-specific
-  SIMD kernel, so the port uses numpy's portable pairwise sum (`Numerics.Sum32`/`Mean32`) and
-  documents where the last-ulp difference can show (the `estimate_skew` ranking); see
-  `docs/090-orientation-deskew.md`.
+  `docs/070-det-post.md`. numpy's contiguous float32 *reductions* are the pairwise tree, and the
+  port transcribes it exactly (`Numerics.Sum32`/`Mean32` are bit-exact; step `155` restored the
+  split rounding the transcription had lost); see `docs/090-orientation-deskew.md`.
 - numpy's float32 `log` is the same story and gets its own kernel (`Indra.Ocr.NpyLog`), because
   the reading-order line features feed it to the order model. `np.logaddexp`'s float32 path, by
   contrast, *does* call the CRT's `expf`/`log1pf` (which is why `OrderPost` uses `MathF.Exp`);
@@ -85,15 +84,19 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `140` `Indra.Ocr.Pdf` PDFium backend — document open (path/bytes/password) with
   pypdfium2's error text, page size, the grayscale render (`FPDFBitmap_Gray`, packed, white,
   `FPDF_ANNOT|FPDF_GRAYSCALE`), the text layer's characters, the `FPDF_PageToDevice` affine and
-  the invisible-text share; the `IPdfDocument`/`IPdfPage` seam in Core keeps PDFium out of it
+  the invisible-text share; the `ITextDocument`/`ITextPage` seam in Core keeps PDFium out of it
   (`docs/140-pdfium.md`).
 - [x] `145` Unicode bidi class table (`unicodedata.bidirectional` parity, used by
   `document.py`): 2 300 generated ranges, checked at every code point
   (`docs/145-bidi-classes.md`).
 - [x] `150` `textlayer` — the text-layer runs and the verdict on them: the uprightness test
   through the page affine, the bad-character test (`unicodedata.category`), the
-  invisible-text / broken-font-map / no-ink checks and their messages, over Core's `IPdfPage`
+  invisible-text / broken-font-map / no-ink checks and their messages, over Core's `ITextPage`
   (`docs/150-textlayer.md`).
+- [x] `155` `OrtOCR` — the whole-page pipeline over a model folder: turn upright
+  (`orientation`/`upright`), `detect`, `recognize` (incl. `hanzi_lines`), `assemble`
+  (`gutter_cuts`/`split_line`/`reading_order`/`_decode`), `__call__`'s box mapping and timings
+  (`docs/155-ortocr.md`).
 - [ ] `160` `document` Converter.
 - [ ] `170` `models` model_dir + download.
 
@@ -131,7 +134,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   9967 (cjk). `order.onnx` has 4 outputs (incl. table heads); `table_heads` is off by default.
 - Layout settled: four projects under `src/` (+ `src/Shared/` linked sources); `Core` is
   free of ImageSharp/PDFium and consumes grayscale `GrayImage`.
-- Steps `000`–`150` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
+- Steps `000`–`155` done: numerics, gray decode/encode parity, bit-exact OpenCV primitives,
   the recognizer vocabulary, the ORT model set, the LineNet pre/post-processing (`DetPost`,
   with numpy's float32 `exp` reproduced bit-exactly), the line crop rule + batching
   (`RecPreproc`), the CenterMask windowing (`LineMask`), the page uprighting
@@ -149,7 +152,8 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   and the `Line`/`Page` result), and the PDFium backend (`Indra.Ocr.Pdf`: document open with
   pypdfium2's error text, page size, bit-exact grayscale renders, the text layer's characters,
   the `FPDF_PageToDevice` affine and the invisible-text share, behind Core's
-  `IPdfDocument`/`IPdfPage` seam), and the text-layer policy (`TextLayerReader`: the runs and
+  `ITextDocument`/`ITextPage` seam), the text-layer policy (`TextLayerReader`: the runs and
   the trust verdict — uprightness through the affine, the bad-character test, invisible text,
-  the ink check).
-  116 tests green, build clean.
+  the ink check), and the whole-page driver (`OrtOcr`: upright → detect → recognize → assemble,
+  with the page's boxes, markdown, blocks, source and timings).
+  121 tests green, build clean.

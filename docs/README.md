@@ -31,6 +31,7 @@ status. Keep these in sync with `PLAN.md`.
 | [140](140-pdfium.md) | PDFium backend |
 | [145](145-bidi-classes.md) | Unicode bidi class table |
 | [150](150-textlayer.md) | textlayer |
+| [155](155-ortocr.md) | OrtOCR (whole-page driver) |
 | 160 | document Converter |
 | 170 | models |
 | 180 | CLI |

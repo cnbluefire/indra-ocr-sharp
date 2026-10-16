@@ -184,10 +184,11 @@ does not.
   A different order only becomes a visible difference when it flips a `> 1e-6` gain comparison. The
   fixture's own 27 `decode_order` and 21 block cases (n ≤ 128, i.e. the whole real pipeline's range)
   agree exactly.
-- **Float32 sum tree above n = 128.** `Numerics.Sum32` is numpy's portable `pairwise_sum_FLOAT`,
-  which halves recursively above 128 elements; numpy's SIMD kernel uses a different tree there. The
-  port's largest use is `lp.sum(1)`/`cls[b].sum(0)` — block sizes and line counts are far below 128
-  in practice, and the probe above put the effect on the decoded order at 0 of 25 at n = 300.
+- **Float32 sums above n = 128 are exact too.** `Numerics.Sum32` is numpy's `pairwise_sum_FLOAT`,
+  whose recursion halves the array with the split rounded down to a multiple of 8 (step `155`
+  restored that rounding; see `docs/090-orientation-deskew.md`), so `lp.sum(1)`/`cls[b].sum(0)`
+  match numpy bit for bit. The probe above already put the effect on the decoded order at 0 of 25
+  at n = 300; that is now a property of the port rather than a coincidence.
 - **`Numerics.Log1p` was wrong** before this step: its two return branches were swapped, so the
   bit-loss correction was applied when there were no lost bits (and skipped when there were),
   giving up to 5e-4 relative error for tiny `x`. Fixed; `(float)Numerics.Log1p((double)x)` is now

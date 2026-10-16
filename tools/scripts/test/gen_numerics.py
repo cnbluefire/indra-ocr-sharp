@@ -125,6 +125,28 @@ with np.errstate(over="ignore", invalid="ignore"):
     exp_y = np.exp(exp_x)          # the specials below include inf/nan and both boundaries
 assert exp_x.dtype == np.float32 and exp_y.dtype == np.float32
 
+# ------------------------------------------------------------------ float32 reductions
+# numpy's contiguous float32 sum/mean is the *pairwise* tree (npy_pairwise_sum_FLOAT: a
+# plain sum below 8 elements, eight accumulators up to PW_BLOCKSIZE=128, then a bisection
+# whose split is rounded down to a multiple of 8).  The tree is order-dependent, so the
+# port reproduces it exactly; the sizes below straddle 8, 128 and the multiples of 8
+# where a different split shows in the last bits.  (A fresh rng: the sections above must
+# keep their values.)
+
+sum_rng = np.random.default_rng(20260616)
+sum_cases = []
+for n in (1, 7, 8, 9, 15, 16, 127, 128, 129, 135, 136, 137, 200, 1000, 4096):
+    x = sum_rng.uniform(-1.0, 1.0, n).astype(np.float32)
+    sum_cases.append(
+        {
+            "n": n,
+            "x": b64(x),
+            "sum_bits": int(np.float32(x.sum()).view(np.uint32)),
+            "mean_bits": int(np.float32(x.mean()).view(np.uint32)),
+        }
+    )
+sum_rows = sum_rng.uniform(0.0, 1.0, (9, 257)).astype(np.float32)
+
 write(
     "numerics.json",
     {
@@ -141,5 +163,11 @@ write(
         "matmul": matmul_case,
         "matmulf": matmulf_case,
         "exp_f32": {"n": int(exp_x.size), "x": b64(exp_x), "y": b64(exp_y)},
+        "sum32": sum_cases,
+        "sum32_rows": {
+            "shape": list(sum_rows.shape),
+            "x": b64(sum_rows),
+            "sum_bits": [int(v) for v in sum_rows.sum(1).view(np.uint32)],
+        },
     },
 )

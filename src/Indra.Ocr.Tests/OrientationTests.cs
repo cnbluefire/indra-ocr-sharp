@@ -111,8 +111,9 @@ public class OrientationTests
             Orientation.OrientInput(new GrayImage(w, h, page), ink);
             new StandIn().Run(ink, p);
 
-            // The quadrant means are float32 sums: numpy's SIMD reduction and the port's
-            // pairwise one differ in the last ulp (docs/090). The decision is asserted exactly.
+            // The stand-in's quadrant means are numpy's *strided* 2-D reduction, which is a
+            // different iteration from the port's contiguous pairwise tree and differs in the
+            // last ulp (docs/090). The decision is asserted exactly.
             for (int k = 0; k < 4; k++)
                 Assert.True(Math.Abs(p[k] - expected[k]) <= 1e-5f,
                             $"{name}: p[{k}] = {p[k]:R}, expected {expected[k]:R}");
@@ -169,10 +170,11 @@ public class OrientationTests
     [Fact]
     public void Estimate_skew_matches_the_reference()
     {
-        // The thumbnail is bit-exact; the sharpness values are float32 sums, so they are compared
-        // with a tolerance (numpy's SIMD reduction tree vs the port's pairwise one: the worst
-        // deviation over the fixture is 2.3e-7 relative, docs/090) while the
-        // angle the search returns �?the thing the pipeline uses �?is compared exactly.
+        // The thumbnail is bit-exact, and since step 155 so are the sharpness values (numpy's
+        // contiguous float32 reduction is the pairwise tree the port transcribes; docs/090). The
+        // tolerance below is headroom for the scalar WarpAffine32f, and its observed deviation
+        // over the fixture is 0.
+        // The angle the search returns �?the thing the pipeline uses �?is compared exactly.
         int cases = 0, profiled = 0;
         double worst = 0;
         string worstAt = "";

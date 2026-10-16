@@ -77,7 +77,7 @@ public static class Numerics
     /// </summary>
     /// <remarks>
     /// numpy dispatches contiguous float32 reductions to a CPU-specific SIMD kernel
-    /// (8/16-lane accumulators) whose tree is not part of numpy's contract â€” the fallback, and
+    /// (8/16-lane accumulators) whose tree is not part of numpy's contract â€?the fallback, and
     /// the code that runs when SIMD is unavailable, is the pairwise sum reproduced here. The
     /// SIMD tree differs from it only in the last ulp; see <c>docs/090-orientation-deskew.md</c>
     /// for where that can be observed.
@@ -90,7 +90,8 @@ public static class Numerics
 
     // numpy's npy_pairwise_sum_FLOAT: a straight sum below 8 elements, 8 accumulators up to
     // PW_BLOCKSIZE=128 elements, and a recursive bisection above it. Every accumulator is
-    // float32, so the result is order-dependent and has to be reproduced exactly.
+    // float32, so the result is order-dependent and has to be reproduced exactly â€?including
+    // the recursion's split point, which numpy rounds down to a multiple of 8.
     private const int PairwiseBlockSize = 128;
 
     private static float PairwiseSum32(ReadOnlySpan<float> a)
@@ -117,6 +118,7 @@ public static class Numerics
             return res;
         }
         int n2 = n / 2;
+        n2 -= n2 % 8;
         return PairwiseSum32(a[..n2]) + PairwiseSum32(a[n2..]);
     }
 
@@ -304,9 +306,9 @@ public static class Numerics
     /// <para>
     /// The final division is done in double, which is correctly rounded as long as
     /// <c>10**|digits|</c> is exactly representable (<c>|digits| &lt;= 22</c>, the last exact
-    /// power) and the rounded integer is below <c>2**53</c> â€” both true for page coordinates.
+    /// power) and the rounded integer is below <c>2**53</c> â€?both true for page coordinates.
     /// Validated against Python over 425 110 values (random doubles, float32-derived doubles and
-    /// boundaries) at 0â€¦4 digits: 0 differences; see <c>docs/120-layout-post.md</c>.
+    /// boundaries) at 0â€? digits: 0 differences; see <c>docs/120-layout-post.md</c>.
     /// </para>
     /// </remarks>
     public static double RoundHalfEven(double value, int digits)
@@ -360,7 +362,7 @@ public static class Numerics
     /// <remarks>
     /// While the integer and the power are exact (<c>|q| &lt; 2**53</c>, <c>digits &lt;= 22</c>) the
     /// IEEE division is already correctly rounded. Beyond that the exact rational is written as a
-    /// decimal string and parsed, which .NET also rounds correctly (nearest, ties to even) â€” the
+    /// decimal string and parsed, which .NET also rounds correctly (nearest, ties to even) â€?the
     /// page coordinates this is used on never leave the fast path.
     /// </remarks>
     private static double ScaledToDouble(BigInteger q, int digits)

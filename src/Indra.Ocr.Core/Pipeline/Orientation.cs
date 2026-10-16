@@ -219,10 +219,28 @@ public static class Orientation
                                    Span<double> dst)
     {
         if (box.Length < 4) throw new ArgumentException("need 4 box values", nameof(box));
+        UnrotateBox(box[0], box[1], box[2], box[3], degrees, width, height, dst);
+    }
+
+    /// <summary>
+    /// <c>unrotate_box</c> for a float64 box — the reference's <c>ln.box</c> / <c>b["bbox"]</c>,
+    /// which are Python floats (the line boxes were rounded to one decimal by <c>assemble</c>,
+    /// the block boxes by <c>layout_post</c>), so narrowing them to float32 would move the
+    /// corners.
+    /// </summary>
+    public static void UnrotateBox(ReadOnlySpan<double> box, double degrees, int width, int height,
+                                   Span<double> dst)
+    {
+        if (box.Length < 4) throw new ArgumentException("need 4 box values", nameof(box));
+        UnrotateBox(box[0], box[1], box[2], box[3], degrees, width, height, dst);
+    }
+
+    private static void UnrotateBox(double x0, double y0, double x1, double y1, double degrees,
+                                    int width, int height, Span<double> dst)
+    {
         if (dst.Length < 4) throw new ArgumentException("need 4 doubles", nameof(dst));
         Span<double> m = stackalloc double[6];
         CvWarpAffine.RotationMatrix2D((float)(width / 2.0), (float)(height / 2.0), -degrees, 1.0, m);
-        double x0 = box[0], y0 = box[1], x1 = box[2], y1 = box[3];
         Span<double> xs = stackalloc double[4] { x0, x1, x0, x1 };
         Span<double> ys = stackalloc double[4] { y0, y0, y1, y1 };
 

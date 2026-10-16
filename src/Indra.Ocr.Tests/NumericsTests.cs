@@ -159,6 +159,39 @@ public class NumericsTests
         }
     }
 
+    [Fact]
+    public void Float32_reductions_match_numpy()
+    {
+        // numpy's contiguous float32 sum/mean is the *pairwise* tree
+        // (npy_pairwise_sum_FLOAT: eight accumulators up to 128 elements, then a bisection
+        // whose split is rounded down to a multiple of 8). Every accumulator is float32, so
+        // the tree is order-dependent and the port reproduces it — bit for bit, not to a
+        // tolerance. `estimate_skew`'s profile and the recognizer's confidence are these
+        // reductions.
+        foreach (var c in Fx.GetProperty("sum32").EnumerateArray())
+        {
+            var x = B64.Floats(c.GetProperty("x").GetString()!);
+            Assert.Equal(c.GetProperty("n").GetInt32(), x.Length);
+            Assert.Equal(c.GetProperty("sum_bits").GetUInt32(),
+                         BitConverter.SingleToUInt32Bits(Numerics.Sum32(x)));
+            Assert.Equal(c.GetProperty("mean_bits").GetUInt32(),
+                         BitConverter.SingleToUInt32Bits(Numerics.Mean32(x)));
+        }
+
+        // r.sum(1): every row of a 2-D array, the reduction the sharpness profile does.
+        var rows = Fx.GetProperty("sum32_rows");
+        var all = B64.Floats(rows.GetProperty("x").GetString()!);
+        var shape = Fixtures.IntArray(rows.GetProperty("shape"));
+        int i = 0;
+        foreach (var want in rows.GetProperty("sum_bits").EnumerateArray())
+        {
+            Assert.Equal(want.GetUInt32(), BitConverter.SingleToUInt32Bits(
+                Numerics.Sum32(all.AsSpan(i * shape[1], shape[1]))));
+            i++;
+        }
+        Assert.Equal(shape[0], i);
+    }
+
     private static double[] ToDoubleMatrix(JsonElement e, out int rows, out int cols)
     {
         rows = e.GetArrayLength();
