@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Indra.Ocr.Py;
+namespace Indra.Ocr.ArgumentParsing;
 
 /// <summary>
 /// Python's <c>int()</c> and <c>float()</c> as argparse's <c>type=</c> uses them: what the command
@@ -13,7 +13,7 @@ namespace Indra.Ocr.Py;
 /// are unbounded, so a value past <see cref="long"/> is clamped: for the two int options the
 /// clamped value picks the same pages or the same pool size as the huge one does.
 /// </remarks>
-public static class PyNumber
+public static class ArgumentNumber
 {
     /// <summary><c>int(s)</c>, clamped to <see cref="long"/>.</summary>
     public static long ParseInt(string value)

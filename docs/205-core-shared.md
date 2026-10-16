@@ -1,6 +1,8 @@
 # 205 — shared helpers move into Core
 
-**Status:** done.
+**Status:** done. **Superseded by [245](245-host-layout.md)** for the helpers: they are the CLI's again (the viewer
+references the CLI), under C# names. `ModelFolder` and the new `PathHelper` are the part
+that stays in Core.
 
 ## Goal
 

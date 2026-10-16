@@ -1,5 +1,4 @@
-using Indra.Ocr.Argparse;
-using Indra.Ocr.Py;
+using Indra.Ocr.ArgumentParsing;
 
 namespace Indra.Ocr.Viewer;
 
@@ -34,33 +33,33 @@ internal static class ViewerParser
     internal static ArgumentParser Build()
     {
         var ap = new ArgumentParser("indra-ocr-viewer", Description);
-        ap.AddArgument(["--model-dir"], type: ArgType.Path, @default: null,
+        ap.AddArgument(["--model-dir"], type: ArgumentType.Path, @default: null,
                        help: "folder with the models (default: download from Hugging Face)");
-        SourceArgs.AddTo(ap);
-        ap.AddArgument(["--version"], action: ArgAction.Version,
+        SourceArguments.AddTo(ap);
+        ap.AddArgument(["--version"], action: ArgumentAction.Version,
                        version: $"{ProductInfo.Name} {ProductInfo.Version}");
-        ap.AddArgument(["--port"], type: ArgType.Int, @default: 8765L);
-        ap.AddArgument(["--threads"], type: ArgType.Int, @default: 4L);
-        ap.AddArgument(["--dpi"], type: ArgType.Float, @default: 200.0,
+        ap.AddArgument(["--port"], type: ArgumentType.Int, @default: 8765L);
+        ap.AddArgument(["--threads"], type: ArgumentType.Int, @default: 4L);
+        ap.AddArgument(["--dpi"], type: ArgumentType.Float, @default: 200.0,
                        help: "initial PDF render resolution");
-        ap.AddArgument(["--max-pages"], type: ArgType.Int, @default: 20L,
+        ap.AddArgument(["--max-pages"], type: ArgumentType.Int, @default: 20L,
                        help: "initial page limit per document");
-        ap.AddArgument(["--keep-furniture"], action: ArgAction.StoreTrue,
+        ap.AddArgument(["--keep-furniture"], action: ArgumentAction.StoreTrue,
                        help: "initially keep page headers and footers");
-        ap.AddArgument(["--tesseract"], action: ArgAction.StoreTrue,
+        ap.AddArgument(["--tesseract"], action: ArgumentAction.StoreTrue,
                        help: "allow comparing with Tesseract");
         ap.AddArgument(["--tesseract-lang"], @default: "eng");
-        ap.AddArgument(["--math"], action: ArgAction.StoreTrue,
+        ap.AddArgument(["--math"], action: ArgumentAction.StoreTrue,
                        help: "initially write math as LaTeX");
         return ap;
     }
 
     /// <summary>The parsed command line, as <c>viewer._main</c> reads it off the namespace.</summary>
-    internal static ViewerArgs Read(Namespace a)
+    internal static ViewerArgs Read(ParsedArguments a)
     {
-        (string mode, bool pdfOrder, bool imageOcr) = SourceArgs.Options(a);
+        (string mode, bool pdfOrder, bool imageOcr) = SourceArguments.Options(a);
         return new ViewerArgs(
-            ModelDir: a.PathOrNull("model_dir"),
+            ModelDir: a.Str("model_dir"),
             Port: a.Int("port"),
             Threads: a.Int("threads"),
             Tesseract: a.Flag("tesseract"),
@@ -78,7 +77,7 @@ internal static class ViewerParser
 
 /// <summary>What the viewer's command line produces (<c>viewer._main</c>'s locals).</summary>
 internal sealed record ViewerArgs(
-    PyPath? ModelDir,
+    string? ModelDir,
     int Port,
     int Threads,
     bool Tesseract,

@@ -152,7 +152,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `205` Shared helpers move into Core — `Py*` (namespace `Indra.Ocr.Py`) and `ModelFolder`
   (namespace `Indra.Ocr.Onnx`) leave the CLI, because the viewer is a second host that must
   agree on `--model-dir`, the environment variable, the cache and the download; this supersedes
-  the earlier "the model folder lives in the CLI" note (`docs/205-core-shared.md`).
+  the earlier "the model folder lives in the CLI" note. **Superseded by `245`** for the
+  helpers (they are the CLI's again; only `ModelFolder` and `PathHelper` stay in Core)
+  (`docs/205-core-shared.md`).
 - [x] `210` Viewer Engine — `viewer.Engine`: the uploads it keeps (five, oldest first, temp
   files and all), one warmed-up recognizer per `(math, furniture)`, and `page` under a single
   lock (PDFium is not thread-safe) — the preview (render at the converter's scale, turn upright,
@@ -163,7 +165,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   `ArgparseExit` (namespace `Indra.Ocr.Argparse`) and the new `SourceArgs` (the reference's
   `add_source_args`/`source_options` in one place), because the viewer is a second host with the
   same `--help`/`--version`/error surface and the same four source options; the CLI's 77 cases are
-  unchanged by the move (`docs/215-argparse-core.md`).
+  unchanged by the move. **Superseded by `245`**: the engine is the CLI's again
+  (namespace `Indra.Ocr.ArgumentParsing`) and the viewer references the CLI
+  (`docs/215-argparse-core.md`).  *Superseded by `245`: the engine is the CLI's again.*
 - [x] `220` Viewer HTTP layer — the reference's five routes over ASP.NET Core's minimal API
   (`GET /`+`/index.html`, `GET /info`, `POST /upload`, `POST /page`, a `404 not found` fallback),
   the answers written by a source-generated `System.Text.Json` context in the reference's key order,
@@ -187,6 +191,15 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   CLI's choice (`docs/240-viewer-http.md`).
 
 ### Phase 7 — Hardening
+- [x] `245` Host layout — the argparse port and the Python-spelling helpers go back to
+  `Indra.Ocr.Cli` (namespaces `Indra.Ocr.ArgumentParsing` and `Indra.Ocr.Cli.PythonInterop`,
+  C# names: `ArgumentAction`/`ArgumentType`/`ArgumentArity`/`ParsedArguments`/
+  `ArgumentParserExit`/`SourceArguments`, `FloatFormat`/`PythonJson`/`ArgumentNumber`/
+  `PythonText`/`ConsoleOutput`) and `Indra.Ocr.Viewer` references `Indra.Ocr.Cli`, which is
+  the reference's own shape (`viewer.py` imports from `cli.py`); `PyPath` is gone — a
+  path is a `string` and `Indra.Ocr.PathHelper` (Core) is the one place that knows Python's
+  spelling of one. No behaviour change: 177 tests, 83/83 + 20/20 + 11/11 parity cases
+  (`docs/245-host-layout.md`).
 - [ ] `250` Port python unit tests.
 - [ ] `260` End-to-end parity sweep + docs.
 
@@ -257,7 +270,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - Step `205` done: the `Py*` helpers (namespace `Indra.Ocr.Py`) and `ModelFolder`
   (`Indra.Ocr.Onnx`) moved from the CLI into Core, because the viewer is a second host that must
   agree on `--model-dir`, `INDRA_OCR_MODEL_DIR`, the Hub cache and the download; the earlier
-  "the model folder lives in the CLI" decision is superseded (`docs/205-core-shared.md`).
+  "the model folder lives in the CLI" decision is superseded (`docs/205-core-shared.md`).  *Superseded by `245` for the helpers.*
 - Step `210` done: `Indra.Ocr.Viewer`'s engine — `Upload` (the `%PDF-` prefix, the page count,
   `uuid4().hex[:12]` ids, five uploads kept, the reference's `not a PDF or a readable image`
   text) and `Page` (one warmed-up recognizer per `(math, furniture)`, everything under one lock
@@ -310,5 +323,14 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   stand-in graphs that assert the loop's invariants; `MathReaderTests` adds 21 tests and
   `NumericsTests` pins the new `Sum64`/`Mean64` against numpy (`docs/200-math.md`). The harness has
   six new math cases (83 in all), all byte-identical.
+- Step `245` done: the host layout — the argparse port and the Python-spelling helpers go back
+  to `Indra.Ocr.Cli` (namespaces `Indra.Ocr.ArgumentParsing` / `Indra.Ocr.Cli.PythonInterop`,
+  C# names: `ArgumentAction`/`ArgumentType`/`ArgumentArity`/`ParsedArguments`/
+  `ArgumentParserExit`/`SourceArguments`, `FloatFormat`/`PythonJson`/`ArgumentNumber`/
+  `PythonText`/`ConsoleOutput`) and `Indra.Ocr.Viewer` references `Indra.Ocr.Cli`, which is the
+  reference's own shape (`viewer.py` imports from `cli.py`); `PyPath` is gone — a path is a
+  `string` and Core's new `PathHelper` is the one place that knows Python's spelling of one.
+  Supersedes `205`/`215` for the helpers; no behaviour change (177 tests, 83/83 + 20/20 + 11/11)
+  (`docs/245-host-layout.md`).
 - 177 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the viewer's command
   line 20/20 and its HTTP harness 11/11.

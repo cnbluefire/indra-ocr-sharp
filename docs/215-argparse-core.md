@@ -1,6 +1,8 @@
 # 215 — the argparse engine and the shared options move into Core
 
-**Status:** done.
+**Status:** done. **Superseded by [245](245-host-layout.md)**: the engine is the CLI's
+again (namespace `Indra.Ocr.ArgumentParsing`) and the viewer references the CLI. The two
+sibling arguments below are answered by that reference instead of by Core.
 
 ## Goal
 

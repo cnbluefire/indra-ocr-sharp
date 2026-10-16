@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Indra.Ocr.Py;
+namespace Indra.Ocr.Cli.PythonInterop;
 
 /// <summary>
 /// Python's <c>json.dumps</c> with <c>ensure_ascii=False</c> — the spelling of strings and numbers
@@ -13,7 +13,7 @@ namespace Indra.Ocr.Py;
 /// characters (with <c>\b \f \n \r \t</c> spelled out) and writes floats with
 /// <c>float.__repr__</c>. The shapes are built by hand, so no serializer can disagree.
 /// </remarks>
-public static class PyJson
+public static class PythonJson
 {
     /// <summary><c>json.dumps(s)</c> for a string.</summary>
     public static string Str(string value)
@@ -80,7 +80,7 @@ public static class PyJson
             return "-Infinity";
         }
 
-        return PyFloat.Repr(value);
+        return FloatFormat.Repr(value);
     }
 
     /// <summary><c>json.dumps(i)</c> for an integer.</summary>

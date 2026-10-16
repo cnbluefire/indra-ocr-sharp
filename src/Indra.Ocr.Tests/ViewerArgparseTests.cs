@@ -1,4 +1,4 @@
-using Indra.Ocr.Argparse;
+using Indra.Ocr.ArgumentParsing;
 using Indra.Ocr.Viewer;
 
 namespace Indra.Ocr.Tests;
@@ -14,10 +14,10 @@ namespace Indra.Ocr.Tests;
 /// </remarks>
 public class ViewerArgparseTests
 {
-    private static Namespace Parse(params string[] argv) => ViewerParser.Build().ParseArgs(argv);
+    private static ParsedArguments Parse(params string[] argv) => ViewerParser.Build().ParseArgs(argv);
 
-    private static ArgparseExit Fail(params string[] argv)
-        => Assert.Throws<ArgparseExit>(() => ViewerParser.Build().ParseArgs(argv));
+    private static ArgumentParserExit Fail(params string[] argv)
+        => Assert.Throws<ArgumentParserExit>(() => ViewerParser.Build().ParseArgs(argv));
 
     private static string Fixture(string name)
         => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", name));
@@ -34,7 +34,7 @@ public class ViewerArgparseTests
     [Fact]
     public void Version_matches_the_reference()
     {
-        ArgparseExit exit = Assert.Throws<ArgparseExit>(() => Parse("--version"));
+        ArgumentParserExit exit = Assert.Throws<ArgumentParserExit>(() => Parse("--version"));
         Assert.Equal(0, exit.Status);
         Assert.Equal("", exit.Stderr);
         Assert.Equal(Normalize(Fixture("viewer_version.txt")), Normalize(exit.Stdout));
@@ -43,7 +43,7 @@ public class ViewerArgparseTests
     [Fact]
     public void Errors_are_argparse_wording_and_exit_two()
     {
-        ArgparseExit nope = Fail("--nope");
+        ArgumentParserExit nope = Fail("--nope");
         Assert.Equal(2, nope.Status);
         Assert.Equal("", nope.Stdout);
         Assert.EndsWith("indra-ocr-viewer: error: unrecognized arguments: --nope\n", nope.Stderr);
@@ -62,7 +62,7 @@ public class ViewerArgparseTests
     [Fact]
     public void Ambiguous_abbreviation_lists_the_matches_in_option_order()
     {
-        ArgparseExit exit = Fail("--t", "x");
+        ArgumentParserExit exit = Fail("--t", "x");
         Assert.Equal("indra-ocr-viewer: error: ambiguous option: --t could match --threads, " +
                      "--tesseract, --tesseract-lang\n",
                      exit.Stderr[exit.Stderr.IndexOf("indra-ocr-viewer: error:")..]);
@@ -98,7 +98,7 @@ public class ViewerArgparseTests
         Assert.Equal(1, a.Threads);
         Assert.True(a.Tesseract);
         Assert.Equal("deu", a.TesseractLang);
-        Assert.Equal("temp\\models", a.ModelDir!.Value.ToString());
+        Assert.Equal("temp\\models", a.ModelDir);
         Assert.Equal("text", a.Defaults.Mode);
         Assert.False(a.Defaults.PdfOrder);
         Assert.False(a.Defaults.ImageOcr);

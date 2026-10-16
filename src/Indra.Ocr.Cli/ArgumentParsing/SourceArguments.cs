@@ -1,11 +1,12 @@
-namespace Indra.Ocr.Argparse;
+namespace Indra.Ocr.ArgumentParsing;
 
 /// <summary>
 /// <c>cli.add_source_args</c> and <c>cli.source_options</c>: the text-layer/OCR group. Both hosts
-/// add it — the reference's <c>viewer.py</c> imports the pair from <c>cli.py</c> — so it lives
-/// beside the parser rather than in either of them, and the two help texts cannot drift apart.
+/// add it — the reference's <c>viewer.py</c> imports the pair from <c>cli.py</c>, and the viewer
+/// project references this one — so it lives beside the parser, and the two help texts cannot
+/// drift apart.
 /// </summary>
-public static class SourceArgs
+public static class SourceArguments
 {
     /// <summary>The group's title, as <c>add_argument_group</c> spells it.</summary>
     public const string Title = "text layer or OCR (PDFs)";
@@ -23,15 +24,15 @@ public static class SourceArgs
                   "checks fail");
         group.AddArgument(
             ["--model-order"],
-            action: ArgAction.StoreTrue,
+            action: ArgumentAction.StoreTrue,
             help: "order text-layer lines with the order model, not the PDF content order");
         group.AddArgument(
             ["--no-image-ocr"],
-            action: ArgAction.StoreTrue,
+            action: ArgumentAction.StoreTrue,
             help: "on text-layer pages, do not OCR text inside images");
     }
 
     /// <summary><c>cli.source_options</c>: the mode, and the two flags the options invert.</summary>
-    public static (string Mode, bool PdfOrder, bool ImageOcr) Options(Namespace a)
+    public static (string Mode, bool PdfOrder, bool ImageOcr) Options(ParsedArguments a)
         => (a.Str("mode") ?? "auto", !a.Flag("model_order"), !a.Flag("no_image_ocr"));
 }

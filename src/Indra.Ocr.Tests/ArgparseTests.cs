@@ -1,6 +1,5 @@
+using Indra.Ocr.ArgumentParsing;
 using Indra.Ocr.Cli;
-using Indra.Ocr.Argparse;
-using Indra.Ocr.Py;
 
 namespace Indra.Ocr.Tests;
 
@@ -16,10 +15,10 @@ namespace Indra.Ocr.Tests;
 /// </remarks>
 public class ArgparseTests
 {
-    private static Namespace Parse(params string[] argv) => CliParser.Build().ParseArgs(argv);
+    private static ParsedArguments Parse(params string[] argv) => CliParser.Build().ParseArgs(argv);
 
-    private static ArgparseExit Fail(params string[] argv)
-        => Assert.Throws<ArgparseExit>(() => CliParser.Build().ParseArgs(argv));
+    private static ArgumentParserExit Fail(params string[] argv)
+        => Assert.Throws<ArgumentParserExit>(() => CliParser.Build().ParseArgs(argv));
 
     private static string Normalize(string text) => text.Replace("\r\n", "\n");
 
@@ -34,7 +33,7 @@ public class ArgparseTests
     [Fact]
     public void Help_short_flag_prints_the_same_help()
     {
-        ArgparseExit exit = Assert.Throws<ArgparseExit>(() => CliParser.Build().ParseArgs(["-h"]));
+        ArgumentParserExit exit = Assert.Throws<ArgumentParserExit>(() => CliParser.Build().ParseArgs(["-h"]));
         Assert.Equal(0, exit.Status);
         Assert.Equal("", exit.Stderr);
         Assert.Equal(Normalize(CliParser.Build().FormatHelp()), Normalize(exit.Stdout));
@@ -43,7 +42,7 @@ public class ArgparseTests
     [Fact]
     public void Version_prints_the_product_line()
     {
-        ArgparseExit exit = Assert.Throws<ArgparseExit>(() => CliParser.Build().ParseArgs(["--version"]));
+        ArgumentParserExit exit = Assert.Throws<ArgumentParserExit>(() => CliParser.Build().ParseArgs(["--version"]));
         Assert.Equal(0, exit.Status);
         Assert.Equal("", exit.Stderr);
         Assert.Equal("indra-ocr 0.3.2\n", exit.Stdout);
@@ -52,7 +51,7 @@ public class ArgparseTests
     [Fact]
     public void Errors_are_argparse_wording_and_exit_two()
     {
-        ArgparseExit noInputs = Fail();
+        ArgumentParserExit noInputs = Fail();
         Assert.Equal(2, noInputs.Status);
         Assert.Equal("", noInputs.Stdout);
         Assert.EndsWith("indra-ocr: error: the following arguments are required: inputs\n",
@@ -76,7 +75,7 @@ public class ArgparseTests
     [Fact]
     public void Ambiguous_abbreviation_lists_the_matches_in_option_order()
     {
-        ArgparseExit exit = Fail("--m", "a.pdf");
+        ArgumentParserExit exit = Fail("--m", "a.pdf");
         Assert.Equal(
             "indra-ocr: error: ambiguous option: --m could match --mode, --model-order, " +
             "--model-dir, --max-pages, --math\n", exit.Stderr[(exit.Stderr.IndexOf("indra-ocr: error:")..)]);
@@ -85,10 +84,10 @@ public class ArgparseTests
     [Fact]
     public void Defaults_are_the_reference_defaults()
     {
-        Namespace a = Parse("a.pdf");
-        Assert.Equal(["a.pdf"], a.PathList("inputs").Select(p => p.ToString()));
-        Assert.Null(a.PathOrNull("out"));
-        Assert.Null(a.PathOrNull("model_dir"));
+        ParsedArguments a = Parse("a.pdf");
+        Assert.Equal(["a.pdf"], a.StrList("inputs"));
+        Assert.Null(a.Str("out"));
+        Assert.Null(a.Str("model_dir"));
         Assert.Equal("md", a.Str("format"));
         Assert.Equal("auto", a.Str("mode"));
         Assert.Null(a.Str("password"));
@@ -105,33 +104,33 @@ public class ArgparseTests
     [Fact]
     public void Options_take_values_and_abbreviations()
     {
-        Namespace a = Parse("--form=json", "--dpi=100", "--threads", "3", "--model-order",
+        ParsedArguments a = Parse("--form=json", "--dpi=100", "--threads", "3", "--model-order",
                             "--keep-furniture", "a.pdf", "b.png");
         Assert.Equal("json", a.Str("format"));
         Assert.Equal(100.0, a.Float("dpi"));
         Assert.Equal(3, a.Int("cores"));
         Assert.True(a.Flag("model_order"));
         Assert.True(a.Flag("keep_furniture"));
-        Assert.Equal(["a.pdf", "b.png"], a.PathList("inputs").Select(p => p.ToString()));
+        Assert.Equal(["a.pdf", "b.png"], a.StrList("inputs"));
     }
 
     [Fact]
     public void Paths_are_normalized_and_the_double_dash_ends_the_options()
     {
-        Namespace a = Parse("--out", "temp/x/", "a/../b.pdf");
-        Assert.Equal("temp\\x", a.PathOrNull("out")!.Value.ToString());
-        Assert.Equal(["a\\..\\b.pdf"], a.PathList("inputs").Select(p => p.ToString()));
+        ParsedArguments a = Parse("--out", "temp/x/", "a/../b.pdf");
+        Assert.Equal("temp\\x", a.Str("out"));
+        Assert.Equal(["a\\..\\b.pdf"], a.StrList("inputs"));
 
-        Namespace after = Parse("--", "--nope");
-        Assert.Equal(["--nope"], after.PathList("inputs").Select(p => p.ToString()));
+        ParsedArguments after = Parse("--", "--nope");
+        Assert.Equal(["--nope"], after.StrList("inputs"));
     }
 
     [Fact]
     public void Help_and_version_leave_nothing_in_the_namespace()
     {
         // argparse's SUPPRESS: the two actions never write their dest.
-        Assert.Throws<ArgparseExit>(() => CliParser.Build().ParseArgs(["a.pdf", "--help"]));
-        Namespace a = Parse("a.pdf");
+        Assert.Throws<ArgumentParserExit>(() => CliParser.Build().ParseArgs(["a.pdf", "--help"]));
+        ParsedArguments a = Parse("a.pdf");
         Assert.Null(a.Get("help"));
         Assert.Null(a.Get("version"));
     }

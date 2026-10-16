@@ -1,14 +1,12 @@
 // The argument model of the argparse port (see ArgumentParser.cs for why this exists).
 //
-// The names follow CPython's Lib/argparse.py — Argument, Namespace, ArgumentError — so the port
-// can be read against the reference.
+// The names follow CPython's Lib/argparse.py — Argument, Namespace (here ParsedArguments),
+// ArgumentError — so the port can be read against the reference.
 
-using Indra.Ocr.Py;
-
-namespace Indra.Ocr.Argparse;
+namespace Indra.Ocr.ArgumentParsing;
 
 /// <summary>argparse's <c>nargs</c> (the three the CLI uses).</summary>
-public enum Nargs
+public enum ArgumentArity
 {
     /// <summary><c>None</c>: exactly one value.</summary>
     None,
@@ -21,7 +19,7 @@ public enum Nargs
 }
 
 /// <summary>argparse's <c>action=</c> (the four the CLI uses).</summary>
-public enum ArgAction
+public enum ArgumentAction
 {
     Store,
     StoreTrue,
@@ -30,7 +28,7 @@ public enum ArgAction
 }
 
 /// <summary>argparse's <c>type=</c> (the four the CLI uses).</summary>
-public enum ArgType
+public enum ArgumentType
 {
     Str,
     Int,
@@ -44,9 +42,9 @@ public sealed class Argument
     internal Argument(
         IReadOnlyList<string> optionStrings,
         string dest,
-        Nargs nargs,
-        ArgAction action,
-        ArgType type,
+        ArgumentArity nargs,
+        ArgumentAction action,
+        ArgumentType type,
         IReadOnlyList<string>? choices,
         object? @default,
         string? help,
@@ -55,7 +53,7 @@ public sealed class Argument
     {
         OptionStrings = optionStrings;
         Dest = dest;
-        Nargs = nargs;
+        Arity = nargs;
         Action = action;
         Type = type;
         Choices = choices;
@@ -71,11 +69,12 @@ public sealed class Argument
     /// <summary>argparse's <c>dest</c>: where the value lands in the namespace.</summary>
     public string Dest { get; }
 
-    public Nargs Nargs { get; }
+    /// <summary>argparse's <c>nargs</c>: how many values the argument takes.</summary>
+    public ArgumentArity Arity { get; }
 
-    public ArgAction Action { get; }
+    public ArgumentAction Action { get; }
 
-    public ArgType Type { get; }
+    public ArgumentType Type { get; }
 
     /// <summary>The allowed values, or <c>null</c>.</summary>
     public IReadOnlyList<string>? Choices { get; }
@@ -108,7 +107,7 @@ public sealed class Argument
 /// <summary>
 /// argparse's <c>Namespace</c>: what the parse produced, read back by name.
 /// </summary>
-public sealed class Namespace
+public sealed class ParsedArguments
 {
     private readonly Dictionary<string, object?> _values = new();
 
@@ -135,25 +134,22 @@ public sealed class Namespace
 
     public double Float(string dest) => Get(dest) is double value ? value : 0.0;
 
-    /// <summary>The value of a <c>type=Path</c> argument, or <c>null</c>.</summary>
-    public PyPath? PathOrNull(string dest) => Get(dest) as PyPath?;
-
-    /// <summary>The values of a <c>type=Path</c>, <c>nargs='+'</c> argument.</summary>
-    public List<PyPath> PathList(string dest)
+    /// <summary>The values of a <c>nargs='+'</c> argument (<c>type=Path</c> ones as strings).</summary>
+    public List<string> StrList(string dest)
     {
-        var paths = new List<PyPath>();
-        if (Get(dest) is List<object?> values)
+        var values = new List<string>();
+        if (Get(dest) is List<object?> items)
         {
-            foreach (object? value in values)
+            foreach (object? value in items)
             {
-                if (value is PyPath path)
+                if (value is string text)
                 {
-                    paths.Add(path);
+                    values.Add(text);
                 }
             }
         }
 
-        return paths;
+        return values;
     }
 }
 
@@ -174,9 +170,9 @@ public sealed class ArgumentError : Exception
 /// stdout, and an error leaves with 2 after writing the usage and the message to stderr. The
 /// caller writes the text (so it goes through the CLI's own encoding and newline handling).
 /// </summary>
-public sealed class ArgparseExit : Exception
+public sealed class ArgumentParserExit : Exception
 {
-    public ArgparseExit(int status, string stdout = "", string stderr = "")
+    public ArgumentParserExit(int status, string stdout = "", string stderr = "")
         : base(stderr.Length > 0 ? stderr : stdout)
     {
         Status = status;

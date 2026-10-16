@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Indra.Ocr.Py;
+namespace Indra.Ocr.Cli.PythonInterop;
 
 /// <summary>
 /// Python's <c>repr()</c> of a float — what <c>json.dumps</c> writes for a number and what an
@@ -15,7 +15,7 @@ namespace Indra.Ocr.Py;
 /// Python. <c>format(x, '.0f')</c> rounds half to even, as Python does; .NET's own "F" format
 /// rounds halves away from zero.
 /// </remarks>
-public static class PyFloat
+public static class FloatFormat
 {
     /// <summary><c>repr(value)</c>.</summary>
     public static string Repr(double value)

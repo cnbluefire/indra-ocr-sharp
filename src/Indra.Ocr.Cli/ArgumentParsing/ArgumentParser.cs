@@ -1,8 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Indra.Ocr.Py;
 
-namespace Indra.Ocr.Argparse;
+namespace Indra.Ocr.ArgumentParsing;
 
 /// <summary>
 /// A port of the slice of Python's <c>argparse</c> (CPython 3.14) that the indra-ocr command line
@@ -14,6 +13,11 @@ namespace Indra.Ocr.Argparse;
 /// the usage line, the abbreviation of long options (<c>--pre</c> for <c>--prefix</c>), <c>--opt=v</c>,
 /// the <c>--</c> separator, the "unrecognized arguments" list, the wording of every error and the
 /// exit codes (0 for help and version, 2 for an argument error) all come from argparse.
+/// <para>
+/// It lives in the CLI project, next to the command line it ports: both hosts need it (the
+/// reference's <c>viewer.py</c> imports its parser pieces from <c>cli.py</c>), and the viewer
+/// references the CLI so the two cannot drift apart.
+/// </para>
 /// <para>
 /// The port keeps argparse's names and its shape (<c>_parse_known_args</c>,
 /// <c>_get_values</c>, <c>_parse_optional</c>, …) so the two can be read side by side. What the
@@ -53,7 +57,7 @@ public sealed class ArgumentParser
         AddArgument(
             ["-h", "--help"],
             dest: "help",
-            action: ArgAction.Help,
+            action: ArgumentAction.Help,
             help: "show this help message and exit");
     }
 
@@ -68,11 +72,11 @@ public sealed class ArgumentParser
     public Argument AddArgument(
         string[] optionStrings,
         string? dest = null,
-        Nargs nargs = Nargs.None,
-        ArgType type = ArgType.Str,
+        ArgumentArity nargs = ArgumentArity.None,
+        ArgumentType type = ArgumentType.Str,
         string[]? choices = null,
         object? @default = null,
-        ArgAction action = ArgAction.Store,
+        ArgumentAction action = ArgumentAction.Store,
         string? help = null,
         string? version = null,
         string? metavar = null)
@@ -82,14 +86,14 @@ public sealed class ArgumentParser
     /// <summary><c>add_argument</c> for a positional (<c>inputs</c>).</summary>
     public Argument AddPositional(
         string dest,
-        Nargs nargs = Nargs.None,
-        ArgType type = ArgType.Str,
+        ArgumentArity nargs = ArgumentArity.None,
+        ArgumentType type = ArgumentType.Str,
         string[]? choices = null,
         object? @default = null,
         string? help = null,
         string? metavar = null)
     {
-        var argument = new Argument([], dest, nargs, ArgAction.Store, type, choices, @default, help,
+        var argument = new Argument([], dest, nargs, ArgumentAction.Store, type, choices, @default, help,
                                     null, metavar)
         {
             // argparse: a positional is required unless its nargs can match nothing. The CLI's
@@ -108,8 +112,8 @@ public sealed class ArgumentParser
     }
 
     internal Argument AddArgumentIn(ArgumentGroup group, string[] optionStrings, string? dest,
-                                    Nargs nargs, ArgType type, string[]? choices, object? @default,
-                                    ArgAction action, string? help, string? version,
+                                    ArgumentArity nargs, ArgumentType type, string[]? choices, object? @default,
+                                    ArgumentAction action, string? help, string? version,
                                     string? metavar)
         => AddArgument(optionStrings, dest, nargs, type, choices, @default, action, help, version,
                        metavar, group);
@@ -117,11 +121,11 @@ public sealed class ArgumentParser
     private Argument AddArgument(
         string[] optionStrings,
         string? dest,
-        Nargs nargs,
-        ArgType type,
+        ArgumentArity nargs,
+        ArgumentType type,
         string[]? choices,
         object? @default,
-        ArgAction action,
+        ArgumentAction action,
         string? help,
         string? version,
         string? metavar,
@@ -133,16 +137,16 @@ public sealed class ArgumentParser
         }
 
         // The actions the CLI uses that take no value, and their defaults.
-        if (action is ArgAction.StoreTrue or ArgAction.Version or ArgAction.Help)
+        if (action is ArgumentAction.StoreTrue or ArgumentAction.Version or ArgumentAction.Help)
         {
-            nargs = Nargs.Zero;
-            if (action == ArgAction.StoreTrue && @default is null)
+            nargs = ArgumentArity.Zero;
+            if (action == ArgumentAction.StoreTrue && @default is null)
             {
                 @default = false;
             }
 
             // argparse's _VersionAction carries this help of its own.
-            if (action == ArgAction.Version && help is null)
+            if (action == ArgumentAction.Version && help is null)
             {
                 help = "show program's version number and exit";
             }
@@ -152,7 +156,7 @@ public sealed class ArgumentParser
                                     type, choices, @default, help, version, metavar)
         {
             Required = false,
-            SuppressDest = action is ArgAction.Help or ArgAction.Version,
+            SuppressDest = action is ArgumentAction.Help or ArgumentAction.Version,
         };
         return Register(argument, group ?? _optionals);
     }
@@ -230,7 +234,7 @@ public sealed class ArgumentParser
     }
 
     /// <summary>argparse's <c>error()</c>: the usage, the message, exit code 2.</summary>
-    public ArgparseExit Error(string message)
+    public ArgumentParserExit Error(string message)
         => new(2, stderr: FormatUsage() + _prog + ": error: " + message + "\n");
 
     private HelpFormatter NewFormatter() => new(_prog, width: _width);
@@ -246,10 +250,10 @@ public sealed class ArgumentParser
     // Parsing
     // ===================================
 
-    /// <summary><c>parse_args</c>: the namespace, or an <see cref="ArgparseExit"/>.</summary>
-    public Namespace ParseArgs(IReadOnlyList<string> argv)
+    /// <summary><c>parse_args</c>: the namespace, or an <see cref="ArgumentParserExit"/>.</summary>
+    public ParsedArguments ParseArgs(IReadOnlyList<string> argv)
     {
-        Namespace ns = ParseKnownArgs(argv, out List<string> extras);
+        ParsedArguments ns = ParseKnownArgs(argv, out List<string> extras);
         if (extras.Count > 0)
         {
             throw Error($"unrecognized arguments: {string.Join(" ", extras)}");
@@ -259,9 +263,9 @@ public sealed class ArgumentParser
     }
 
     /// <summary><c>_parse_known_args</c> without the intermixing of subparsers.</summary>
-    private Namespace ParseKnownArgs(IReadOnlyList<string> argv, out List<string> extras)
+    private ParsedArguments ParseKnownArgs(IReadOnlyList<string> argv, out List<string> extras)
     {
-        var ns = new Namespace();
+        var ns = new ParsedArguments();
 
         // argparse: the defaults, unless the dest is suppressed.
         foreach (Argument action in _actions)
@@ -506,16 +510,16 @@ public sealed class ArgumentParser
         {
             switch (action.Action)
             {
-                case ArgAction.Store:
+                case ArgumentAction.Store:
                     ns.Set(action.Dest, values);
                     break;
-                case ArgAction.StoreTrue:
+                case ArgumentAction.StoreTrue:
                     ns.Set(action.Dest, true);
                     break;
-                case ArgAction.Version:
-                    throw new ArgparseExit(0, stdout: FormatVersion(action));
-                case ArgAction.Help:
-                    throw new ArgparseExit(0, stdout: FormatHelp());
+                case ArgumentAction.Version:
+                    throw new ArgumentParserExit(0, stdout: FormatVersion(action));
+                case ArgumentAction.Help:
+                    throw new ArgumentParserExit(0, stdout: FormatHelp());
                 default:
                     throw new InvalidOperationException($"unhandled action {action.Action}");
             }
@@ -523,7 +527,7 @@ public sealed class ArgumentParser
 
         object? GetValues(Argument action, List<string> argStrings)
         {
-            if (argStrings.Count == 1 && action.Nargs == Nargs.None)
+            if (argStrings.Count == 1 && action.Arity == ArgumentArity.None)
             {
                 object? value = GetValue(action, argStrings[0]);
                 CheckValue(action, value);
@@ -550,9 +554,9 @@ public sealed class ArgumentParser
             {
                 return action.Type switch
                 {
-                    ArgType.Int => PyNumber.ParseInt(argString),
-                    ArgType.Float => PyNumber.ParseFloat(argString),
-                    ArgType.Path => PyPath.From(argString),
+                    ArgumentType.Int => ArgumentNumber.ParseInt(argString),
+                    ArgumentType.Float => ArgumentNumber.ParseFloat(argString),
+                    ArgumentType.Path => PathHelper.Normalize(argString),
                     _ => argString,
                 };
             }
@@ -592,10 +596,10 @@ public sealed class ArgumentParser
     /// <summary>argparse's <c>_match_argument</c>.</summary>
     private int MatchArgument(Argument action, string pattern)
     {
-        Match match = Regex.Match(pattern, "^" + NargsPattern(action));
+        Match match = Regex.Match(pattern, "^" + ArgumentArityPattern(action));
         if (!match.Success)
         {
-            throw Error($"argument {action.Name}: {NargsError(action.Nargs)}");
+            throw Error($"argument {action.Name}: {ArgumentArityError(action.Arity)}");
         }
 
         return match.Groups[1].Length;
@@ -606,7 +610,7 @@ public sealed class ArgumentParser
     {
         for (int i = actions.Count; i > 0; i--)
         {
-            string combined = string.Concat(actions.Take(i).Select(NargsPattern));
+            string combined = string.Concat(actions.Take(i).Select(ArgumentArityPattern));
             Match match = Regex.Match(pattern, "^" + combined);
             if (match.Success)
             {
@@ -624,41 +628,41 @@ public sealed class ArgumentParser
     }
 
     /// <summary>argparse's <c>_get_nargs_pattern</c> for the nargs values the CLI uses.</summary>
-    private static string NargsPattern(Argument action)
+    private static string ArgumentArityPattern(Argument action)
     {
         if (action.IsOptional)
         {
-            return action.Nargs switch
+            return action.Arity switch
             {
-                Nargs.None => "([A])",
-                Nargs.Zero => "()",
-                Nargs.OneOrMore => "(A[A]*)",
+                ArgumentArity.None => "([A])",
+                ArgumentArity.Zero => "()",
+                ArgumentArity.OneOrMore => "(A[A]*)",
                 _ => throw new ArgumentOutOfRangeException(nameof(action)),
             };
         }
 
-        return action.Nargs switch
+        return action.Arity switch
         {
-            Nargs.None => "(-*A-*)",
-            Nargs.Zero => "(-*)",
-            Nargs.OneOrMore => "(-*A[A-]*)",
+            ArgumentArity.None => "(-*A-*)",
+            ArgumentArity.Zero => "(-*)",
+            ArgumentArity.OneOrMore => "(-*A[A-]*)",
             _ => throw new ArgumentOutOfRangeException(nameof(action)),
         };
     }
 
-    private static string NargsError(Nargs nargs) => nargs switch
+    private static string ArgumentArityError(ArgumentArity nargs) => nargs switch
     {
-        Nargs.None => "expected one argument",
-        Nargs.Zero => "expected 0 arguments",
-        Nargs.OneOrMore => "expected at least one argument",
+        ArgumentArity.None => "expected one argument",
+        ArgumentArity.Zero => "expected 0 arguments",
+        ArgumentArity.OneOrMore => "expected at least one argument",
         _ => "expected 1 argument",
     };
 
-    private static string TypeName(ArgType type) => type switch
+    private static string TypeName(ArgumentType type) => type switch
     {
-        ArgType.Int => "int",
-        ArgType.Float => "float",
-        ArgType.Path => "Path",
+        ArgumentType.Int => "int",
+        ArgumentType.Float => "float",
+        ArgumentType.Path => "Path",
         _ => "str",
     };
 
@@ -828,11 +832,11 @@ public sealed class ArgumentGroup
     public Argument AddArgument(
         string[] optionStrings,
         string? dest = null,
-        Nargs nargs = Nargs.None,
-        ArgType type = ArgType.Str,
+        ArgumentArity nargs = ArgumentArity.None,
+        ArgumentType type = ArgumentType.Str,
         string[]? choices = null,
         object? @default = null,
-        ArgAction action = ArgAction.Store,
+        ArgumentAction action = ArgumentAction.Store,
         string? help = null,
         string? version = null,
         string? metavar = null)

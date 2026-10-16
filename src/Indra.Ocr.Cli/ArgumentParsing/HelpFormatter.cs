@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Indra.Ocr.Argparse;
+namespace Indra.Ocr.ArgumentParsing;
 
 /// <summary>
 /// A port of <c>argparse.HelpFormatter</c> (CPython 3.14) with
@@ -225,7 +225,7 @@ internal sealed class HelpFormatter
             }
 
             // The first way to invoke the option, in brackets: not required, not in a group.
-            string part = action.Nargs == Nargs.Zero
+            string part = action.Arity == ArgumentArity.Zero
                 ? action.FormatUsage()
                 : action.OptionStrings[0] + " " + FormatArgs(action, action.Dest.ToUpperInvariant());
             parts.Add("[" + part + "]");
@@ -334,7 +334,7 @@ internal sealed class HelpFormatter
             return string.Join(" ", MetavarFormatter(action, action.Dest)(1));
         }
 
-        if (action.Nargs == Nargs.Zero)
+        if (action.Arity == ArgumentArity.Zero)
         {
             return string.Join(", ", action.OptionStrings);
         }
@@ -362,11 +362,11 @@ internal sealed class HelpFormatter
     private string FormatArgs(Argument action, string defaultMetavar)
     {
         Func<int, string[]> getMetavar = MetavarFormatter(action, defaultMetavar);
-        return action.Nargs switch
+        return action.Arity switch
         {
-            Nargs.None => getMetavar(1)[0],
-            Nargs.OneOrMore => FormatOneOrMore(getMetavar(2)),
-            Nargs.Zero => "",
+            ArgumentArity.None => getMetavar(1)[0],
+            ArgumentArity.OneOrMore => FormatOneOrMore(getMetavar(2)),
+            ArgumentArity.Zero => "",
             _ => throw new ArgumentOutOfRangeException(nameof(action)),
         };
     }

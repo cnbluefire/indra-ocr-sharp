@@ -5,7 +5,7 @@ using Indra.Ocr.Layout;
 using Indra.Ocr.Onnx;
 using Indra.Ocr.Pdf;
 using Indra.Ocr.Pipeline;
-using Indra.Ocr.Py;
+using Indra.Ocr.Cli.PythonInterop;
 
 namespace Indra.Ocr.Viewer;
 
@@ -41,7 +41,7 @@ public sealed class Engine : IDisposable
     /// <summary>How many uploads are kept (the rest are dropped, oldest first).</summary>
     private const int MaxUploads = 5;
 
-    private readonly PyPath? _modelPath;
+    private readonly string? _modelPath;
     private readonly int _threads;
     private readonly object _lock = new();
     private readonly Dictionary<(bool Math, bool Furniture), OrtOcr> _ocrs = [];
@@ -54,7 +54,7 @@ public sealed class Engine : IDisposable
     /// <param name="tesseract">Whether <c>--tesseract</c> was given.</param>
     /// <param name="defaults">The options the page starts with (<c>GET /info</c> reports them).</param>
     /// <exception cref="ViewerError">The model folder is unusable, or tesseract was asked for.</exception>
-    public Engine(PyPath? modelPath, int threads, bool tesseract, ViewerDefaults defaults)
+    public Engine(string? modelPath, int threads, bool tesseract, ViewerDefaults defaults)
     {
         _modelPath = modelPath;
         _threads = threads;
@@ -268,9 +268,9 @@ public sealed class Engine : IDisposable
         }
 
         timings.TryGetValue("total_ms", out double total);
-        PyConsole.Write(
+        ConsoleOutput.Write(
             $"page {n + 1}: {page.Source}, {page.Lines.Count} lines, {page.Blocks.Count} blocks, " +
-            $"{PyFloat.Fixed(total, 0)} ms ({mode}{(math ? ", math" : string.Empty)})\n");
+            $"{FloatFormat.Fixed(total, 0)} ms ({mode}{(math ? ", math" : string.Empty)})\n");
 
         return new PageResponse(
             Page: n + 1,

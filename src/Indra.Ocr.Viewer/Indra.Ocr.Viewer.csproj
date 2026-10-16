@@ -6,8 +6,11 @@
   </PropertyGroup>
 
   <!-- The viewer is a front end like the CLI: Core holds the pipeline, Pdf and Indra.Ocr the two
-       decoders. It never touches an image codec or PDFium itself. -->
+       decoders. It never touches an image codec or PDFium itself. It references the CLI because
+       the two hosts share the argument parser and the Python-spelling helpers
+       (indra_ocr.viewer imports them from indra_ocr.cli the same way). -->
   <ItemGroup>
+    <ProjectReference Include="..\Indra.Ocr.Cli\Indra.Ocr.Cli.csproj" />
     <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
     <ProjectReference Include="..\Indra.Ocr.Pdf\Indra.Ocr.Pdf.csproj" />
     <ProjectReference Include="..\Indra.Ocr\Indra.Ocr.csproj" />

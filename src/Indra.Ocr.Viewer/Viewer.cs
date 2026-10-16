@@ -1,9 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
-using Indra.Ocr.Argparse;
+using Indra.Ocr.ArgumentParsing;
 using Indra.Ocr.Onnx;
-using Indra.Ocr.Py;
+using Indra.Ocr.Cli.PythonInterop;
 
 namespace Indra.Ocr.Viewer;
 
@@ -34,17 +34,17 @@ internal static class Viewer
         {
             return Serve(args);
         }
-        catch (ArgparseExit exit)
+        catch (ArgumentParserExit exit)
         {
             // argparse writes --help and --version to stdout and an error to stderr, then exits.
             if (exit.Stdout.Length > 0)
             {
-                PyConsole.Write(exit.Stdout);
+                ConsoleOutput.Write(exit.Stdout);
             }
 
             if (exit.Stderr.Length > 0)
             {
-                PyConsole.WriteError(exit.Stderr);
+                ConsoleOutput.WriteError(exit.Stderr);
             }
 
             return exit.Status;
@@ -53,12 +53,12 @@ internal static class Viewer
         {
             // viewer.main prints this one to stdout — the command line's own main writes the
             // same error to stderr, and the reference really does differ between the two.
-            PyConsole.Write($"indra-ocr-viewer: {e.Message}\n");
+            ConsoleOutput.Write($"indra-ocr-viewer: {e.Message}\n");
             return 1;
         }
         catch (ViewerError e)
         {
-            PyConsole.WriteError($"indra-ocr-viewer: {e.Message}\n");
+            ConsoleOutput.WriteError($"indra-ocr-viewer: {e.Message}\n");
             return 1;
         }
     }
@@ -126,7 +126,7 @@ internal static class Viewer
 
         app.MapFallback(() => Send("not found"u8.ToArray(), "text/plain", 404));
 
-        PyConsole.Write($"Indra OCR viewer on http://localhost:{a.Port}  ({a.Threads} threads)\n");
+        ConsoleOutput.Write($"Indra OCR viewer on http://localhost:{a.Port}  ({a.Threads} threads)\n");
         app.Run();
         return 0;
     }
@@ -157,7 +157,7 @@ internal static class Viewer
     /// </summary>
     private static IResult Fail(Exception e)
     {
-        PyConsole.Write($"error: {e.Message}\n");
+        ConsoleOutput.Write($"error: {e.Message}\n");
         return Send(JsonSerializer.SerializeToUtf8Bytes(new ErrorResponse(e.Message),
                                                         ViewerJson.Default.ErrorResponse),
                     "application/json", 400);

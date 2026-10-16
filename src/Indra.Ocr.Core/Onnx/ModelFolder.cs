@@ -1,5 +1,3 @@
-using Indra.Ocr.Py;
-
 namespace Indra.Ocr.Onnx;
 
 /// <summary>
@@ -29,28 +27,28 @@ public static class ModelFolder
     /// <param name="path">The <c>--model-dir</c> value, or <c>null</c> when it was not given.</param>
     /// <param name="math">Whether the math models are needed.</param>
     /// <exception cref="ModelError">The folder is incomplete, or the download failed.</exception>
-    public static string Resolve(PyPath? path, bool math)
+    public static string Resolve(string? path, bool math)
     {
-        PyPath? given = path;
+        string? given = path;
         if (given is null)
         {
             string? fromEnvironment = Environment.GetEnvironmentVariable("INDRA_OCR_MODEL_DIR");
             if (!string.IsNullOrEmpty(fromEnvironment))
             {
-                given = PyPath.From(fromEnvironment);
+                given = fromEnvironment;
             }
         }
 
-        if (given is PyPath folder)
+        if (given is not null)
         {
-            PyPath p = folder.ExpandUser();
-            List<string> missing = Missing(p.ToString(), math);
+            string folder = PathHelper.ExpandUser(given);
+            List<string> missing = Missing(folder, math);
             if (missing.Count > 0)
             {
-                throw new ModelError($"the model folder {p} lacks {string.Join(", ", missing)}");
+                throw new ModelError($"the model folder {folder} lacks {string.Join(", ", missing)}");
             }
 
-            return p.ToString();
+            return folder;
         }
 
         string cache = CacheFolder();

@@ -1,4 +1,4 @@
-using Indra.Ocr.Argparse;
+using Indra.Ocr.ArgumentParsing;
 
 namespace Indra.Ocr.Cli;
 
@@ -28,27 +28,27 @@ internal static class CliParser
     internal static ArgumentParser Build()
     {
         var ap = new ArgumentParser("indra-ocr", Description);
-        ap.AddArgument(["--version"], action: ArgAction.Version,
+        ap.AddArgument(["--version"], action: ArgumentAction.Version,
                        version: $"{ProductInfo.Name} {ProductInfo.Version}");
-        ap.AddPositional("inputs", nargs: Nargs.OneOrMore, type: ArgType.Path);
-        ap.AddArgument(["--out"], type: ArgType.Path, @default: null,
+        ap.AddPositional("inputs", nargs: ArgumentArity.OneOrMore, type: ArgumentType.Path);
+        ap.AddArgument(["--out"], type: ArgumentType.Path, @default: null,
                        help: "write one file per input here");
         ap.AddArgument(["--format"], choices: ["md", "text", "json"], @default: "md");
-        SourceArgs.AddTo(ap);
-        ap.AddArgument(["--model-dir"], type: ArgType.Path, @default: null);
-        ap.AddArgument(["--cores", "--threads"], dest: "cores", type: ArgType.Int, @default: 0L,
+        SourceArguments.AddTo(ap);
+        ap.AddArgument(["--model-dir"], type: ArgumentType.Path, @default: null);
+        ap.AddArgument(["--cores", "--threads"], dest: "cores", type: ArgumentType.Int, @default: 0L,
                        help: "cores to use (default: all this process may run on, here " +
                              $"{UsableCores()})");
-        ap.AddArgument(["--dpi"], type: ArgType.Float, @default: 200.0);
-        ap.AddArgument(["--max-pages"], type: ArgType.Int, @default: 0L);
+        ap.AddArgument(["--dpi"], type: ArgumentType.Float, @default: 200.0);
+        ap.AddArgument(["--max-pages"], type: ArgumentType.Int, @default: 0L);
         ap.AddArgument(["--password"], @default: null, help: "password of encrypted PDFs");
-        ap.AddArgument(["--math"], action: ArgAction.StoreTrue,
+        ap.AddArgument(["--math"], action: ArgumentAction.StoreTrue,
                        help: "write math as LaTeX ($...$); slower on pages with math " +
                              "(off by default)");
-        ap.AddArgument(["--keep-furniture"], action: ArgAction.StoreTrue,
+        ap.AddArgument(["--keep-furniture"], action: ArgumentAction.StoreTrue,
                        help: "keep page headers and footers (page numbers, running titles) " +
                              "in the markdown");
-        ap.AddArgument(["--timings"], action: ArgAction.StoreTrue,
+        ap.AddArgument(["--timings"], action: ArgumentAction.StoreTrue,
                        help: "print per-page timings to stderr");
         return ap;
     }
