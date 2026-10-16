@@ -1,0 +1,44 @@
+usage: indra-ocr [-h] [--version] [--out OUT] [--format {md,text,json}]
+                 [--mode {auto,ocr,text}] [--model-order] [--no-image-ocr]
+                 [--model-dir MODEL_DIR] [--cores CORES] [--dpi DPI]
+                 [--max-pages MAX_PAGES] [--password PASSWORD] [--math]
+                 [--keep-furniture] [--timings]
+                 inputs [inputs ...]
+
+Command line: PDFs or images in, markdown (or text, or JSON lines) out.
+
+indra-ocr paper.pdf                    # markdown to stdout
+indra-ocr *.pdf --out results/         # one .md per input
+indra-ocr scan.png --format json       # lines with boxes, confidences, timings
+
+Pages run in parallel on all the cores the process may use (--cores to limit).
+
+positional arguments:
+  inputs
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --out OUT             write one file per input here
+  --format {md,text,json}
+  --model-dir MODEL_DIR
+  --cores, --threads CORES
+                        cores to use (default: all this process may run on,
+                        here 8)
+  --dpi DPI
+  --max-pages MAX_PAGES
+  --password PASSWORD   password of encrypted PDFs
+  --math                write math as LaTeX ($...$); slower on pages with math
+                        (off by default)
+  --keep-furniture      keep page headers and footers (page numbers, running
+                        titles) in the markdown
+  --timings             print per-page timings to stderr
+
+text layer or OCR (PDFs):
+  --mode {auto,ocr,text}
+                        auto: text layer where it passes the checks, OCR
+                        elsewhere (default); ocr: never read the text layer;
+                        text: use the text layer even when the checks fail
+  --model-order         order text-layer lines with the order model, not the
+                        PDF content order
+  --no-image-ocr        on text-layer pages, do not OCR text inside images

@@ -14,4 +14,10 @@
     <ProjectReference Include="..\Indra.Ocr\Indra.Ocr.csproj" />
   </ItemGroup>
 
+  <!-- The tests read the CLI's own parser definition and namespace, so the help text and the
+       option defaults are checked against the same parser the program uses. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Indra.Ocr.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -102,5 +102,9 @@ ModelDownload.Download(folder, math, revision)
   `type(e).__name__` (`LocalEntryNotFoundError`, `ConnectionError`, …); the port prints the .NET
   exception's name (`HttpRequestException`, `TaskCanceledException`, …). The rest of the message
   is the reference's wording.
-- **No `huggingface_hub` cache reuse.** A folder the reference's own `huggingface_hub` populated
-  is not read by the port (and vice versa); each keeps to its own folder.
+- **No `huggingface_hub` cache reuse *by the download*.** `Download` writes into the folder it is
+  given and reads nothing else; the Hub cache's own layout (blobs, symlinks, `refs/`) is not
+  parsed here. The CLI (`docs/180-cli.md`) is what points `Download` at
+  `<HF_HUB_CACHE>/models--datalab-to--indra-ocr/snapshots/<sha>` — reading the cache's `refs/v3.1.1`
+  for the sha — so a model set the reference already downloaded is found and reused, and neither
+  tool re-checks the Hub for the other.

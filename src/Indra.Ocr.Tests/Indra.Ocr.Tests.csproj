@@ -16,6 +16,7 @@
     <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
     <ProjectReference Include="..\Indra.Ocr.Pdf\Indra.Ocr.Pdf.csproj" />
     <ProjectReference Include="..\Indra.Ocr\Indra.Ocr.csproj" />
+    <ProjectReference Include="..\Indra.Ocr.Cli\Indra.Ocr.Cli.csproj" />
   </ItemGroup>
 
   <ItemGroup>

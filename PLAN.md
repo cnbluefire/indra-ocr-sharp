@@ -111,9 +111,14 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   (`docs/170-models.md`).
 
 ### Phase 4 — CLI
-- [ ] `180` argparse-faithful CLI.
-- [ ] `190` `convert_many` + output writing.
-- [ ] `195` CLI alignment harness.
+- [x] `180` CLI — the argparse port (usage line, abbreviations, `--opt=v`, `--`, error wording,
+  exit codes), the `Py*` helpers (path/number/float/text/JSON spelling), the model-folder policy
+  (`models.model_dir`, the Hub cache reused) and the output (`md`/`text`/`json`, `--out`,
+  `--timings`, the error lines). 59/59 argv cases byte-identical against the reference
+  (`tools/scripts/test/cli_parity.py`); `docs/180-cli.md`.
+- [ ] `190` `convert_many` — the worker-process pool (self-exec worker mode, line protocol,
+  `THREADS_PER_WORKER`, `WORKER_MEMORY`, the serial path for few pages, the broken-pool fallback).
+- [ ] `195` CLI alignment harness (fold in `cli_parity.py`; viewer later).
 
 ### Phase 5 — Math
 - [ ] `200` MathReader + integration.
@@ -169,5 +174,14 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   detect → recognize → assemble, with the page's boxes, markdown, blocks, source and timings), the
   document layer (`PdfConverter` + `ImageConverter`: the text layer where it can be trusted and
   OCR elsewhere, `page_scale`, `readable`/`right_to_left`/`assign_runs`, `_safe`'s error pages and
-  the `is_pdf` dispatch), and the three-way project split (`docs/165-project-split.md`).
-  128 tests green, build clean.
+  the `is_pdf` dispatch), the three-way project split (`docs/165-project-split.md`) and the model
+  download (`ModelDownload`, `docs/170-models.md`).
+- Step `180` done: the command line runs end to end — an argparse port (`src/Indra.Ocr.Cli/Argparse/`)
+  whose help, errors and exit codes are byte-identical to the reference's, the `Py*` helpers that
+  spell Python's paths, numbers, floats, newlines and JSON, the model-folder policy (argument →
+  `INDRA_OCR_MODEL_DIR` → the Hub cache, reusing the reference's own download) and the output
+  (`md`/`text`/`json` to stdout or `--out`, the error lines, `--timings`). Pages are converted in
+  process; the worker-process pool is step `190`. `tools/scripts/test/cli_parity.py` compares 59
+  argv cases byte for byte against the reference — all matching — and `ArgparseTests` checks the
+  help against the reference's captured text without Python (`docs/180-cli.md`).
+- 143 tests green, build clean (0 warnings).

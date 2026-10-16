@@ -35,8 +35,8 @@ status. Keep these in sync with `PLAN.md`.
 | [160](160-document.md) | document Converter (PDF + image) |
 | [165](165-project-split.md) | Three-way split: `Indra.Ocr` / `Indra.Ocr.Pdf` / `Core` |
 | [170](170-models.md) | models (Hugging Face download) |
-| 180 | CLI |
-| 190 | convert_many + output |
+| [180](180-cli.md) | CLI (argparse, model folder, output, exit codes) |
+| 190 | convert_many (worker-process pool) + output |
 | 195 | CLI alignment harness |
 | 200 | MathReader |
 | 210 | Viewer Engine |

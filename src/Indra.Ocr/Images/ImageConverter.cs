@@ -38,9 +38,14 @@ public sealed class ImageConverter
 
         // The reference decodes the whole file and then slices to max_pages. Each frame owns its
         // pixels, so the list is held exactly like cv2.imreadmulti's and the frames go to the
-        // pipeline one at a time.
+        // pipeline one at a time. The slice is Python's: 0 means all, a positive value the first
+        // ones, a negative value all but the last ones.
         List<GrayImageData> frames = ImageFiles.ReadImages(path);
-        int pages = maxPages <= 0 ? frames.Count : Math.Min(frames.Count, maxPages);
+        int pages = maxPages == 0
+            ? frames.Count
+            : maxPages > 0
+                ? Math.Min(frames.Count, maxPages)
+                : Math.Max(0, frames.Count + maxPages);
         for (int i = 0; i < pages; i++)
         {
             int index = i;

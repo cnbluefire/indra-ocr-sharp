@@ -1,11 +1,7 @@
-// indra-ocr (C# port) — CLI entry point. Full argument parsing arrives in step 180.
+// indra-ocr (C# port) — the command line: PDFs or images in, markdown (or text, or JSON) out.
 namespace Indra.Ocr.Cli;
 
 internal static class Program
 {
-    private static int Main(string[] args)
-    {
-        Console.Error.WriteLine("indra-ocr: not implemented yet");
-        return 1;
-    }
+    private static int Main(string[] args) => Cli.Run(args);
 }
