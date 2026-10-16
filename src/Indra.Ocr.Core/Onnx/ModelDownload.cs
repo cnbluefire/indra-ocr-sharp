@@ -65,6 +65,13 @@ public static class ModelDownload
     /// (default <see cref="HfRevision"/>), creating it if needed. With <paramref name="math"/>,
     /// the math models are downloaded too; without it they are left out.
     /// </summary>
+    /// <param name="downloadProgress">
+    /// Told about each file as it is fetched: once before its body is read, then at every tenth of
+    /// it, then once more at the end when the last report was not the end. A file already there at
+    /// the right size is not downloaded and is not reported. <c>null</c> reports nothing: the
+    /// downloader prints nothing itself — the reference's bar belongs to its library — and the
+    /// hosts decide what theirs looks like.
+    /// </param>
     /// <returns>
     /// <c>true</c> when the Hub was reached (the folder now holds what the Hub has); <c>false</c>
     /// when it was not and the folder's own model set was kept as it is. The distinction is the
@@ -76,7 +83,8 @@ public static class ModelDownload
     /// already hold the model set (in which case the folder is left as it is: an offline run
     /// keeps the models it has, as the reference does).
     /// </exception>
-    public static bool Download(string folder, bool math = false, string? revision = null)
+    public static bool Download(string folder, bool math = false, string? revision = null,
+                                Action<ModelDownloadProgress>? downloadProgress = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(folder);
         string rev = revision ?? HfRevision;
@@ -110,7 +118,7 @@ public static class ModelDownload
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
             try
             {
-                Fetch($"{Host}/{HfRepo}/resolve/{rev}/{path}", dest);
+                Fetch($"{Host}/{HfRepo}/resolve/{rev}/{path}", dest, path, size, downloadProgress);
             }
             catch (Exception e) when (e is HttpRequestException or TaskCanceledException or IOException)
             {
@@ -187,20 +195,67 @@ public static class ModelDownload
         return wanted;
     }
 
-    /// <summary>Fetches one file to <paramref name="dest"/> (via a <c>.part</c> file).</summary>
-    private static void Fetch(string url, string dest)
+    /// <summary>How much of a response is read at a time while its progress is counted.</summary>
+    private const int Chunk = 1 << 16; // 64 KiB
+
+    /// <summary>The share of a file that makes a progress report (a tenth).</summary>
+    private const int Step = 10;
+
+    /// <summary>
+    /// Fetches one file to <paramref name="dest"/> (via a <c>.part</c> file), reporting it under
+    /// the repository name <paramref name="name"/>.
+    /// </summary>
+    private static void Fetch(string url, string dest, string name, long size,
+                              Action<ModelDownloadProgress>? downloadProgress)
     {
         using HttpResponseMessage res = Http
             .GetAsync(url, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
         res.EnsureSuccessStatusCode();
         string part = dest + ".part";
+        downloadProgress?.Invoke(new ModelDownloadProgress(name, dest, url, 0, size));
         using (Stream src = res.Content.ReadAsStream())
         using (FileStream dst = File.Create(part))
         {
-            src.CopyTo(dst);
+            Copy(src, dst, size,
+                 done => downloadProgress?.Invoke(
+                     new ModelDownloadProgress(name, dest, url, done, size)));
         }
 
         File.Move(part, dest, overwrite: true);
+    }
+
+    /// <summary>
+    /// Copies a response body to <paramref name="dst"/>, calling <paramref name="report"/> with how
+    /// much has arrived at every tenth of <paramref name="size"/> — and once more at the end, when
+    /// the body does not end on a report (a short file, or a body that is not the size the Hub
+    /// listed). A size of 0 (the Hub did not say) is reported at the end alone.
+    /// </summary>
+    internal static void Copy(Stream src, Stream dst, long size, Action<long> report)
+    {
+        byte[] buffer = new byte[Chunk];
+        long done = 0;
+        long reported = 0;
+        while (true)
+        {
+            int read = src.Read(buffer, 0, buffer.Length);
+            if (read == 0)
+            {
+                break;
+            }
+
+            dst.Write(buffer, 0, read);
+            done += read;
+            if (size > 0 && (int)(done * 100 / size) >= (int)(reported * 100 / size) + Step)
+            {
+                reported = done;
+                report(done);
+            }
+        }
+
+        if (done > reported)
+        {
+            report(done);
+        }
     }
 
     /// <summary>

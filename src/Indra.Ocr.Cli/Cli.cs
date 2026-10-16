@@ -89,8 +89,10 @@ internal static class Cli
         (string mode, bool pdfOrder, bool imageOcr) = SourceArguments.Options(a);
 
         // convert_many resolves (and on a first run downloads) the models once, before the
-        // workers start; a ModelError reaches main() and becomes one line and exit 1.
-        string modelDirectory = ModelFolder.Resolve(a.Str("model_dir"), math);
+        // workers start; a ModelError reaches main() and becomes one line and exit 1. The download
+        // reports itself on stderr as it goes.
+        string modelDirectory = ModelFolder.Resolve(a.Str("model_dir"), math,
+                                                    ConsoleOutput.DownloadProgressCallback());
         int threads = Math.Max(1, cores != 0 ? cores : CliParser.UsableCores());
         var load = new LoadOptions(modelDirectory, dpi, furniture, math, mode, pdfOrder, imageOcr);
 

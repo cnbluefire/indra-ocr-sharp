@@ -1,11 +1,13 @@
 using System.Globalization;
 using System.Text;
+using Indra.Ocr.Onnx;
 
 namespace Indra.Ocr.ArgumentParsing;
 
 /// <summary>
 /// Everything a host needs to write the way Python writes: the two streams, Python's text-mode
-/// newline translation, Python's <c>repr()</c> of a float and Python's <c>json.dumps</c> spelling.
+/// newline translation, Python's <c>repr()</c> of a float and Python's <c>json.dumps</c> spelling —
+/// and the lines a model download reports, which are the port's own (step 310).
 /// </summary>
 /// <remarks>
 /// Both hosts write the console the same way (the viewer references the CLI, as
@@ -63,6 +65,81 @@ public static class ConsoleOutput
 
         return new StreamWriter(stream, Utf8) { AutoFlush = true };
     }
+
+    // ------------------------------------------------------------------ the model download's progress
+
+    /// <summary>
+    /// A model download report as the lines the hosts print on stderr (step 310): the file being
+    /// fetched, and where it comes from and goes, in the report that opens it; then how far it is.
+    /// </summary>
+    /// <remarks>
+    /// The reference's <c>snapshot_download</c> draws a <c>tqdm</c> bar for each file it fetches
+    /// (its description is the file name, its unit scale the byte count). This is the same
+    /// information without the animation, so a redirected stream holds lines rather than a trail of
+    /// carriage returns. The newlines are Python's (<c>\n</c>), as everywhere here:
+    /// <see cref="WriteError"/> turns them into the platform's.
+    /// </remarks>
+    public static string DownloadProgress(ModelDownloadProgress p)
+    {
+        if (p.Downloaded == 0)
+        {
+            string size = p.Total > 0 ? $" ({Size(p.Total, p.Total)})" : string.Empty;
+            return $"downloading {p.File}{size}\n  from {p.Url}\n  to {p.Path}\n";
+        }
+
+        if (p.Total <= 0)
+        {
+            return $"{p.File}: {Size(p.Downloaded, p.Downloaded)}\n";
+        }
+
+        return $"{p.File}: {Size(p.Downloaded, p.Total)} / {Size(p.Total, p.Total)} " +
+               $"({Percent(p.Downloaded, p.Total)}%)\n";
+    }
+
+    /// <summary>A model download report on stderr, one report at a time.</summary>
+    public static void WriteDownloadProgress(ModelDownloadProgress p)
+        => WriteError(DownloadProgress(p));
+
+    /// <summary>
+    /// What a host hands <c>ModelFolder.Resolve</c> as its <c>downloadProgress</c>: the lines below
+    /// — or nothing, when <c>HF_HUB_DISABLE_PROGRESS_BARS</c> asks for quiet, the variable
+    /// <c>huggingface_hub</c> reads for its own bars (<c>1</c>, <c>on</c>, <c>yes</c>, <c>true</c>,
+    /// in any case).
+    /// </summary>
+    public static Action<ModelDownloadProgress>? DownloadProgressCallback()
+        => ProgressBarsDisabled() ? null : WriteDownloadProgress;
+
+    /// <summary>The values <c>huggingface_hub.utils._runtime._is_true</c> accepts.</summary>
+    private static readonly string[] TrueValues = ["1", "ON", "YES", "TRUE"];
+
+    /// <summary><c>HF_HUB_DISABLE_PROGRESS_BARS</c>, with the reference's truthiness.</summary>
+    private static bool ProgressBarsDisabled()
+    {
+        string? value = Environment.GetEnvironmentVariable("HF_HUB_DISABLE_PROGRESS_BARS");
+        return value is not null && System.Array.IndexOf(TrueValues, value.ToUpperInvariant()) >= 0;
+    }
+
+    /// <summary>
+    /// A byte count in the unit that fits it, one decimal (<c>16.4 MB</c>) — the scale a progress
+    /// bar shows. <paramref name="whole"/> is the size the unit is chosen from, so every line about
+    /// one file reads in the same unit.
+    /// </summary>
+    private static string Size(long bytes, long whole)
+    {
+        (double scale, string unit) = whole switch
+        {
+            >= 1_000_000_000 => (1e9, "GB"),
+            >= 1_000_000 => (1e6, "MB"),
+            >= 1_000 => (1e3, "KB"),
+            _ => (1d, "B"),
+        };
+        return unit == "B"
+            ? $"{bytes} B"
+            : string.Create(CultureInfo.InvariantCulture, $"{bytes / scale:F1} {unit}");
+    }
+
+    /// <summary>The share of a file that has arrived, in whole percent.</summary>
+    private static int Percent(long downloaded, long total) => (int)(downloaded * 100 / total);
 
     // ------------------------------------------------------------------ Python's text streams
 

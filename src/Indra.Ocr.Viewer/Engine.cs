@@ -84,7 +84,9 @@ public sealed class Engine : IDisposable
         var key = (math, furniture);
         if (!_ocrs.TryGetValue(key, out OrtOcr? ocr))
         {
-            string onnx = ModelFolder.Resolve(_modelPath, math);
+            // A first run downloads the models here, and says so on stderr as it goes.
+            string onnx = ModelFolder.Resolve(_modelPath, math,
+                                              ConsoleOutput.DownloadProgressCallback());
             ocr = new OrtOcr(onnx, threads: _threads, recInt8: false, math: math, furniture: furniture);
             var warmUp = new byte[200 * 200];
             Array.Fill(warmUp, (byte)255);

@@ -26,8 +26,14 @@ public static class ModelFolder
     /// <summary>The folder a run should load its models from (downloading them if need be).</summary>
     /// <param name="path">The <c>--model-dir</c> value, or <c>null</c> when it was not given.</param>
     /// <param name="math">Whether the math models are needed.</param>
+    /// <param name="downloadProgress">
+    /// Told about each file the download fetches, as <see cref="ModelDownload.Download"/> reports
+    /// it. <c>null</c> (the default) reports nothing; a folder that needs no download reports
+    /// nothing either way.
+    /// </param>
     /// <exception cref="ModelError">The folder is incomplete, or the download failed.</exception>
-    public static string Resolve(string? path, bool math)
+    public static string Resolve(string? path, bool math,
+                                 Action<ModelDownloadProgress>? downloadProgress = null)
     {
         string? given = path;
         if (given is null)
@@ -68,7 +74,7 @@ public static class ModelFolder
             // The stamp is only touched when the Hub was really reached (the reference's `_touch`
             // sits on the online branch alone): an offline run keeps the cached models and keeps
             // checking, rather than going quiet for a day.
-            if (ModelDownload.Download(snapshot, math))
+            if (ModelDownload.Download(snapshot, math, downloadProgress: downloadProgress))
             {
                 Touch(stamp);
             }

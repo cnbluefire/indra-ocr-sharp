@@ -403,6 +403,12 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   host happens to register one already) and `ViewerHostTests` pins the shutdown: the signal's
   target, and the server closing with the engine disposed (`docs/300-viewer-ctrl-c.md`).
   207 tests, 83/24/20/12.
-- 207 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
-  asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 11 cases plus the
-  `assets` case.
+- Step `310` done: the model download's progress — Core reports (`ModelDownloadProgress`:
+  file, path, url, downloaded, total) through `Download`/`Resolve`'s `downloadProgress`
+  callback, and the hosts print it on stderr (`ConsoleOutput`, shared by the CLI and the
+  viewer), a line per tenth with the file's name, its size, how much has arrived and the
+  percentage (`docs/310-model-download-progress.md`). 216 tests, 83/24/20/12, and both hosts
+  checked against a real first-run download.
+- 216 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
+  asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
+  `stderr`.
