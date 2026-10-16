@@ -399,6 +399,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   binaries need no ICU. It made `string.Normalize` a no-op, which broke one test: the port's
   NFC moved into managed code, over tables generated from CPython's own `unicodedata`
   (`docs/295-invariant-globalization.md`). 206 tests, 83/24/20/12.
-- 206 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
+- Step `300` done: the viewer's Ctrl+C — the console lifetime is asked for explicitly (the slim
+  host happens to register one already) and `ViewerHostTests` pins the shutdown: the signal's
+  target, and the server closing with the engine disposed (`docs/300-viewer-ctrl-c.md`).
+  207 tests, 83/24/20/12.
+- 207 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 11 cases plus the
   `assets` case.

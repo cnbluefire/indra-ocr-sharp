@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Indra.Ocr.ArgumentParsing;
 using Indra.Ocr.Onnx;
+using Microsoft.Extensions.Hosting;
 
 namespace Indra.Ocr.Viewer;
 
@@ -67,9 +68,28 @@ internal static class Viewer
     {
         ViewerArgs a = ViewerParser.Read(ViewerParser.Build().ParseArgs(args));
         using var engine = new Engine(a.ModelDir, a.Threads, a.Tesseract, a.Defaults);
+        WebApplication app = BuildHost(a, engine);
 
+        ConsoleOutput.Write($"Indra OCR viewer on http://localhost:{a.Port}  ({a.Threads} threads)\n");
+        app.Run();
+        return 0;
+    }
+
+    /// <summary>
+    /// The host and the five routes, built but not started: <see cref="Serve"/> runs it, and the
+    /// tests build it to look at what the host is made of (step 300).
+    /// </summary>
+    internal static WebApplication BuildHost(ViewerArgs a, Engine engine)
+    {
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder();
         builder.Logging.ClearProviders(); // the reference's log_message() is a no-op
+        // Ctrl+C (and SIGTERM) must stop the server, not kill the process: the console lifetime
+        // turns the signal into IHostApplicationLifetime.StopApplication, so Kestrel closes and
+        // the engine — the ONNX sessions — is disposed on the way out. The slim builder's host
+        // registers one already (Host.CreateEmptyApplicationBuilder), and it is asked for here
+        // rather than relied on: the viewer's Ctrl+C behaviour should not depend on that default
+        // staying true.
+        builder.Host.UseConsoleLifetime();
         builder.WebHost.UseUrls($"http://127.0.0.1:{a.Port}");
         builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
         WebApplication app = builder.Build();
@@ -124,10 +144,7 @@ internal static class Viewer
         });
 
         app.MapFallback(() => Send("not found"u8.ToArray(), "text/plain", 404));
-
-        ConsoleOutput.Write($"Indra OCR viewer on http://localhost:{a.Port}  ({a.Threads} threads)\n");
-        app.Run();
-        return 0;
+        return app;
     }
 
     /// <summary>The reference's <c>self.rfile.read(n)</c>: the whole request body.</summary>
