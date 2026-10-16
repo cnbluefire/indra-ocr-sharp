@@ -213,7 +213,12 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   Two parity fixes came out of it: `HF_ENDPOINT` was ignored, and the daily model-cache
   stamp was touched on the offline path (the reference only stamps after a real Hub
   call). 203 tests, 83/83 + 20/20 + 11/11 (`docs/250-reference-tests.md`).
-- [ ] `260` End-to-end parity sweep + docs.
+- [x] `260` End-to-end parity sweep — every PNG the reference ships under
+  `resources/indra-src/assets` (the four example pages, the two benchmark charts, the logo)
+  through both commands in `md`/`text`/`json`, then all seven at once through the worker pool
+  (parallel and serial) and through `--out` (`tools/scripts/test/parity_sweep.py`, 24 cases),
+  plus two of the example pages through the viewer's API (`viewer_parity.py`'s `assets` case).
+  All of it matches byte for byte; no finding (`docs/260-parity-sweep.md`).
 
 ### Phase 8 — Last
 - [x] `270` ONNX backend benchmark: `Microsoft.ML.OnnxRuntime` vs `Lokad.Onnx` on the Indra
@@ -354,5 +359,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   test name. It found two parity bugs: `HF_ENDPOINT` was ignored, and the model cache's
   daily stamp was touched on the offline path (the reference stamps only after a real Hub
   call). 203 tests, 83/83 + 20/20 + 11/11 (`docs/250-reference-tests.md`).
-- 203 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the viewer's command
-  line 20/20 and its HTTP harness 11/11.
+- Step `260` done: the end-to-end sweep over the reference's own material — `parity_sweep.py`
+  (24 cases: seven assets x three formats, the seven-asset pool parallel and serial, `--out`)
+  and `viewer_parity.py`'s new `assets` case (two example pages through the API, skipped when
+  `resources/` is not downloaded). Byte-identical everywhere; no finding
+  (`docs/260-parity-sweep.md`).
+- 203 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
+  asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 11 cases plus the
+  `assets` case.

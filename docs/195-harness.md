@@ -17,6 +17,7 @@ in `240`) needs the same report and diff with different commands and a different
 |---|---|
 | `tools/scripts/test/parity.py` | the machinery: `Case`, `Result`, `Report`, `Harness`, `diff`, `parse`, `select` |
 | `tools/scripts/test/cli_parity.py` | the CLI cases (77) and the two commands |
+| `tools/scripts/test/parity_sweep.py` | the CLI side over the reference's own material (step `260`); reuses `cli_parity.py`'s commands, environment and mask |
 | `tools/scripts/test/parity_selftest.py` | the machinery's own check: a mismatch must fail |
 | `tools/scripts/parity.ps1` | the short way in (the local interpreter, `PYTHONPATH` set) |
 | `docs/195-harness.md` | this file |

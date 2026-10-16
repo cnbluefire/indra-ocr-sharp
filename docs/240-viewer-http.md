@@ -16,7 +16,7 @@ thread-safe — is the engine's one lock enough?*
 | File | Contents |
 |---|---|
 | `tools/scripts/test/viewer_cli_parity.py` | **new** — the command-line cases (20), on `parity.Harness` |
-| `tools/scripts/test/viewer_parity.py` | the `concurrent` case, `Session.parallel`, `Session.record` |
+| `tools/scripts/test/viewer_parity.py` | the `concurrent` case, `Session.parallel`, `Session.record`; the `assets` case and `Case.skip_if` (step `260`) |
 | `src/Indra.Ocr.Viewer/Viewer.cs` | the `ModelError` stream fixed (below) |
 
 ## Two harnesses, because a server is not a command

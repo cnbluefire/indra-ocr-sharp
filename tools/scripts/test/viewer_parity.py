@@ -6,7 +6,9 @@ A viewer is a server, not a command, so this harness starts each side once — t
 once each — and drives both with the same sequence of requests.  ``parity.py`` supplies the
 report and the diff; the cases live here.  Requests are sent one at a time so the console lines
 they produce line up, except in ``concurrent``, which overlaps four of them on purpose (the
-engine's lock, not the request handling, is what serialises PDFium).
+engine's lock, not the request handling, is what serialises PDFium).  ``assets`` then sends two
+of the reference's own example pages through the API: the fixture's inputs are synthetic, and a
+real page is what the reading order and the CJK recogniser are for.
 
 What is compared: the status, the content type, and the body, case by case, plus the console
 lines each case made each server write.  A JSON body is parsed and re-dumped, so the **key
@@ -55,6 +57,11 @@ EXE = ROOT / "src" / "Indra.Ocr.Viewer" / "bin" / "Debug" / "net10.0" / "indra-o
 MODELS = ROOT / "resources" / "models"
 FIXTURE = ROOT / "src" / "Indra.Ocr.Tests" / "fixtures" / "viewer.json"
 WORK = ROOT / "temp" / "viewer_parity"
+EXAMPLES = ROOT / "resources" / "indra-src" / "assets" / "examples"
+
+#: The two example pages the ``assets`` case sends through the API (see it for why these two).
+#: ``resources/`` is externally downloaded material, so the case is skipped when it is absent.
+ASSET_PAGES = ("multi_column", "chinese_essay")
 
 ENV = dict(os.environ)
 ENV["PYTHONPATH"] = str(ROOT / "resources" / "indra-src")
@@ -91,12 +98,14 @@ class Case:
     """A named sequence of requests, driven against both servers.
 
     ``console_exclude`` names something in the console lines this case makes the servers write
-    that cannot match; those lines are then left out of the comparison.
+    that cannot match; those lines are then left out of the comparison.  ``skip_if`` returns why
+    the case cannot run here — a folder that is not downloaded — or ``None``.
     """
 
     name: str
     run: Callable[["Session"], None]
     console_exclude: str | None = None
+    skip_if: Callable[[], str | None] | None = None
 
 
 class Session:
@@ -130,11 +139,15 @@ class Session:
              exclude: str | None = None) -> Step:
         return self.request(label, "POST", path, body, exclude)
 
-    def upload(self, name: str) -> str:
-        """POST /upload for one of the fixture's inputs; returns the id it gave back."""
-        answer = json.loads(self.post(f"upload-{name}", "/upload", self.inputs[name]).body)
+    def upload_bytes(self, name: str, body: bytes) -> str:
+        """POST /upload for raw bytes; returns the id it gave back."""
+        answer = json.loads(self.post(f"upload-{name}", "/upload", body).body)
         self.ids.append(answer["id"])
         return answer["id"]
+
+    def upload(self, name: str) -> str:
+        """POST /upload for one of the fixture's inputs."""
+        return self.upload_bytes(name, self.inputs[name])
 
     def page(self, label: str, did: str, n: int, opts: dict | None = None,
              exclude: str | None = None) -> Step:
@@ -239,6 +252,26 @@ def case_five_uploads(s: Session) -> None:
     s.page("first-is-gone", first, 0)
 
 
+def missing_assets() -> str | None:
+    """Why the ``assets`` case cannot run here, or ``None`` when it can."""
+    if not all((EXAMPLES / f"{name}.png").is_file() for name in ASSET_PAGES):
+        return "resources/indra-src/assets/examples is not there"
+    return None
+
+
+def case_assets(s: Session) -> None:
+    """Two of the reference's own pages, straight through the API.
+
+    The fixture's inputs are small and synthetic; these are the pages the pipeline's reading order
+    and its CJK recogniser exist for.  The viewer's JSON is its own encoding — not the CLI's
+    ``--format json`` — so a real page with blocks, tokens and a reading order has to come back
+    spelled the way the reference spells it, not just with the same values.
+    """
+    for name in ASSET_PAGES:
+        did = s.upload_bytes(name, (EXAMPLES / f"{name}.png").read_bytes())
+        s.page(f"page-{name}", did, 0)
+
+
 CASES = [
     Case("info", case_info),
     Case("page", case_page),
@@ -252,6 +285,9 @@ CASES = [
     # interleave: the answers are compared, the lines are not.
     Case("concurrent", case_concurrent, console_exclude="the page lines can interleave"),
     Case("five-uploads", case_five_uploads),
+    # The reference's own example pages: real material through the API, where the fixture's inputs
+    # are synthetic.  A new asset does not join this one — it is picked for what it exercises.
+    Case("assets", case_assets, skip_if=missing_assets),
 ]
 
 
@@ -453,6 +489,9 @@ def main(argv: list[str]) -> int:
         # ran (both sides are driven one request at a time, so the order is the same).
         reference_seen = port_seen = 0
         for case in cases:
+            if case.skip_if is not None and (reason := case.skip_if()):
+                report.skip(case.name, reason)
+                continue
             ref_session = Session(reference.connection, reference.port, inputs)
             port_session = Session(port.connection, port.port, inputs)
             case.run(ref_session)
