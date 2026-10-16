@@ -51,3 +51,4 @@ status. Keep these in sync with `PLAN.md`.
 | [260](260-parity-sweep.md) | End-to-end parity sweep (the reference's own assets) |
 | 270 | [ONNX backend benchmark (ONNX Runtime vs Lokad.Onnx)](270-onnx-benchmark.md) |
 | [280](280-deskew-threads.md) | The deskew search's threads (and why ReadyToRun is not it) |
+| [290](290-aot.md) | NativeAOT: the properties, and the two warnings that had to go |

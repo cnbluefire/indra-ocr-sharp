@@ -69,6 +69,11 @@ package** (`Microsoft.ML.OnnxRuntime`).
    - Binaries and `resources/` contents must never be committed to git.
 7. **Git**
    - Commit after every step, so work can be traced back later.
+8. **AOT.** The three class libraries (`Indra.Ocr.Core`, `Indra.Ocr`, `Indra.Ocr.Pdf`) set
+   `IsAotCompatible` and the two executables (`Indra.Ocr.Cli`, `Indra.Ocr.Viewer`) set
+   `PublishAot`, so the solution builds with the trim/AOT analyzers on and both hosts publish
+   as native binaries. Warnings that come from a third-party assembly and cannot be fixed are
+   suppressed with the reason written down next to them (`docs/290-aot.md`).
 
 ## Parity decisions (confirmed with the user)
 
@@ -105,6 +110,10 @@ package** (`Microsoft.ML.OnnxRuntime`).
 ## Environment
 
 - .NET SDK 10.0.400 (target `net10.0`).
+- NativeAOT needs a platform toolchain (Windows: the MSVC linker + Windows SDK from Visual
+  Studio's *Desktop development with C++* workload; Linux: clang). It is **not** installed on
+  this machine, so the AOT publish is verified where it exists; the analyzers and a trimmed
+  self-contained publish are verified here (`docs/290-aot.md`).
 - `uv` 0.12.7 available; Python reference env at `tools/pyenv` (gitignored).
 - Local models at `resources/models` (det/rec/rec_cjk/order/orient/script/meta.json).
   `mask.onnx` and the math models are absent; handle their absence the way Python does.

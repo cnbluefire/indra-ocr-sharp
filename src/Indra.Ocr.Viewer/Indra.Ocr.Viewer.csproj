@@ -3,6 +3,10 @@
   <PropertyGroup>
     <RootNamespace>Indra.Ocr.Viewer</RootNamespace>
     <AssemblyName>indra-ocr-viewer</AssemblyName>
+    <!-- The viewer ships as a NativeAOT binary too (`dotnet publish -c Release -r <rid>`). Its
+         JSON is source-generated (ViewerJson) and its routes are the minimal API's, so nothing
+         in it needs runtime code generation; PublishAot keeps the analyzers honest about that. -->
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
 
   <!-- The viewer is a front end like the CLI: Core holds the pipeline, Pdf and Indra.Ocr the two

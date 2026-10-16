@@ -4,6 +4,11 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Indra.Ocr.Cli</RootNamespace>
     <AssemblyName>indra-ocr</AssemblyName>
+    <!-- The console app ships as a NativeAOT binary (`dotnet publish -c Release -r <rid>`): one
+         native executable, no runtime to install. PublishAot turns the AOT/trim analyzers on for
+         every build, so the whole pipeline has to stay IL2xxx/IL3xxx-clean — the worker mode
+         included (see WorkerPool.WorkerStartInfo). -->
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
 
   <!-- The CLI is only a front end: Core holds the pipeline, Pdf and Indra.Ocr the two decoders.

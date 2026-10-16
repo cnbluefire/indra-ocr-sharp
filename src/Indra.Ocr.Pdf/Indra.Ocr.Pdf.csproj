@@ -3,6 +3,9 @@
   <PropertyGroup>
     <RootNamespace>Indra.Ocr.Pdf</RootNamespace>
     <AssemblyName>Indra.Ocr.Pdf</AssemblyName>
+    <!-- A class library: it has to stay NativeAOT- and trim-clean, so the analyzers run on every
+         build (IL2xxx / IL3xxx). The two hosts publish with PublishAot, which is what needs it. -->
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <!-- The only project that depends on PDFium. It references Core (for GrayImage) but Core

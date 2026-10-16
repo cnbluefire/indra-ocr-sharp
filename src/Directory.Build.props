@@ -10,5 +10,14 @@
          Six Labors Split License), and it carries advisories that are only fixed in 3.x.
          We accept that knowingly: the port needs a permissive image codec. -->
     <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
+    <!-- NativeAOT/trimming: IL2104 (the trimmer) and IL3053 (ILC) are the per-assembly
+         summaries.  SixLabors.ImageSharp 2.1.13 — the last Apache-2.0 release, see
+         Directory.Packages.props — is the only assembly that produces them, and with
+         -p:TrimmerSingleWarn=false its whole warning set is a single IL2075 in
+         ExifTagDescriptionAttribute.GetDescription, reflection over EXIF tag fields: a path the
+         port never reaches, because it decodes pixels and reads no metadata.  The summaries
+         would also hide another assembly's warnings, so if a new package starts warning, look
+         for it with -p:TrimmerSingleWarn=false (docs/290-aot.md). -->
+    <NoWarn>$(NoWarn);IL2104;IL3053</NoWarn>
   </PropertyGroup>
 </Project>

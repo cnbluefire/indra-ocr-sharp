@@ -53,7 +53,11 @@ import parity
 
 ROOT = Path(__file__).resolve().parents[3]
 PY = ROOT / "tools" / "pyenv" / "Scripts" / "python.exe"
-EXE = ROOT / "src" / "Indra.Ocr.Viewer" / "bin" / "Debug" / "net10.0" / "indra-ocr-viewer.exe"
+#: The viewer's executable — the Debug build by default.  ``INDRA_OCR_VIEWER_EXE`` points the
+#: harness at another one (a Release or NativeAOT publish).
+EXE = Path(os.environ.get(
+    "INDRA_OCR_VIEWER_EXE",
+    ROOT / "src" / "Indra.Ocr.Viewer" / "bin" / "Debug" / "net10.0" / "indra-ocr-viewer.exe"))
 MODELS = ROOT / "resources" / "models"
 FIXTURE = ROOT / "src" / "Indra.Ocr.Tests" / "fixtures" / "viewer.json"
 WORK = ROOT / "temp" / "viewer_parity"

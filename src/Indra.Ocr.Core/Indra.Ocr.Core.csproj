@@ -3,6 +3,9 @@
   <PropertyGroup>
     <RootNamespace>Indra.Ocr</RootNamespace>
     <AssemblyName>Indra.Ocr.Core</AssemblyName>
+    <!-- A class library: it has to stay NativeAOT- and trim-clean, so the analyzers run on every
+         build (IL2xxx / IL3xxx). The two hosts publish with PublishAot, which is what needs it. -->
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <!-- The tests reach two internals: LayoutPost.IsItem (the reference's _ITEM predicate, checked

@@ -238,6 +238,20 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   lose: the app is not startup-bound, its ~0.9 s before the page is ONNX Runtime's own
   session setup, so the default Release publish stays (`docs/280-deskew-threads.md`).
 
+### Phase 10 — NativeAOT
+- [x] `290` the solution is AOT-ready: the three class libraries set `IsAotCompatible` and
+  the two hosts `PublishAot`, so every build runs the trim and AOT analyzers and
+  `dotnet publish -r <rid>` makes a native binary. `IL3000` in the worker pool is fixed (the
+  assembly path is `AppContext.BaseDirectory` + the entry assembly's name, not
+  `Assembly.Location`, which is empty in a single-file/AOT app — and a `dotnet` host is the
+  one case such a build cannot be in); ImageSharp 2.1.13's `IL2104`/`IL3053` summaries are
+  suppressed with the reason written down, its whole warning set being one `IL2075` in an
+  EXIF tag-description helper the port never reaches. No MSVC toolchain here, so the AOT
+  publish itself is left to a machine that has one; what is verified here is a **trimmed
+  self-contained** publish of both hosts — 0 warnings, and all four harnesses green against
+  those binaries (`INDRA_OCR_EXE` / `INDRA_OCR_VIEWER_EXE` point them at any build)
+  (`docs/290-aot.md`).
+
 ## Current state
 
 - Environment verified: dotnet 10.0.400, uv 0.12.7, Python ref env at `tools/pyenv`.
@@ -377,6 +391,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - Step `280` done: the deskew search's threads — the parallel angle scoring above; all five
   harnesses still byte-identical (203 tests, 83/83 + 24/24 + 20/20 + 12)
   (`docs/280-deskew-threads.md`).
+- Step `290` done: the AOT properties on the five projects, the `IL3000` fix and the
+  ImageSharp suppression; build clean with the analyzers on, 203 tests, and the four
+  harnesses (83/24/20/12) green on the Debug build *and* on a trimmed self-contained publish
+  of each host (`docs/290-aot.md`).
 - 203 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 11 cases plus the
   `assets` case.

@@ -3,6 +3,9 @@
   <PropertyGroup>
     <RootNamespace>Indra.Ocr.Images</RootNamespace>
     <AssemblyName>Indra.Ocr</AssemblyName>
+    <!-- A class library: it has to stay NativeAOT- and trim-clean, so the analyzers run on every
+         build (IL2xxx / IL3xxx). ImageSharp's own aggregates are suppressed below. -->
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <!-- The encoded-image layer: it decodes image files (ImageSharp) to Core's GrayImage and turns

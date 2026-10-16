@@ -201,12 +201,15 @@ internal sealed class WorkerPool : IDisposable
             CreateNoWindow = true,
         };
 
-        // Run as `dotnet indra-ocr.dll`: the host needs the assembly as its first argument.
-        string? assembly = Assembly.GetEntryAssembly()?.Location;
-        if (assembly is not null &&
-            Path.GetFileNameWithoutExtension(host).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
+        // Run as `dotnet indra-ocr.dll`: the host needs the assembly as its first argument. The
+        // entry assembly is asked for by name in the base directory rather than through
+        // Assembly.Location, which is empty in a single-file or NativeAOT build (IL3000) — and a
+        // `dotnet` host is exactly the case that cannot happen there, because such a build is its
+        // own host. (The check above already proved this assembly *is* the entry assembly.)
+        if (Path.GetFileNameWithoutExtension(host).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
         {
-            info.ArgumentList.Add(assembly);
+            string name = typeof(WorkerPool).Assembly.GetName().Name!;
+            info.ArgumentList.Add(Path.Combine(AppContext.BaseDirectory, name + ".dll"));
         }
 
         info.Environment[WorkerProtocol.WorkerVariable] = "1";

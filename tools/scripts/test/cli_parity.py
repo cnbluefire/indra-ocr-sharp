@@ -32,7 +32,12 @@ import parity
 
 ROOT = Path(__file__).resolve().parents[3]
 PY = ROOT / "tools" / "pyenv" / "Scripts" / "python.exe"
-EXE = ROOT / "src" / "Indra.Ocr.Cli" / "bin" / "Debug" / "net10.0" / "indra-ocr.exe"
+#: The port's executable — the Debug build by default.  ``INDRA_OCR_EXE`` points the harness at
+#: another one (a Release or NativeAOT publish), which is how a published binary is compared
+#: against the reference.
+EXE = Path(os.environ.get(
+    "INDRA_OCR_EXE",
+    ROOT / "src" / "Indra.Ocr.Cli" / "bin" / "Debug" / "net10.0" / "indra-ocr.exe"))
 TEMP = ROOT / "temp"
 MODELS = ROOT / "resources" / "models"
 SCRIPTS = ROOT / "tools" / "scripts"
