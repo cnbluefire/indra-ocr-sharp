@@ -91,7 +91,8 @@ does.
   package that drives the `tesseract` binary; neither is present on this machine, so the
   reference itself dies at startup with `ModuleNotFoundError` when the option is given. The
   port has no equivalent and says so (`ViewerError: tesseract is not supported by this port`,
-  exit 1) rather than silently ignoring the flag. Recorded as a deviation.
+  exit 1) rather than silently ignoring the flag. Recorded as a deviation, and **out of scope by
+  decision** (user, 2026-10-16) — not something a later step picks up.
 - **Serialisation is step `220`.** The engine returns records; the JSON spelling (and the
   `source`-generated serializer) is the next step's business. The records are declared in the
   reference's key order so that step can keep it.

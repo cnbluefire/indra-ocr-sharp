@@ -43,7 +43,7 @@ status. Keep these in sync with `PLAN.md`.
 | [210](210-viewer-engine.md) | Viewer Engine |
 | [215](215-argparse-core.md) | Argparse engine + shared options move into Core |
 | [220](220-viewer-api.md) | Viewer HTTP layer (minimal API + source-gen JSON) |
-| 230 | PAGE/LOGO |
+| [230](230-viewer-page.md) | The viewer's page (`PAGE`/`LOGO`) |
 | 240 | Viewer HTTP tests |
 | 250 | Port python unit tests |
 | 260 | End-to-end sweep |

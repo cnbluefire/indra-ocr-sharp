@@ -25,6 +25,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   contrast, *does* call the CRT's `expf`/`log1pf` (which is why `OrderPost` uses `MathF.Exp`);
   see `docs/110-order-post.md`.
 - Order: Core + Cli first (aligned against `indra-ocr`), then Viewer.
+- The viewer's Tesseract comparison is **out of scope** (user, 2026-10-16). The reference needs
+  `pytesseract` and the `tesseract` binary and dies at startup without them; the port keeps the
+  flag in its `--help`, refuses it at startup (exit 1) and never offers a backend, so `/info`
+  always answers `"tesseract": false`. No further work planned (`docs/230-viewer-page.md`).
 - Math (`--math`) ported last.
 - `resources/` read-only and gitignored; binaries/temp gitignored.
 
@@ -155,9 +159,15 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   key order and values match, the spelling of numbers and whitespace does not. `--help`/`--version`
   are byte-identical; `viewer_parity.py` drives both servers over nine request cases and the console
   lines (`docs/220-viewer-api.md`).
-- [ ] `230` PAGE/LOGO port.
-- [ ] `240` HTTP parity tests — `viewer_parity.py` already runs the API cases; `240` adds the page
-  itself, `--help`/`--version` over the wire, the banner and the `--tesseract` refusal.
+- [x] `230` The viewer's page — `viewer.PAGE` (22 kB of HTML/CSS/JS) and `viewer.LOGO` (the
+  base64 Datalab mark) taken from the reference module by `gen_viewer_page.py` and written as C#
+  literals, `Render()` substituting the logo. The reference serves its page exactly as spelled,
+  and CPython normalises the line endings inside string literals, so the answer is LF — which the
+  port keeps. `fixtures/viewer_page.html` records the body and the `page` case of
+  `viewer_parity.py` compares it over the wire byte for byte (`docs/230-viewer-page.md`).
+- [ ] `240` HTTP parity tests — `viewer_parity.py` already runs the API and the page; `240` adds
+  the remaining surface: `--help`/`--version` over the wire, the banner, the `--tesseract`
+  refusal and the port/threads variants.
   Note: requests arrive on several threads while PDFium is not thread-safe (step `190` keeps one
   process per core for that reason). The engine serialises every page under one lock and the API
   calls it directly — no second path around it.
@@ -256,5 +266,13 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   both servers driven over the same requests) pass. The JSON bytes are deliberately not
   `json.dumps`'s (whitespace, non-ASCII escaping, the spelling of integral doubles), so the HTTP
   comparison is semantic — every key, its position and every value (`docs/220-viewer-api.md`).
-- 157 tests green, build clean (0 warnings); the CLI alignment harness still 77/77 and the viewer's
-  HTTP harness 9/9.
+- Step `230` done: the viewer's page — `viewer.PAGE` (22 kB of HTML/CSS/JS) and `viewer.LOGO` (the
+  base64 Datalab mark) are taken from the reference module by
+  `tools/scripts/test/gen_viewer_page.py` (writing `ViewerPageAssets.Generated.cs` and the
+  `fixtures/viewer_page.html` the C# test reads) and `ViewerPage.Render()` puts the logo where
+  `__LOGO__` is. The reference serves its page exactly as spelled in its source, and CPython
+  normalises the line endings inside string literals, so the answer is LF; the port keeps it.
+  `ViewerPageTests` (2) compare the page with the record, and the harness's `page` case compares
+  `/` and `/index.html` byte for byte over the wire (`docs/230-viewer-page.md`).
+- 159 tests green, build clean (0 warnings); the CLI alignment harness still 77/77 and the viewer's
+  HTTP harness 10/10.

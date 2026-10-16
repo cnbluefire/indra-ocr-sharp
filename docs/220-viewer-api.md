@@ -16,7 +16,7 @@ page itself (`viewer.PAGE`) is step `230`; this step is the API, aligned on its 
 | `src/Indra.Ocr.Viewer/ViewerParser.cs` | the reference's `_main` parser (`viewer.py`'s docstring as the description) and `ViewerArgs` |
 | `src/Indra.Ocr.Viewer/Viewer.cs` | the host: the parser, the engine, the routes, the banner, `main`'s exit codes |
 | `src/Indra.Ocr.Viewer/ViewerJson.cs` | the source-generated context (`camelCase` + the `[JsonPropertyName]`s that keep snake_case) |
-| `src/Indra.Ocr.Viewer/ViewerPage.cs` | `PAGE`/`LOGO` — a placeholder until step `230` |
+| `src/Indra.Ocr.Viewer/ViewerPage.cs` | `PAGE`/`LOGO` — a placeholder in this step, the real page in `230` |
 | `src/Indra.Ocr.Viewer/Program.cs` | `return Viewer.Run(args);` |
 | `src/Indra.Ocr.Viewer/Requests.cs` | `ViewerDefaults`/`PageOptions`/`PageRequest` (step `210`), now serialised |
 | `src/Indra.Ocr.Viewer/Responses.cs` | `UploadResponse`/`PageResponse` (step `210`) + `InfoResponse`, `ErrorResponse` |
@@ -78,9 +78,9 @@ that cannot match by construction.
   because that is what the reference's `except Exception` puts in `{"error": …}`.
 - **`MapFallback` is the 404.** The reference answers `not found` for every path it does not
   know; the port registers the five routes and one fallback.
-- **The page is a placeholder here.** `ViewerPage.Html` is a one-line note so the API can be
-  exercised on its own; step `230` replaces it with the reference's HTML and logo, and adds the
-  page cases to the harness.
+- **The page is a placeholder in this step.** `ViewerPage.Render()` answered with a one-line note
+  so the API could be exercised on its own; step `230` replaces it with the reference's HTML and
+  logo and adds the `page` case to the harness (`docs/230-viewer-page.md`).
 
 ## Known deviations
 
@@ -96,7 +96,8 @@ that cannot match by construction.
   answers `'id'`.
 - **The transport** (above): HTTP version, `Server:`/`Date:`, keep-alive.
 - **`--tesseract` is refused at startup** (step `210`), so `/info` always answers
-  `"tesseract": false` and the page's Tesseract tab never appears.
+  `"tesseract": false` and the page's Tesseract tab never appears. The comparison is out of scope
+  by decision, not pending (`docs/230-viewer-page.md`).
 - **`--math` reaches `OrtOcr`'s missing-model failure** on both sides, but the message names the
   Python exception and path on the reference and the .NET one here; not compared.
 
@@ -110,12 +111,13 @@ that cannot match by construction.
 - `dotnet test src/Indra.Ocr.slnx --filter ViewerArgparseTests` — 6/6: the help, the version, the
   error wording (including `ambiguous option: --t takes --threads, --tesseract, --tesseract-lang`),
   the defaults and the option reading.
-- `tools/scripts/test/viewer_parity.py` — **9/9**: `info`, `not-found`, `errors`, `bad-json`,
-  `upload-and-page` (all six inputs), `page-options` (default, `mode text`, `mode ocr`,
-  `model_order`, `image_ocr false`, `dpi 100`, `furniture`), `page-2`, `five-uploads` and `stderr`.
+- `tools/scripts/test/viewer_parity.py` — **10/10**: `info`, `page` (added in `230`), `not-found`,
+  `errors`, `bad-json`, `upload-and-page` (all six inputs), `page-options` (default, `mode text`,
+  `mode ocr`, `model_order`, `image_ocr false`, `dpi 100`, `furniture`), `page-2`, `five-uploads`
+  and `stderr`.
   Each case compares the status, the content type and the body of every request, and the console
   lines that case made the servers write. The harness starts both servers once (the models load
   once each) and drives them with the same requests; the six inputs are the ones the C# engine
   tests use, so the two harnesses cover the same documents.
-- `dotnet test src/Indra.Ocr.slnx` — 157/157; `cli_parity.py` — 77/77 (step `215` moved the parser
+- `dotnet test src/Indra.Ocr.slnx` — 159/159; `cli_parity.py` — 77/77 (step `215` moved the parser
   into Core and the command line did not shift).

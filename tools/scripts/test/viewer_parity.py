@@ -140,6 +140,12 @@ def case_info(s: Session) -> None:
     s.get("info", "/info")
 
 
+def case_page(s: Session) -> None:
+    """The page itself: 22 kB of HTML with the logo in it, compared byte for byte."""
+    s.get("page", "/")
+    s.get("index", "/index.html")
+
+
 def case_not_found(s: Session) -> None:
     s.get("get-unknown", "/nope")
     s.post("post-unknown", "/nope", b"{}")
@@ -190,6 +196,7 @@ def case_five_uploads(s: Session) -> None:
 
 CASES = [
     Case("info", case_info),
+    Case("page", case_page),
     Case("not-found", case_not_found),
     Case("errors", case_errors),
     Case("bad-json", case_bad_json, console_exclude="the JSON parser's wording"),
@@ -204,11 +211,15 @@ CASES = [
 
 
 def canonical(body: bytes, content_type: str, ids: Sequence[str] = ()) -> bytes:
-    """The body as both sides can be compared (see the module docstring)."""
-    text = _without_ids(body, ids)
+    """The body as both sides can be compared (see the module docstring).
+
+    The ids are only taken out of JSON bodies: the page carries an 8 kB base64 logo, and a random
+    id could in principle spell itself inside it — on one side only, which would fail the
+    comparison for no reason.
+    """
     if not content_type.startswith("application/json"):
-        return text
-    data = _floatify(_mask(json.loads(text.decode("utf-8"))))
+        return body
+    data = _floatify(_mask(json.loads(_without_ids(body, ids).decode("utf-8"))))
     return json.dumps(data, ensure_ascii=False, indent=1).encode("utf-8")
 
 
