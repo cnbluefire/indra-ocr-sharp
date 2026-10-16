@@ -1,6 +1,7 @@
 using System.Text;
 using Indra.Ocr.Cli.Argparse;
 using Indra.Ocr.Cli.Py;
+using Indra.Ocr.Cli.Worker;
 using Indra.Ocr.Images;
 using Indra.Ocr.Layout;
 using Indra.Ocr.Onnx;
@@ -92,12 +93,8 @@ internal static class Cli
         // convert_many resolves (and on a first run downloads) the models once, before the
         // workers start; a ModelError reaches main() and becomes one line and exit 1.
         string modelDirectory = ModelFolder.Resolve(a.PathOrNull("model_dir"), math);
-        int threads = Math.Max(1, cores > 0 ? cores : CliParser.UsableCores());
-
-        using var ocr = new OrtOcr(modelDirectory, threads: threads, providers: null,
-                                   furniture: furniture, math: math);
-        var pdf = new PdfConverter(ocr, dpi, mode, pdfOrder, imageOcr);
-        var images = new ImageConverter(ocr);
+        int threads = Math.Max(1, cores != 0 ? cores : CliParser.UsableCores());
+        var load = new LoadOptions(modelDirectory, dpi, furniture, math, mode, pdfOrder, imageOcr);
 
         List<PyPath> inputs = a.PathList("inputs");
         List<object> plan = Plan(inputs, maxPages, password);
@@ -105,7 +102,7 @@ internal static class Cli
         var names = new HashSet<string>();
 
         foreach ((string path, object result) in ConvertMany(inputs, plan, maxPages, password,
-                                                             threads, pdf, images))
+                                                             threads, load))
         {
             PyPath input = PyPath.From(path);
             var chunks = new List<string>();
@@ -194,7 +191,7 @@ internal static class Cli
 
             if (!OrtOcr.IsPdf(path))
             {
-                plan.Add(new List<Unit> { new(path, null, maxPages) });
+                plan.Add(new List<WorkUnit> { new(path, null, maxPages) });
                 continue;
             }
 
@@ -215,10 +212,10 @@ internal static class Cli
                 count = Math.Min(count, maxPages);
             }
 
-            var units = new List<Unit>();
+            var units = new List<WorkUnit>();
             for (int i = 0; i < count; i++)
             {
-                units.Add(new Unit(path, i, password));
+                units.Add(new WorkUnit(path, i, password));
             }
 
             plan.Add(units);
@@ -232,14 +229,46 @@ internal static class Cli
     /// the pages in page order or the error that stopped the file.
     /// </summary>
     /// <remarks>
-    /// The reference spreads the pages over one worker process per core; the pool is the next
-    /// step, so every input is read in this process for now (the pages, and so the output, are
-    /// the same either way).
+    /// The pages of all inputs are spread over one worker process per core (fewer when the
+    /// machine's memory is under <see cref="WorkerMemory"/> per worker); with fewer than
+    /// <see cref="MinPoolPages"/> pages, or fewer than two workers, one process reads everything
+    /// with all the cores on each page.
     /// </remarks>
-    private static IEnumerable<(string Path, object Result)> ConvertMany(
-        List<PyPath> paths, List<object> plan, int maxPages, string? password, int threads,
-        PdfConverter pdf, ImageConverter images)
+    internal static IEnumerable<(string Path, object Result)> ConvertMany(
+        List<PyPath> paths, List<object> plan, int maxPages, string? password, int cores,
+        LoadOptions load)
     {
+        int pages = 0;
+        foreach (object item in plan)
+        {
+            if (item is List<WorkUnit> units)
+            {
+                pages += units.Count;
+            }
+        }
+
+        int workers = Math.Min(Math.Min(cores / ThreadsPerWorker, pages), MaxWorkersForMemory());
+        if (workers < 2 || pages < MinPoolPages)
+        {
+            return Serial(paths, plan, maxPages, password, cores, load);
+        }
+
+        return Pooled(paths, plan, workers, maxPages, password, cores, load);
+    }
+
+    /// <summary>
+    /// <c>parallel._serial</c>: the inputs in this process, <paramref name="threads"/> ONNX
+    /// Runtime threads on each page.
+    /// </summary>
+    private static IEnumerable<(string Path, object Result)> Serial(
+        List<PyPath> paths, List<object> plan, int maxPages, string? password, int threads,
+        LoadOptions load)
+    {
+        using var ocr = new OrtOcr(load.ModelDirectory, threads: threads, providers: null,
+                                   furniture: load.Furniture, math: load.Math);
+        var pdf = new PdfConverter(ocr, load.Dpi, load.Mode, load.PdfOrder, load.ImageOcr);
+        var images = new ImageConverter(ocr);
+
         for (int i = 0; i < paths.Count; i++)
         {
             string path = paths[i].ToString();
@@ -260,6 +289,141 @@ internal static class Cli
             }
 
             yield return (path, result);
+        }
+    }
+
+    /// <summary>
+    /// <c>parallel._pooled</c>: the pages on a pool of worker processes. If the workers cannot
+    /// run — the reference warns about the spawn start method importing the caller's main
+    /// module, which a self-exec worker never does, but a worker can still die — the remaining
+    /// inputs are read in this process.
+    /// </summary>
+    private static IEnumerable<(string Path, object Result)> Pooled(
+        List<PyPath> paths, List<object> plan, int workers, int maxPages, string? password,
+        int cores, LoadOptions load)
+    {
+        var flat = new List<WorkUnit>();
+        foreach (object item in plan)
+        {
+            if (item is List<WorkUnit> units)
+            {
+                flat.AddRange(units);
+            }
+        }
+
+        // Thread pools of the libraries the workers import (OpenMP, BLAS) take their size from
+        // the environment at import: keep each to the worker's share while they start.
+        string[] names = ["OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"];
+        string?[] saved = new string?[names.Length];
+        for (int i = 0; i < names.Length; i++)
+        {
+            saved[i] = Environment.GetEnvironmentVariable(names[i]);
+        }
+
+        SetWorkerThreads(names, ThreadsPerWorker);
+        WorkerPool? pool = null;
+        bool broken = false;
+        try
+        {
+            pool = new WorkerPool(workers, load, ThreadsPerWorker, flat);
+        }
+        catch (Exception e) when (e is IOException or InvalidOperationException
+                                  or NotSupportedException
+                                  or System.ComponentModel.Win32Exception)
+        {
+            broken = true; // the reference's BrokenProcessPool
+        }
+        finally
+        {
+            SetWorkerThreads(names, saved);
+        }
+
+        int unit = 0;
+        int done = 0;
+        if (!broken)
+        {
+            try
+            {
+                for (int i = 0; i < paths.Count && !broken; i++)
+                {
+                    string path = paths[i].ToString();
+                    if (plan[i] is InputError error)
+                    {
+                        yield return (path, error);
+                        done++;
+                        continue;
+                    }
+
+                    var pages = new List<(int Index, OcrPage Page)>();
+                    InputError? failure = null;
+                    foreach (WorkUnit _ in (List<WorkUnit>)plan[i])
+                    {
+                        WorkResult result;
+                        try
+                        {
+                            result = pool!.Result(unit++);
+                        }
+                        catch (BrokenPoolException)
+                        {
+                            broken = true;
+                            break;
+                        }
+
+                        if (result.Error is not null)
+                        {
+                            failure ??= result.Error;
+                        }
+                        else
+                        {
+                            pages.AddRange(result.Pages);
+                        }
+                    }
+
+                    if (broken)
+                    {
+                        break;
+                    }
+
+                    yield return (path, failure is not null ? failure : pages);
+                    done++;
+                }
+            }
+            finally
+            {
+                pool!.Dispose();
+            }
+        }
+
+        if (broken)
+        {
+            PyConsole.WriteError(
+                "RuntimeWarning: indra_ocr.convert_many: the worker processes stopped (with the " +
+                "spawn start method, call convert_many under `if __name__ == \"__main__\":`); " +
+                "reading the remaining inputs in this process\n");
+            foreach ((string path, object result) in
+                     Serial(paths.GetRange(done, paths.Count - done),
+                            plan.GetRange(done, plan.Count - done), maxPages, password, cores,
+                            load))
+            {
+                yield return (path, result);
+            }
+        }
+    }
+
+    /// <summary>Set the thread-pool environment variables (a <c>null</c> value removes them).</summary>
+    private static void SetWorkerThreads(string[] names, int value)
+    {
+        foreach (string name in names)
+        {
+            Environment.SetEnvironmentVariable(name, value.ToString());
+        }
+    }
+
+    private static void SetWorkerThreads(string[] names, string?[] values)
+    {
+        for (int i = 0; i < names.Length; i++)
+        {
+            Environment.SetEnvironmentVariable(names[i], values[i]);
         }
     }
 
@@ -288,8 +452,30 @@ internal static class Cli
         return pages;
     }
 
-    /// <summary>One unit of work: a page of a PDF, or a whole image file (the reference's tuple).</summary>
-    private readonly record struct Unit(string Path, int? PageIndex, object? Extra);
+    /// <summary>ORT threads in each worker process (<c>parallel.THREADS_PER_WORKER</c>).</summary>
+    private const int ThreadsPerWorker = 1;
+
+    /// <summary>Fewer pages than this: one process, all cores on each page.</summary>
+    private const int MinPoolPages = 4;
+
+    /// <summary>Bytes a worker can reach (giant scans); caps the pool.</summary>
+    private const long WorkerMemory = 1_500_000_000;
+
+    /// <summary>
+    /// <c>parallel._max_workers_for_memory</c>: the physical memory divided by
+    /// <see cref="WorkerMemory"/>. Windows Python has no <c>os.sysconf</c> and returns
+    /// <c>1 &lt;&lt; 30</c>, i.e. never the limit.
+    /// </summary>
+    private static int MaxWorkersForMemory()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return 1 << 30;
+        }
+
+        long ram = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+        return ram <= 0 ? 1 << 30 : Math.Max(1, (int)Math.Min(int.MaxValue, ram / WorkerMemory));
+    }
 
     /// <summary>The reference's <c>--format json</c> line for one page.</summary>
     private static string PageJson(PyPath path, int index, OcrPage page)

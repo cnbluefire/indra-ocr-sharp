@@ -36,7 +36,7 @@ status. Keep these in sync with `PLAN.md`.
 | [165](165-project-split.md) | Three-way split: `Indra.Ocr` / `Indra.Ocr.Pdf` / `Core` |
 | [170](170-models.md) | models (Hugging Face download) |
 | [180](180-cli.md) | CLI (argparse, model folder, output, exit codes) |
-| 190 | convert_many (worker-process pool) + output |
+| [190](190-parallel.md) | convert_many (worker-process pool) |
 | 195 | CLI alignment harness |
 | 200 | MathReader |
 | 210 | Viewer Engine |

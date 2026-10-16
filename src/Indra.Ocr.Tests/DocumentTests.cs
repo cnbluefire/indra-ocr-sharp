@@ -22,6 +22,7 @@ namespace Indra.Ocr.Tests;
 /// <see cref="TestModels"/>). The sample PDFs travel inside the fixture, so the tests need no
 /// Python and no file beyond what they write themselves.
 /// </remarks>
+[Collection("pdfium")]
 public class DocumentTests
 {
     private static readonly JsonElement Fx = Fixtures.Load("document.json");

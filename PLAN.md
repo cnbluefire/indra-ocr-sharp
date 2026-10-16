@@ -114,10 +114,14 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `180` CLI — the argparse port (usage line, abbreviations, `--opt=v`, `--`, error wording,
   exit codes), the `Py*` helpers (path/number/float/text/JSON spelling), the model-folder policy
   (`models.model_dir`, the Hub cache reused) and the output (`md`/`text`/`json`, `--out`,
-  `--timings`, the error lines). 59/59 argv cases byte-identical against the reference
+  `--timings`, the error lines). 65 argv cases byte-identical against the reference
   (`tools/scripts/test/cli_parity.py`); `docs/180-cli.md`.
-- [ ] `190` `convert_many` — the worker-process pool (self-exec worker mode, line protocol,
-  `THREADS_PER_WORKER`, `WORKER_MEMORY`, the serial path for few pages, the broken-pool fallback).
+- [x] `190` `convert_many` — the worker-process pool: a worker is this same program started with
+  `INDRA_OCR_WORKER=1` (the reference's spawn context and `initializer=_init`), its own binary
+  line protocol, one task per worker pulling from a shared cursor with the results published by
+  index (`ex.map`'s order), `THREADS_PER_WORKER`, `WORKER_MEMORY`, `MIN_POOL_PAGES`, the serial
+  path and the broken-pool fallback. 12 pool cases byte-identical against the reference (77 in the
+  harness now); `docs/190-parallel.md`.
 - [ ] `195` CLI alignment harness (fold in `cli_parity.py`; viewer later).
 
 ### Phase 5 — Math
@@ -128,6 +132,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [ ] `220` Minimal API + source-gen JSON.
 - [ ] `230` PAGE/LOGO port.
 - [ ] `240` HTTP parity tests.
+  Note for `210`: requests arrive on several threads while PDFium is not thread-safe (step `190`
+  keeps one process per core for that reason). The viewer must serialise PDF work — a lock around
+  the document calls, or a single conversion worker with a queue — or it will render garbage.
 
 ### Phase 7 — Hardening
 - [ ] `250` Port python unit tests.
@@ -180,8 +187,15 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   whose help, errors and exit codes are byte-identical to the reference's, the `Py*` helpers that
   spell Python's paths, numbers, floats, newlines and JSON, the model-folder policy (argument →
   `INDRA_OCR_MODEL_DIR` → the Hub cache, reusing the reference's own download) and the output
-  (`md`/`text`/`json` to stdout or `--out`, the error lines, `--timings`). Pages are converted in
-  process; the worker-process pool is step `190`. `tools/scripts/test/cli_parity.py` compares 59
-  argv cases byte for byte against the reference — all matching — and `ArgparseTests` checks the
-  help against the reference's captured text without Python (`docs/180-cli.md`).
-- 143 tests green, build clean (0 warnings).
+  (`md`/`text`/`json` to stdout or `--out`, the error lines, `--timings`).
+  `tools/scripts/test/cli_parity.py` compares 65 argv cases byte for byte against the reference —
+  all matching — and `ArgparseTests` checks the help against the reference's captured text without
+  Python (`docs/180-cli.md`).
+- Step `190` done: `convert_many`'s worker-process pool — one single-threaded worker process per
+  core (a worker is the CLI itself, started with `INDRA_OCR_WORKER=1`, speaking a private binary
+  line protocol), the results published by unit index in `ex.map`'s order, the serial path for
+  fewer than `MIN_POOL_PAGES` pages or fewer than two workers, and the fallback to this process
+  when the workers stop. 11 pool cases — including a six-page PDF, two workers over six pages and
+  a mixed run with plan errors and a worker's error — are byte-identical to the reference
+  (`docs/190-parallel.md`).
+- 147 tests green, build clean (0 warnings).

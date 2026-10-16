@@ -15,6 +15,7 @@ namespace Indra.Ocr.Tests;
 /// The PDFium surface itself is step 140's; these tests only run the policy over it, so a
 /// divergence here is a porting bug, not a library difference.
 /// </remarks>
+[Collection("pdfium")]
 public class TextLayerTests
 {
     private static readonly JsonElement Fx = Fixtures.Load("pdf.json");

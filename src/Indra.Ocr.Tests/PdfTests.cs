@@ -14,6 +14,7 @@ namespace Indra.Ocr.Tests;
 /// no binary in git. Everything is compared bit-exactly: the renders byte for byte, the page
 /// sizes and character boxes as raw doubles, the affine as PDFium's own integer output.
 /// </remarks>
+[Collection("pdfium")]
 public class PdfTests
 {
     private static readonly JsonElement Fx = Fixtures.Load("pdf.json");

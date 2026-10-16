@@ -19,6 +19,7 @@ import os
 import re
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -77,6 +78,19 @@ def prepare_inputs() -> None:
     (out / "truncated.png").write_bytes((TEMP / "inputs" / "latin.png").read_bytes()[:200])
     (out / "notpdf.pdf").write_bytes(b"not a pdf at all\n")
     (out / "dir").mkdir(exist_ok=True)
+    if not (out / "many.pdf").exists():
+        # Six pages of text, so convert_many's worker pool is the path taken (MIN_POOL_PAGES).
+        from fpdf import FPDF
+
+        pdf = FPDF(unit="pt", format="letter")
+        pdf.set_creation_date(datetime(2026, 1, 1, tzinfo=timezone.utc))
+        for page in range(6):
+            pdf.add_page()
+            pdf.set_font("Helvetica", size=14)
+            pdf.cell(0, 22, f"Pooled page {page + 1}", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("Helvetica", size=12)
+            pdf.cell(0, 18, "A line of text for the detector.", new_x="LMARGIN", new_y="NEXT")
+        pdf.output(str(out / "many.pdf"))
 
 
 def compare_bytes(label: str, expected: bytes, actual: bytes) -> bool:
@@ -199,6 +213,32 @@ RUN_CASES = [
     ("truncated-json", ["temp/cli_inputs/truncated.png", "--format", "json", "--model-dir", "resources/models"]),
     ("notpdf", ["temp/cli_inputs/notpdf.pdf", "--model-dir", "resources/models"]),
     ("cache", ["temp/inputs/latin.png"]),
+    # The worker pool (MIN_POOL_PAGES = 4 pages): several inputs, a six-page PDF, and the
+    # serial fallbacks (few pages, one worker).
+    ("pool-images", ["temp/inputs/latin.png", "temp/inputs/latin_rot90.png",
+                     "temp/inputs/latin_tilt.png", "temp/inputs/two_columns.png",
+                     "temp/inputs/blank.png", "temp/inputs/cjk.png",
+                     "--model-dir", "resources/models"]),
+    ("pool-pdf", ["temp/cli_inputs/many.pdf", "--model-dir", "resources/models"]),
+    ("pool-pdf-json", ["temp/cli_inputs/many.pdf", "--format", "json",
+                       "--model-dir", "resources/models"]),
+    ("pool-pdf-text", ["temp/cli_inputs/many.pdf", "--format", "text",
+                       "--model-dir", "resources/models"]),
+    ("pool-pdf-mode", ["temp/cli_inputs/many.pdf", "--mode", "text",
+                       "--model-dir", "resources/models"]),
+    ("pool-pdf-max", ["temp/cli_inputs/many.pdf", "--max-pages", "5",
+                      "--model-dir", "resources/models"]),
+    ("pool-mixed", ["temp/cli_inputs/many.pdf", "temp/inputs/latin.png", "missing.pdf",
+                    "temp/pdf_samples/locked.pdf", "temp/pdf_samples/text.pdf",
+                    "temp/cli_inputs/truncated.png", "--model-dir", "resources/models"]),
+    ("pool-cores2", ["temp/cli_inputs/many.pdf", "--cores", "2",
+                     "--model-dir", "resources/models"]),
+    ("pool-cores1", ["temp/cli_inputs/many.pdf", "--cores", "1",
+                     "--model-dir", "resources/models"]),
+    ("pool-small", ["temp/inputs/latin.png", "temp/inputs/two_columns.png",
+                    "temp/inputs/blank.png", "--model-dir", "resources/models"]),
+    ("pool-timings", ["temp/cli_inputs/many.pdf", "--timings", "--cores", "3",
+                      "--model-dir", "resources/models"]),
 ]
 
 OUT_CASES = [
@@ -206,6 +246,8 @@ OUT_CASES = [
     ("out-json", ["temp/pdf_samples/text.pdf", "--format", "json", "--out", "@OUT@", "--model-dir", "resources/models"]),
     ("out-dup", ["temp/inputs/latin.png", "temp/inputs/latin.png", "--out", "@OUT@", "--model-dir", "resources/models"]),
     ("out-bad", ["missing.pdf", "temp/inputs/latin.png", "--out", "@OUT@", "--model-dir", "resources/models"]),
+    ("out-pool", ["temp/cli_inputs/many.pdf", "temp/inputs/latin.png", "--out", "@OUT@",
+                  "--model-dir", "resources/models"]),
 ]
 
 
