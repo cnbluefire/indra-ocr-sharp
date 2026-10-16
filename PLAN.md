@@ -200,6 +200,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   path is a `string` and `Indra.Ocr.PathHelper` (Core) is the one place that knows Python's
   spelling of one. No behaviour change: 177 tests, 83/83 + 20/20 + 11/11 parity cases
   (`docs/245-host-layout.md`).
+- [x] `247` One console class — `PythonInterop` is gone: its four classes (`FloatFormat`,
+  `PythonJson`, `PythonText`, `ConsoleOutput`) are one class,
+  `Indra.Ocr.ArgumentParsing.ConsoleOutput`, which is what both hosts write with (the streams
+  and `os.linesep`, Python's float `repr`/`format(x, '.Nf')`, `json.dumps`). No behaviour
+  change: 177 tests, 83/83 + 20/20 + 11/11 (`docs/247-console-output.md`).
 - [ ] `250` Port python unit tests.
 - [ ] `260` End-to-end parity sweep + docs.
 
@@ -332,5 +337,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   `string` and Core's new `PathHelper` is the one place that knows Python's spelling of one.
   Supersedes `205`/`215` for the helpers; no behaviour change (177 tests, 83/83 + 20/20 + 11/11)
   (`docs/245-host-layout.md`).
+- Step `247` done: `PythonInterop` folded into `Indra.Ocr.ArgumentParsing.ConsoleOutput` —
+  the streams plus the `os.linesep` translation, Python's float `repr`/`format(x, '.Nf')` and
+  `json.dumps` in one class, since all of it is the console's (`docs/247-console-output.md`).
+  No behaviour change (177 tests, 83/83 + 20/20 + 11/11).
 - 177 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the viewer's command
   line 20/20 and its HTTP harness 11/11.

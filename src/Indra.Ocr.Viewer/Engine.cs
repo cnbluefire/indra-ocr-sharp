@@ -1,11 +1,11 @@
 using System.Diagnostics;
+using Indra.Ocr.ArgumentParsing;
 using Indra.Ocr.Imaging;
 using Indra.Ocr.Images;
 using Indra.Ocr.Layout;
 using Indra.Ocr.Onnx;
 using Indra.Ocr.Pdf;
 using Indra.Ocr.Pipeline;
-using Indra.Ocr.Cli.PythonInterop;
 
 namespace Indra.Ocr.Viewer;
 
@@ -270,7 +270,7 @@ public sealed class Engine : IDisposable
         timings.TryGetValue("total_ms", out double total);
         ConsoleOutput.Write(
             $"page {n + 1}: {page.Source}, {page.Lines.Count} lines, {page.Blocks.Count} blocks, " +
-            $"{FloatFormat.Fixed(total, 0)} ms ({mode}{(math ? ", math" : string.Empty)})\n");
+            $"{ConsoleOutput.Fixed(total, 0)} ms ({mode}{(math ? ", math" : string.Empty)})\n");
 
         return new PageResponse(
             Page: n + 1,

@@ -1,6 +1,5 @@
 using System.Text;
 using Indra.Ocr.ArgumentParsing;
-using Indra.Ocr.Cli.PythonInterop;
 using Indra.Ocr.Cli.Worker;
 using Indra.Ocr.Images;
 using Indra.Ocr.Layout;
@@ -136,7 +135,7 @@ internal static class Cli
                 {
                     page.Timings.TryGetValue("total_ms", out double total);
                     ConsoleOutput.WriteError(
-                        $"{input} page {i + 1}: {page.Source}, {FloatFormat.Fixed(total, 0)} ms " +
+                        $"{input} page {i + 1}: {page.Source}, {ConsoleOutput.Fixed(total, 0)} ms " +
                         $"{page.Note}\n");
                 }
             }
@@ -155,7 +154,7 @@ internal static class Cli
 
                 names.Add(name);
                 File.WriteAllText(PathHelper.Join(outDirectory, name + extension),
-                                  PythonText.Translate(body), new UTF8Encoding(false));
+                                  ConsoleOutput.Translate(body), new UTF8Encoding(false));
             }
             else
             {
@@ -477,36 +476,36 @@ internal static class Cli
 
     /// <summary>The reference's <c>--format json</c> line for one page.</summary>
     private static string PageJson(string path, int index, OcrPage page)
-        => PythonJson.Object([
-            ("file", PythonJson.Str(path)),
-            ("page", PythonJson.Num(index)),
-            ("source", PythonJson.Str(page.Source)),
-            ("rotation", PythonJson.Num(page.Rotation)),
-            ("skew", PythonJson.Num(page.Skew)),
-            ("note", PythonJson.Str(page.Note)),
-            ("lines", PythonJson.Array(page.Lines.Select(LineJson))),
-            ("markdown", page.Markdown is null ? PythonJson.Null() : PythonJson.Str(page.Markdown)),
-            ("blocks", PythonJson.Array(page.Blocks.Select(BlockJson))),
+        => ConsoleOutput.Object([
+            ("file", ConsoleOutput.Str(path)),
+            ("page", ConsoleOutput.Num(index)),
+            ("source", ConsoleOutput.Str(page.Source)),
+            ("rotation", ConsoleOutput.Num(page.Rotation)),
+            ("skew", ConsoleOutput.Num(page.Skew)),
+            ("note", ConsoleOutput.Str(page.Note)),
+            ("lines", ConsoleOutput.Array(page.Lines.Select(LineJson))),
+            ("markdown", page.Markdown is null ? ConsoleOutput.Null() : ConsoleOutput.Str(page.Markdown)),
+            ("blocks", ConsoleOutput.Array(page.Blocks.Select(BlockJson))),
             ("timings", TimingsJson(page.Timings)),
         ]);
 
     /// <summary><c>dataclasses.asdict(Line)</c>.</summary>
     private static string LineJson(OcrLine line)
-        => PythonJson.Object([
-            ("box", PythonJson.Array(line.Box.Select(PythonJson.Num))),
-            ("text", PythonJson.Str(line.Text)),
-            ("conf", PythonJson.Num(line.Confidence)),
+        => ConsoleOutput.Object([
+            ("box", ConsoleOutput.Array(line.Box.Select(ConsoleOutput.Num))),
+            ("text", ConsoleOutput.Str(line.Text)),
+            ("conf", ConsoleOutput.Num(line.Confidence)),
         ]);
 
     /// <summary>One of <c>layout_post.page_blocks</c>' dicts.</summary>
     private static string BlockJson(LayoutBlock block)
-        => PythonJson.Object([
-            ("label", PythonJson.Str(block.Label)),
-            ("bbox", PythonJson.Array(block.Bbox.Select(PythonJson.Num))),
-            ("text", PythonJson.Str(block.Text)),
+        => ConsoleOutput.Object([
+            ("label", ConsoleOutput.Str(block.Label)),
+            ("bbox", ConsoleOutput.Array(block.Bbox.Select(ConsoleOutput.Num))),
+            ("text", ConsoleOutput.Str(block.Text)),
         ]);
 
     /// <summary>The page's timings, in the order the pipeline filled them in.</summary>
     private static string TimingsJson(IReadOnlyDictionary<string, double> timings)
-        => PythonJson.Object(timings.Select(kv => (kv.Key, PythonJson.Num(kv.Value))));
+        => ConsoleOutput.Object(timings.Select(kv => (kv.Key, ConsoleOutput.Num(kv.Value))));
 }

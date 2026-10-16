@@ -2,7 +2,8 @@
 
 **Status:** done. **Superseded by [245](245-host-layout.md)** for the helpers: they are the CLI's again (the viewer
 references the CLI), under C# names. `ModelFolder` and the new `PathHelper` are the part
-that stays in Core.
+that stays in Core. (The four Python-spelling classes became one, `ConsoleOutput`, in step
+`247`.)
 
 ## Goal
 

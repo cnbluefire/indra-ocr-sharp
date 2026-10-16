@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Indra.Ocr.ArgumentParsing;
 using Indra.Ocr.Onnx;
-using Indra.Ocr.Cli.PythonInterop;
 
 namespace Indra.Ocr.Viewer;
 

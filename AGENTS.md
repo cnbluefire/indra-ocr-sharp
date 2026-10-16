@@ -35,10 +35,11 @@ package** (`Microsoft.ML.OnnxRuntime`).
    do **not** reference each other — both hand Core the same `GrayImage`, so neither needs the
    other — and `Core` references none of them. `Viewer` also references `Cli`, because the two
    hosts share the argument parser and the Python-spelling helpers
-   (`Indra.Ocr.ArgumentParsing`, `Indra.Ocr.Cli.PythonInterop`) — the reference's own shape, its
-   `viewer.py` importing them from `cli.py` — so they live in the CLI and the viewer is built on
-   top of it (`docs/245-host-layout.md`). The hosts choose a decoder with `OrtOcr.IsPdf` and own
-   no codec themselves.
+   (`Indra.Ocr.ArgumentParsing`; one class, `ConsoleOutput`, for the streams, `os.linesep`, the
+   float spelling and `json.dumps`) — the reference's own shape, its `viewer.py` importing them
+   from `cli.py` — so they live in the CLI and the viewer is built on top of it
+   (`docs/245-host-layout.md`, `docs/247-console-output.md`). The hosts choose a decoder with
+   `OrtOcr.IsPdf` and own no codec themselves.
 2. **`resources/` is read-only.** Never modify anything under `resources/`. It also never
    enters git (it is externally downloaded material).
 3. **ONNX runtime via NuGet.** `Microsoft.ML.OnnxRuntime`.

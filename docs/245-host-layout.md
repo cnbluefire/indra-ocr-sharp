@@ -19,7 +19,8 @@ The C# name rules for the move:
 - the `Arg` abbreviation is spelled out (`ArgAction` → `ArgumentAction`, `ArgType` →
   `ArgumentType`, `SourceArgs` → `SourceArguments`), the namespace is `Indra.Ocr.ArgumentParsing`;
 - the `Py` prefix is gone: `PyFloat` → `FloatFormat`, `PyJson` → `PythonJson`, `PyNumber` →
-  `ArgumentNumber`, `PyText` → `PythonText`, `PyConsole` → `ConsoleOutput`;
+  `ArgumentNumber`, `PyText` → `PythonText`, `PyConsole` → `ConsoleOutput` (step `247`
+  merged those four classes into that one);
 - argparse's `Namespace` → `ParsedArguments` (a type called `Namespace` in C# reads badly),
   `Nargs` → `ArgumentArity` (the enum) with `Argument.Arity` (the property), `ArgparseExit` →
   `ArgumentParserExit`;
@@ -35,10 +36,13 @@ The C# name rules for the move:
 | `Core/Argparse/HelpFormatter.cs` | `Cli/ArgumentParsing/HelpFormatter.cs` | `Indra.Ocr.ArgumentParsing` |
 | `Core/Argparse/SourceArgs.cs` | `Cli/ArgumentParsing/SourceArguments.cs` | `Indra.Ocr.ArgumentParsing` |
 | `Core/Py/PyNumber.cs` | `Cli/ArgumentParsing/ArgumentNumber.cs` | `Indra.Ocr.ArgumentParsing` |
-| `Core/Py/PyFloat.cs` | `Cli/PythonInterop/FloatFormat.cs` | `Indra.Ocr.Cli.PythonInterop` |
-| `Core/Py/PyJson.cs` | `Cli/PythonInterop/PythonJson.cs` | `Indra.Ocr.Cli.PythonInterop` |
-| `Core/Py/PyText.cs` (incl. `PyConsole`) | `Cli/PythonInterop/PythonText.cs` + `ConsoleOutput.cs` | `Indra.Ocr.Cli.PythonInterop` |
+| `Core/Py/PyFloat.cs` | `Cli/ArgumentParsing/ConsoleOutput.cs` (`Repr` / `Fixed`) | `Indra.Ocr.ArgumentParsing` |
+| `Core/Py/PyJson.cs` | `Cli/ArgumentParsing/ConsoleOutput.cs` (`Str` … `Object`) | `Indra.Ocr.ArgumentParsing` |
+| `Core/Py/PyText.cs` (incl. `PyConsole`) | `Cli/ArgumentParsing/ConsoleOutput.cs` (`Translate`, `Write`) | `Indra.Ocr.ArgumentParsing` |
 | `Core/Py/PyPath.cs` | deleted — `Core/PathHelper.cs` (new) | `Indra.Ocr` |
+
+> Step `247` merged the four `PythonInterop` classes into one class in `ArgumentParsing`
+> (`ConsoleOutput.cs`); the table records where step `245` first put them.
 
 `ArgumentNumber` sits with the parser because it *is* argparse's `type=int`/`type=float`;
 `PathHelper` sits in Core because `ModelFolder` (`models.model_dir`) needs `expanduser()` and the
@@ -51,8 +55,9 @@ Indra.Ocr.Cli
   ArgumentParsing/   ArgumentParser, Argument (Arity/Action/Type), ParsedArguments,
                      ArgumentError, ArgumentParserExit, ArgumentNumber, HelpFormatter,
                      SourceArguments          -- the argparse port
-  PythonInterop/     FloatFormat (repr / .Nf), PythonJson (json.dumps), PythonText (\n ->
-                     os.linesep), ConsoleOutput (stdout/stderr as UTF-8)
+                     ConsoleOutput            -- the two streams, \n -> os.linesep, float
+                                                 repr / .Nf, json.dumps (one class
+                                                 since step 247)
   Cli.cs, CliParser.cs, Worker/          -- the command line
 
 Indra.Ocr.Core
