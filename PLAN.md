@@ -165,12 +165,13 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   and CPython normalises the line endings inside string literals, so the answer is LF — which the
   port keeps. `fixtures/viewer_page.html` records the body and the `page` case of
   `viewer_parity.py` compares it over the wire byte for byte (`docs/230-viewer-page.md`).
-- [ ] `240` HTTP parity tests — `viewer_parity.py` already runs the API and the page; `240` adds
-  the remaining surface: `--help`/`--version` over the wire, the banner, the `--tesseract`
-  refusal and the port/threads variants.
-  Note: requests arrive on several threads while PDFium is not thread-safe (step `190` keeps one
-  process per core for that reason). The engine serialises every page under one lock and the API
-  calls it directly — no second path around it.
+- [x] `240` The viewer's parity surface — `viewer_cli_parity.py` (20 command-line cases on
+  `parity.Harness`: `--help`/`--version`, the argparse errors, the abbreviation and `=` forms, the
+  model folder with and without `--math`, the source options and the refused `--tesseract`) and the
+  `concurrent` case in `viewer_parity.py` (four overlapping `POST /page`, which is what the
+  engine's single lock has to survive). It found a real bug: the reference's *viewer* prints its
+  `ModelError` to stdout while the command line prints it to stderr, and the port had copied the
+  CLI's choice (`docs/240-viewer-http.md`).
 
 ### Phase 7 — Hardening
 - [ ] `250` Port python unit tests.
@@ -274,5 +275,13 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   normalises the line endings inside string literals, so the answer is LF; the port keeps it.
   `ViewerPageTests` (2) compare the page with the record, and the harness's `page` case compares
   `/` and `/index.html` byte for byte over the wire (`docs/230-viewer-page.md`).
-- 159 tests green, build clean (0 warnings); the CLI alignment harness still 77/77 and the viewer's
-  HTTP harness 10/10.
+- Step `240` done: the viewer's command line compared against the reference by a second harness
+  (`viewer_cli_parity.py`, 20 cases on the shared `parity.Harness` — the help, the version, the
+  argparse errors, `--opt=v` and abbreviations, a model folder that lacks the files, with and
+  without `--math`, and the refused `--tesseract`) plus a `concurrent` case in `viewer_parity.py`
+  that fires four overlapping `POST /page` at both servers and compares the answers as a multiset.
+  It found a real bug: the reference's viewer prints its `ModelError` to **stdout** (the command
+  line prints the same error to stderr) and the port had copied the CLI's choice — fixed, with
+  `nofolder` as the regression test (`docs/240-viewer-http.md`).
+- 159 tests green, build clean (0 warnings); the CLI alignment harness 77/77, the viewer's command
+  line 20/20 and its HTTP harness 11/11.

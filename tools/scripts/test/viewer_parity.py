@@ -4,7 +4,9 @@
 
 A viewer is a server, not a command, so this harness starts each side once — the models load
 once each — and drives both with the same sequence of requests.  ``parity.py`` supplies the
-report and the diff; the cases live here.
+report and the diff; the cases live here.  Requests are sent one at a time so the console lines
+they produce line up, except in ``concurrent``, which overlaps four of them on purpose (the
+engine's lock, not the request handling, is what serialises PDFium).
 
 What is compared: the status, the content type, and the body, case by case, plus the console
 lines each case made each server write.  A JSON body is parsed and re-dumped, so the **key
@@ -40,6 +42,7 @@ import socket
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Sequence
@@ -99,20 +102,26 @@ class Case:
 class Session:
     """One server, driven by one case: performs the requests and records the answers."""
 
-    def __init__(self, conn: http.client.HTTPConnection, inputs: dict[str, bytes]) -> None:
+    def __init__(self, conn: http.client.HTTPConnection, port: int,
+                 inputs: dict[str, bytes]) -> None:
         self.conn = conn
+        self.port = port
         self.inputs = inputs
         self.steps: list[Step] = []
         self.ids: list[str] = []  # every id this side handed out (they are random)
+
+    def record(self, label: str, status: int, content_type: str, body: bytes,
+               exclude: str | None = None) -> Step:
+        step = Step(label, status, content_type, body, exclude)
+        self.steps.append(step)
+        return step
 
     def request(self, label: str, method: str, path: str, body: bytes = b"",
                 exclude: str | None = None) -> Step:
         self.conn.request(method, path, body=body or None)
         response = self.conn.getresponse()
-        step = Step(label, response.status, response.getheader("Content-Type") or "",
-                    response.read(), exclude)
-        self.steps.append(step)
-        return step
+        return self.record(label, response.status, response.getheader("Content-Type") or "",
+                           response.read(), exclude)
 
     def get(self, label: str, path: str) -> Step:
         return self.request(label, "GET", path)
@@ -131,6 +140,27 @@ class Session:
              exclude: str | None = None) -> Step:
         body = json.dumps({"id": did, "n": n, "opts": opts or {}}).encode()
         return self.post(label, "/page", body, exclude)
+
+    def parallel(self, path: str, bodies: list[bytes]) -> list[tuple[int, bytes]]:
+        """POST every body at once, each on its own connection, and return the answers.
+
+        Both servers are threaded and the *engine* is what serialises the work (PDFium is not
+        thread-safe), so this is the shape that checks the lock is enough when the requests really
+        do overlap.  The answers come back in whatever order each side finished them, so the
+        caller sorts them before recording.
+        """
+
+        def one(body: bytes) -> tuple[int, bytes]:
+            conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=600)
+            try:
+                conn.request("POST", path, body=body)
+                response = conn.getresponse()
+                return response.status, response.read()
+            finally:
+                conn.close()
+
+        with ThreadPoolExecutor(max_workers=len(bodies)) as pool:
+            return list(pool.map(one, bodies))
 
 
 # ======================================================================= the cases
@@ -186,6 +216,21 @@ def case_page_2(s: Session) -> None:
     s.page("page-2", s.upload("text"), 1)
 
 
+def case_concurrent(s: Session) -> None:
+    """Four page requests at once.
+
+    The reference threads its server and the engine serialises the work; the port must answer all
+    four the same way, so the request handling must not add a second path around that lock.  The
+    four answers are two pairs, sorted by page number before they are recorded.
+    """
+    did = s.upload("text")
+    bodies = [json.dumps({"id": did, "n": n, "opts": {}}).encode() for n in (0, 1, 0, 1)]
+    answers = s.parallel("/page", bodies)
+    answers.sort(key=lambda answer: json.loads(answer[1])["page"])
+    for index, (status, body) in enumerate(answers):
+        s.record(f"page#{index}", status, "application/json", body)
+
+
 def case_five_uploads(s: Session) -> None:
     """Six uploads: the first has to be gone (the engine keeps the last five)."""
     first = s.upload("text")
@@ -203,6 +248,9 @@ CASES = [
     Case("upload-and-page", case_upload_and_page),
     Case("page-options", case_page_options),
     Case("page-2", case_page_2),
+    # The reference's own print is two writes, so under concurrency its console lines can
+    # interleave: the answers are compared, the lines are not.
+    Case("concurrent", case_concurrent, console_exclude="the page lines can interleave"),
     Case("five-uploads", case_five_uploads),
 ]
 
@@ -399,8 +447,8 @@ def main(argv: list[str]) -> int:
         # ran (both sides are driven one request at a time, so the order is the same).
         reference_seen = port_seen = 0
         for case in cases:
-            ref_session = Session(reference.connection, inputs)
-            port_session = Session(port.connection, inputs)
+            ref_session = Session(reference.connection, reference.port, inputs)
+            port_session = Session(port.connection, port.port, inputs)
             case.run(ref_session)
             case.run(port_session)
 

@@ -111,10 +111,10 @@ that cannot match by construction.
 - `dotnet test src/Indra.Ocr.slnx --filter ViewerArgparseTests` — 6/6: the help, the version, the
   error wording (including `ambiguous option: --t takes --threads, --tesseract, --tesseract-lang`),
   the defaults and the option reading.
-- `tools/scripts/test/viewer_parity.py` — **10/10**: `info`, `page` (added in `230`), `not-found`,
+- `tools/scripts/test/viewer_parity.py` — **11/11**: `info`, `page` (added in `230`), `not-found`,
   `errors`, `bad-json`, `upload-and-page` (all six inputs), `page-options` (default, `mode text`,
-  `mode ocr`, `model_order`, `image_ocr false`, `dpi 100`, `furniture`), `page-2`, `five-uploads`
-  and `stderr`.
+  `mode ocr`, `model_order`, `image_ocr false`, `dpi 100`, `furniture`), `page-2`, `concurrent`
+  (added in `240`), `five-uploads` and `stderr`.
   Each case compares the status, the content type and the body of every request, and the console
   lines that case made the servers write. The harness starts both servers once (the models load
   once each) and drives them with the same requests; the six inputs are the ones the C# engine

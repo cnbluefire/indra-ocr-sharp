@@ -51,7 +51,9 @@ internal static class Viewer
         }
         catch (ModelError e)
         {
-            PyConsole.WriteError($"indra-ocr-viewer: {e.Message}\n");
+            // viewer.main prints this one to stdout — the command line's own main writes the
+            // same error to stderr, and the reference really does differ between the two.
+            PyConsole.Write($"indra-ocr-viewer: {e.Message}\n");
             return 1;
         }
         catch (ViewerError e)

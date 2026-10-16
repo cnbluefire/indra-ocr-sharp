@@ -44,7 +44,7 @@ status. Keep these in sync with `PLAN.md`.
 | [215](215-argparse-core.md) | Argparse engine + shared options move into Core |
 | [220](220-viewer-api.md) | Viewer HTTP layer (minimal API + source-gen JSON) |
 | [230](230-viewer-page.md) | The viewer's page (`PAGE`/`LOGO`) |
-| 240 | Viewer HTTP tests |
+| [240](240-viewer-http.md) | Viewer parity surface (command line + concurrency) |
 | 250 | Port python unit tests |
 | 260 | End-to-end sweep |
 | 270 | [ONNX backend benchmark (ONNX Runtime vs Lokad.Onnx)](270-onnx-benchmark.md) |
