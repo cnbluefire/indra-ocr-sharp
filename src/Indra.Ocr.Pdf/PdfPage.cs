@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 using Indra.Ocr.Imaging;
-using Indra.Ocr.PdfText;
+using Indra.Ocr.Document;
 using PDFiumCore;
 
 namespace Indra.Ocr.Pdf;
@@ -12,7 +12,7 @@ namespace Indra.Ocr.Pdf;
 /// <c>page.render(scale=..., grayscale=True)</c> and the affine is
 /// <c>FPDF_PageToDevice</c> sampled at 1000 device units per point.
 /// </summary>
-public sealed class PdfPage : IPdfPage
+public sealed class PdfPage : ITextPage
 {
     // PDFium constants (fpdfview.h / fpdf_edit.h); the managed wrapper renames but does
     // not otherwise expose them.
@@ -33,19 +33,19 @@ public sealed class PdfPage : IPdfPage
 
     public double Height => fpdfview.FPDF_GetPageHeightF(_page);
 
-    public IReadOnlyList<PdfChar> ReadChars()
+    public IReadOnlyList<PageChar> ReadChars()
     {
         ThrowIfDisposed();
         FpdfTextpageT? textPage = fpdf_text.FPDFTextLoadPage(_page);
         if (textPage is null || textPage.__Instance == IntPtr.Zero)
         {
-            throw new PdfiumError("Failed to load text page.");
+            throw new TextPageError("Failed to load text page.");
         }
 
         try
         {
             int count = fpdf_text.FPDFTextCountChars(textPage);
-            var chars = new List<PdfChar>(Math.Max(count, 0));
+            var chars = new List<PageChar>(Math.Max(count, 0));
             for (int i = 0; i < count; i++)
             {
                 uint code = fpdf_text.FPDFTextGetUnicode(textPage, i);
@@ -53,7 +53,7 @@ public sealed class PdfPage : IPdfPage
                 bool hasBox = fpdf_text.FPDFTextGetCharBox(
                     textPage, i, ref left, ref right, ref bottom, ref top) != 0;
                 float angle = fpdf_text.FPDFTextGetCharAngle(textPage, i);
-                chars.Add(new PdfChar(code, angle, hasBox, left, right, bottom, top));
+                chars.Add(new PageChar(code, angle, hasBox, left, right, bottom, top));
             }
 
             return chars;
@@ -131,7 +131,7 @@ public sealed class PdfPage : IPdfPage
                 width, height, BitmapGray, pin.AddrOfPinnedObject(), width);
             if (bitmap is null || bitmap.__Instance == IntPtr.Zero)
             {
-                throw new PdfiumError("Failed to create bitmap.");
+                throw new TextPageError("Failed to create bitmap.");
             }
 
             try
@@ -139,7 +139,7 @@ public sealed class PdfPage : IPdfPage
                 // fill_color=(255, 255, 255, 255) -> 0xFFFFFFFF whatever the byte order.
                 if (fpdfview.FPDFBitmapFillRect(bitmap, 0, 0, width, height, 0xFFFFFFFFUL) == 0)
                 {
-                    throw new PdfiumError("Failed to fill bitmap rectangle.");
+                    throw new TextPageError("Failed to fill bitmap rectangle.");
                 }
 
                 fpdfview.FPDF_RenderPageBitmap(
@@ -195,7 +195,7 @@ public sealed class PdfPage : IPdfPage
             : fpdf_edit.FPDFFormObjCountObjects(form);
         if (count < 0)
         {
-            throw new PdfiumError("Failed to get number of pageobjects.");
+            throw new TextPageError("Failed to get number of pageobjects.");
         }
 
         for (int i = 0; i < count; i++)
@@ -205,7 +205,7 @@ public sealed class PdfPage : IPdfPage
                 : fpdf_edit.FPDFFormObjGetObject(form, (ulong)i);
             if (obj is null || obj.__Instance == IntPtr.Zero)
             {
-                throw new PdfiumError("Failed to get pageobject.");
+                throw new TextPageError("Failed to get pageobject.");
             }
 
             int type = fpdf_edit.FPDFPageObjGetType(obj);

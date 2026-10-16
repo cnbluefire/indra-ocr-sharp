@@ -14,7 +14,7 @@ ink under it marks hidden or misplaced text.
 
 | File | Contents |
 |---|---|
-| `src/Indra.Ocr.Core/PdfText/TextLayer.cs` | `TextChar`, `TextLine`, `TextLayerStats`, `TextLayer`, `TextLayerReader` (`BadCharCount`, `ExtractRuns`, `NoInkFraction`, `ReadTextLayer`) |
+| `src/Indra.Ocr.Core/Document/TextLayer.cs` | `TextChar`, `TextLine`, `TextLayerStats`, `TextLayer`, `TextLayerReader` (`BadCharCount`, `ExtractRuns`, `NoInkFraction`, `ReadTextLayer`) |
 | `src/Indra.Ocr.Core/Text/UnicodeText.cs` | `CollapseSpaces` (promoted from `Assembler`; `" ".join(s.split())`) |
 | `src/Indra.Ocr.Tests/TextLayerTests.cs` | the parity tests (4) |
 
@@ -30,7 +30,7 @@ extract_runs(page):                     # one pass over the text page
   "\r" / "\n"      -> a run break
   "\x02"           -> "-"               # pdfium's hyphen-at-line-break mark
   not c.isspace()  -> count it; count bad chars; drop it if not upright
-  keep             -> FPDFText_GetCharBox (l, r, b, t) or PdfiumError
+  keep             -> FPDFText_GetCharBox (l, r, b, t) or TextPageError
   then: box each character's four corners through _device_affine, drop the
   characters whose centre is off the page, and cut the text at the breaks:
   a run's box is the ink characters' bounding box, its text is the segment
@@ -67,9 +67,11 @@ otherwise                                -> trusted
   Neither numpy nor .NET contracts `a*b + c` into an FMA, so the arithmetic matches bit for
   bit.
 - **A missing character box throws only for a character the policy keeps**:
-  `PdfiumError("Failed to get charbox.")`, raised after the character is appended, exactly
-  where the reference raises it. `IPdfPage.ReadChars` records `HasBox` instead of throwing, so
-  a missing box for a skipped character stays silent, as in Python.
+  `TextPageError("Failed to get charbox.")`, raised after the character is appended, exactly
+  where the reference raises it (the reference's own type is `pypdfium2.PdfiumError`; the string
+  `PdfiumError` is restored where `_safe` prints it, step 160). `ITextPage.ReadChars` records
+  `HasBox` instead of throwing, so a missing box for a skipped character stays silent, as in
+  Python.
 - **The ink check reads the render it is handed** (`gray < 160`), over the run's box scaled by
   the same `scale`, with `int()` truncation and `+1` on the far edge. A run's box always
   contains the centre of one of its characters and the visibility filter kept that centre on

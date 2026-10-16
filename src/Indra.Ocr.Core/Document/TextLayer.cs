@@ -2,7 +2,7 @@ using System.Globalization;
 using Indra.Ocr.Imaging;
 using Indra.Ocr.Text;
 
-namespace Indra.Ocr.PdfText;
+namespace Indra.Ocr.Document;
 
 /// <summary>One character of a text-layer run: the character and its box (l, b, r, t).</summary>
 public readonly record struct TextChar(string Character, double[] Bbox);
@@ -86,7 +86,7 @@ public sealed class TextLayer
 /// they can be trusted in place of OCR.
 /// </summary>
 /// <remarks>
-/// The PDFium calls themselves live behind <see cref="IPdfPage"/> (step 140); everything here
+/// The PDFium calls themselves live behind <see cref="ITextPage"/> (step 140); everything here
 /// is the policy, so it runs against recorded page data in the tests. The two content-order
 /// checks <c>textlayer.py</c> also holds (<c>order_backtracks</c>, <c>pdf_order_coherent</c>)
 /// live in <c>Assembler</c>, their only runtime caller.
@@ -135,9 +135,9 @@ public static class TextLayerReader
     /// The upright text runs of a page, in content order, with the statistics
     /// (<c>textlayer.extract_runs</c>).
     /// </summary>
-    public static (List<TextLine> Runs, TextLayerStats Stats) ExtractRuns(IPdfPage page)
+    public static (List<TextLine> Runs, TextLayerStats Stats) ExtractRuns(ITextPage page)
     {
-        IReadOnlyList<PdfChar> source = page.ReadChars();
+        IReadOnlyList<PageChar> source = page.ReadChars();
         // The linear part of the page-to-frame map: a character is upright when its baseline
         // runs left to right once mapped through it (any /Rotate, any mirroring).
         double[,] affine = page.DeviceAffine();
@@ -151,7 +151,7 @@ public static class TextLayerReader
 
         for (int i = 0; i < source.Count; i++)
         {
-            PdfChar pc = source[i];
+            PageChar pc = source[i];
             string c = Chr(pc.Code);
             if (c is "\r" or "\n")
             {
@@ -195,7 +195,7 @@ public static class TextLayerReader
             chars.Add(c);
             if (!pc.HasBox)
             {
-                throw new PdfiumError("Failed to get charbox.");
+                throw new TextPageError("Failed to get charbox.");
             }
 
             rawBoxes.Add([pc.Left, pc.Bottom, pc.Right, pc.Top]); // l, b, r, t
@@ -342,7 +342,7 @@ public static class TextLayerReader
     /// (<c>textlayer.read_text_layer</c>). <paramref name="gray"/> is a render of the page at
     /// <paramref name="scale"/> pixels per point — a low resolution is enough for the ink check.
     /// </summary>
-    public static TextLayer ReadTextLayer(IPdfPage page, GrayImage gray, double scale)
+    public static TextLayer ReadTextLayer(ITextPage page, GrayImage gray, double scale)
     {
         (double Width, double Height) size = (page.Width, page.Height);
         double invisible = page.InvisibleTextFraction();

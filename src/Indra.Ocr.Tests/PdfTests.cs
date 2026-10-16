@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Indra.Ocr.Pdf;
-using Indra.Ocr.PdfText;
+using Indra.Ocr.Document;
 
 namespace Indra.Ocr.Tests;
 
@@ -48,7 +48,7 @@ public class PdfTests
                     $"expected {expected:R}, got {actual:R}");
     }
 
-    private static IEnumerable<(JsonElement Page, IPdfPage Loaded)> Pages(JsonElement doc)
+    private static IEnumerable<(JsonElement Page, ITextPage Loaded)> Pages(JsonElement doc)
     {
         using PdfDocument pdf = Open(doc);
         int i = 0;
@@ -76,7 +76,7 @@ public class PdfTests
                 var (w, h) = pdf.PageSize(i);
                 Same(size[0], w);
                 Same(size[1], h);
-                using IPdfPage page = pdf.LoadPage(i);
+                using ITextPage page = pdf.LoadPage(i);
                 Same(size[0], page.Width);
                 Same(size[1], page.Height);
                 i++;
@@ -215,7 +215,7 @@ public class PdfTests
             }
             else
             {
-                var err = Assert.Throws<PdfiumError>(() => PdfDocument.Open(data, password));
+                var err = Assert.Throws<TextPageError>(() => PdfDocument.Open(data, password));
                 Assert.Equal(message.GetString(), err.Message);
             }
 
@@ -235,7 +235,7 @@ public class PdfTests
             File.WriteAllBytes(path, Bytes(doc));
             using var pdf = PdfDocument.Open(path);
             Assert.Equal(doc.GetProperty("pages").GetArrayLength(), pdf.PageCount);
-            using IPdfPage page = pdf.LoadPage(0);
+            using ITextPage page = pdf.LoadPage(0);
             var size = Fixtures.DoubleArray(doc.GetProperty("pages")[0].GetProperty("size"));
             Same(size[0], page.Width);
             Same(size[1], page.Height);

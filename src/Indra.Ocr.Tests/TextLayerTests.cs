@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Indra.Ocr.Imaging;
 using Indra.Ocr.Pdf;
-using Indra.Ocr.PdfText;
+using Indra.Ocr.Document;
 
 namespace Indra.Ocr.Tests;
 
@@ -120,7 +120,7 @@ public class TextLayerTests
             int i = 0;
             foreach (var pageJson in doc.GetProperty("pages").EnumerateArray())
             {
-                using IPdfPage page = pdf.LoadPage(i++);
+                using ITextPage page = pdf.LoadPage(i++);
                 var (runs, stats) = TextLayerReader.ExtractRuns(page);
                 var want = pageJson.GetProperty("textlayer");
                 AssertStats(want.GetProperty("stats"), stats);
@@ -138,7 +138,7 @@ public class TextLayerTests
             int i = 0;
             foreach (var pageJson in doc.GetProperty("pages").EnumerateArray())
             {
-                using IPdfPage page = pdf.LoadPage(i++);
+                using ITextPage page = pdf.LoadPage(i++);
                 var want = pageJson.GetProperty("textlayer");
 
                 var render = page.Render(CheckScale);
@@ -175,7 +175,7 @@ public class TextLayerTests
     {
         var doc = Documents().Single(d => d.Name == "text").Doc;
         using PdfDocument pdf = Open(doc);
-        using IPdfPage page = pdf.LoadPage(0);
+        using ITextPage page = pdf.LoadPage(0);
         var (runs, _) = TextLayerReader.ExtractRuns(page);
         Assert.True(runs.Count > 0);
 

@@ -8,7 +8,7 @@ The `Indra.Ocr.Pdf` project: open a PDF (path or bytes, with an optional passwor
 exactly the PDFium surface `indra_ocr.textlayer` and `indra_ocr.document` use — page count, page
 size in canvas units, a grayscale render at a scale, the text layer's characters, the
 page-to-render affine, and the share of invisibly drawn text. Plus the seam in Core
-(`IPdfDocument` / `IPdfPage` / `PdfChar`) so `Core` keeps its no-PDFium rule, and the owning
+(`ITextDocument` / `ITextPage` / `PageChar`) so `Core` keeps its no-PDFium rule, and the owning
 `GrayPixels` buffer the pipeline views as a `GrayImage`.
 
 ## Files
@@ -16,7 +16,7 @@ page-to-render affine, and the share of invisibly drawn text. Plus the seam in C
 | File | Contents |
 |---|---|
 | `src/Indra.Ocr.Core/Imaging/GrayPixels.cs` | owning, tightly packed grayscale buffer + `View` |
-| `src/Indra.Ocr.Core/PdfText/PdfSurface.cs` | `PdfiumError`, `PdfChar`, `IPdfPage`, `IPdfDocument` |
+| `src/Indra.Ocr.Core/Document/TextPage.cs` | `TextPageError`, `PageChar`, `ITextPage`, `ITextDocument` |
 | `src/Indra.Ocr.Pdf/Pdfium.cs` | library init + `FPDF_GetLastError` text (pypdfium2's `ErrorToStr`) |
 | `src/Indra.Ocr.Pdf/PdfDocument.cs` | `Open(path/bytes, password)`, `PageCount`, `PageSize`, `LoadPage` |
 | `src/Indra.Ocr.Pdf/PdfPage.cs` | `ReadChars`, `DeviceAffine`, `InvisibleTextFraction`, `Render` |
@@ -54,8 +54,12 @@ textlayer.invisible_text_frac(page)                    # page.get_objects(max_de
   access error" / "Data format error", while `fpdfview.h`'s comments say "File not found or could
   not be opened" / "File not in PDF format or corrupted" — the pypdfium2 strings win, because
   `document.Converter` puts the message in the CLI output and looks for `"password"` in it.
-- **`PdfiumError` is named `PdfiumError` on purpose.** `document._safe` reports a failing page as
-  `f"{type(e).__name__}: {e}"`, so the exception's type name is part of the output.
+- **The exception is `TextPageError`, not `PdfiumError`.** The reference's type is
+  `pypdfium2.PdfiumError`, and `document._safe` reports a failing page as
+  `f"{type(e).__name__}: {e}"`, so that type *name* is part of the output — but Core carries no
+  PDFium name (the review that asked for it: "don't call it Pdf; Core must not look
+  PDF-dependent"), so the step-160 port of `_safe` restores the reference's string where it is
+  observable.
 - **Render geometry** is `page.render(scale, grayscale=True)` with the defaults:
   `src_w = ceil(width * scale)`, `src_h = ceil(height * scale)` (no rotation, no crop), a
   `FPDFBitmap_CreateEx(width, height, FPDFBitmap_Gray, buffer, stride=width)` over our own buffer,
@@ -83,8 +87,10 @@ textlayer.invisible_text_frac(page)                    # page.get_objects(max_de
   (`FPDFFormObj_CountObjects` / `FPDFFormObj_GetObject`), and counting the
   `FPDF_PAGEOBJ_TEXT` objects whose `FPDFTextObj_GetTextRenderMode` is
   `FPDF_TEXTRENDERMODE_INVISIBLE` (3).
-- **`IPdfPage`/`IPdfDocument` live in Core** (`Indra.Ocr.PdfText`), with `PdfDocument`/`PdfPage`
-  as the PDFium implementation — the same seam shape as `IOrderModel`/`OnnxOrderModel`. Step 150
+- **`ITextPage`/`ITextDocument` live in Core** (`Indra.Ocr.Document`), with `PdfDocument`/`PdfPage`
+  as the PDFium implementation — the same seam shape as `IOrderModel`/`OnnxOrderModel`. The names
+  are PDF-free on purpose (Core has no PDF dependency, and a page is pixels first: `Render` is
+  what the OCR path uses); the *characters* are what a text layer adds on top. Step 150
   adds the text-layer policy against the interface, step 160 the `Converter`, and both stay
   testable without PDFium.
 
