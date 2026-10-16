@@ -119,5 +119,5 @@ that cannot match by construction.
   lines that case made the servers write. The harness starts both servers once (the models load
   once each) and drives them with the same requests; the six inputs are the ones the C# engine
   tests use, so the two harnesses cover the same documents.
-- `dotnet test src/Indra.Ocr.slnx` — 159/159; `cli_parity.py` — 77/77 (step `215` moved the parser
+- `dotnet test src/Indra.Ocr.slnx` — 155/155; `cli_parity.py` — 77/77 (step `215` moved the parser
   into Core and the command line did not shift).

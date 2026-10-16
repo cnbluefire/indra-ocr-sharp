@@ -411,7 +411,13 @@ def start(command: list[str], port: int, stem: str) -> Server:
 
 
 def load_inputs() -> dict[str, bytes]:
-    """The documents the C# engine tests use, so the two harnesses cover the same ground."""
+    """The fixture's documents (base64), so both sides upload the very same bytes.
+
+    ``fixtures/viewer.json`` is ``gen_viewer_fixtures.py``'s record of the reference engine; the
+    harness keeps it as the shared input store.  The engine's *answers* are compared against the
+    live reference here, which is stronger than a recording — and is why the C# engine test that
+    used to read the recorded answers is gone (see ``docs/210-viewer-engine.md``).
+    """
     document = json.loads(FIXTURE.read_text(encoding="utf-8"))
     return {name: base64.b64decode(spec["b64"]) for name, spec in document["inputs"].items()}
 

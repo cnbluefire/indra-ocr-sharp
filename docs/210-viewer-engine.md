@@ -17,8 +17,7 @@ recognizers it has built, and the two operations the HTTP layer exposes, `upload
 | `src/Indra.Ocr.Viewer/Responses.cs` | `UploadResponse`, `PageResponse`, `JsonPage`, … |
 | `src/Indra.Ocr.Viewer/ViewerError.cs` | the exception the API turns into `{"error": …}` |
 | `tools/scripts/test/gen_viewer_fixtures.py` | writes `fixtures/viewer.json` from the reference |
-| `src/Indra.Ocr.Tests/ViewerEngineTests.cs` | the parity test |
-| `src/Indra.Ocr.Tests/fixtures/viewer.json` | the recorded responses (12 pages, 3 error texts) |
+| `src/Indra.Ocr.Tests/fixtures/viewer.json` | the reference's record (12 pages, 3 error texts) — and the harness's input store |
 
 ## Shape
 
@@ -110,20 +109,28 @@ sample PDFs (`text`, `rotated`, `image`) and three synthetic PNGs — the same d
 that page turned by 90° and 180°, which is what makes the orientation model sure enough
 (`p[k] > 0.95`) to turn it, so the engine's own rotation path is exercised — through twelve
 option sets (default, `dpi 100`, `mode text`, `mode ocr`, `model_order`, `image_ocr false`,
-page 2, the turned pages). `ViewerEngineTests` uploads each input, reads the page and compares
-the response with the record **field by field**, ignoring the JPEG bytes and the timing
-*values* (the keys and their order are compared).
+page 2, the turned pages).
 
 The error texts are recorded too: a page asked for a mode outside `MODES`, a page of an
 unknown upload, and an upload that is neither a PDF nor a readable image.
 
-- `dotnet test src/Indra.Ocr.slnx --filter ViewerEngineTests` — 4/4: the twelve pages, the two
-  page errors, the upload error, and the five-upload limit.
-- The comparison was checked against a deliberately wrong fixture (`"rotation": 90` →
-  `91`): it failed with `png-turn-90.rotation: expected 91, got 90` and
-  `png-turn-90.json.rotation: expected 91, got 90`, so the test can fail and says where.
-  (A stale copy of that experiment in `bin/` also produced two spurious full-suite failures:
-  `PreserveNewest` compares timestamps, and restoring the fixture preserved the *older* one.)
+**The engine is verified over HTTP against the live reference**, not against the recording:
+`tools/scripts/test/viewer_parity.py` starts both servers once, uploads exactly the fixture's
+documents to each and compares the answers — `upload-and-page` walks all six inputs,
+`page-options` the twelve option sets, `page-2` the second page of the turned page, and
+`errors` the three error texts (status, `Content-Type` and body, field by field, ignoring the
+JPEG bytes and the timing *values*).
+
+- `tools/scripts/test/viewer_parity.py` — 11/11.
+- A C# `ViewerEngineTests` that replayed the recording was **removed** (user, 2026-10-16): it
+  asserted the same fields as the harness, but against a snapshot instead of the reference, and
+  the harness covers more (the HTTP status and headers, and the console output). The fixture
+  stays as the harness's input store — both sides upload the very same bytes — and as the
+  reference's own record of what it answers.
+- The comparison was checked against a deliberately wrong fixture (`"rotation": 90` → `91`)
+  while the replay test still existed: it failed with `png-turn-90.rotation: expected 91, got
+  90`, so the check can fail and says where. The harness has the same property (a wrong answer
+  from either side is reported with the field's path).
 - The generator was run twice: `defaults`, `inputs`, `uploads`, `cases` and `errors`
   came out identical, so the fixture — the synthetic PNGs included — is reproducible.
 

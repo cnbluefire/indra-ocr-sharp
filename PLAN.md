@@ -30,6 +30,12 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   flag in its `--help`, refuses it at startup (exit 1) and never offers a backend, so `/info`
   always answers `"tesseract": false`. No further work planned (`docs/230-viewer-page.md`).
 - Math (`--math`) ported last.
+- The viewer's behaviour is verified **over HTTP against the live reference** by the Python
+  harnesses (`viewer_parity.py`, `viewer_cli_parity.py`): they start each side and compare the
+  answers, so the two sides run the same logic with only the launch command differing. C# viewer
+  tests are kept only where they must run without Python (`ViewerPageTests` on the generated page
+  bytes, `ViewerArgparseTests` on the help/version fixtures); the replay test of the engine
+  (`ViewerEngineTests`) was removed as redundant (user, 2026-10-16).
 - `resources/` read-only and gitignored; binaries/temp gitignored.
 
 ## Step plan
@@ -251,9 +257,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   for PDFium's sake, the preview rendered at the converter's scale → turned upright → shrunk to
   1600 px → JPEG q82, the boxes scaled by the same factor, the CLI-shaped `json` and the console
   line). `fixtures/viewer.json` records twelve pages, three error texts and the page counts from
-  the reference's own `Engine`, and `ViewerEngineTests` compares the response field by field —
-  the JPEG bytes and the timing values excepted, and the five-upload limit and the error texts
-  checked too (`docs/210-viewer-engine.md`).
+  the reference's own `Engine`; the engine is verified against the **live** reference by
+  `viewer_parity.py` (the same twelve option sets, the six inputs and the three error texts over
+  HTTP, field by field — the JPEG bytes and the timing values excepted). The C# replay test
+  (`ViewerEngineTests`) was removed by the user's decision (2026-10-16): it asserted the same
+  fields against a snapshot instead of the reference (`docs/210-viewer-engine.md`).
 - Step `215` done: the argparse engine (`ArgumentParser`, `Namespace`, `ArgparseExit`) moved from
   the CLI into Core (namespace `Indra.Ocr.Argparse`), with `SourceArgs` holding the option group
   both hosts share (the reference's `add_source_args`/`source_options`); the CLI's private helper
@@ -283,5 +291,5 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   It found a real bug: the reference's viewer prints its `ModelError` to **stdout** (the command
   line prints the same error to stderr) and the port had copied the CLI's choice — fixed, with
   `nofolder` as the regression test (`docs/240-viewer-http.md`).
-- 159 tests green, build clean (0 warnings); the CLI alignment harness 77/77, the viewer's command
+- 155 tests green, build clean (0 warnings); the CLI alignment harness 77/77, the viewer's command
   line 20/20 and its HTTP harness 11/11.

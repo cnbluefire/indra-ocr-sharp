@@ -6,8 +6,11 @@ already turns, a scan) and three synthetic colour PNGs (one dense page, and that
 90 and 180 degrees, which is what makes the orientation model sure enough to turn it back) —
 the fixture records the reference ``Engine.upload``'s page count and the reference
 ``Engine.page``'s response for a handful of option sets.  The PDFs and the PNGs are recorded
-as bytes (base64), so the C# test needs no Python and no files: it writes the bytes to a temp
-file, drives the port's ``Engine`` with the host decoders, and compares field by field.
+as bytes (base64): ``tools/scripts/test/viewer_parity.py`` uploads exactly those bytes to both
+servers, so the two sides see the same documents.  The recorded responses stay as the
+reference's own record — the harness compares against the *live* reference instead of replaying
+them (a recording cannot catch a change in the reference, and the C# engine test that asserted
+it is gone; see ``docs/210-viewer-engine.md``).
 
 The error texts are recorded too: a page asked for a mode outside ``MODES``, a page of an
 unknown upload, and an upload that is neither a PDF nor a readable image.

@@ -74,4 +74,4 @@ planned.
 - `tools/scripts/test/viewer_parity.py page` — the `page` case fetches `/` and `/index.html` from
   both servers and compares the bodies **byte for byte** (the two are the same 30 425 bytes); the
   full harness is 10/10.
-- `dotnet test src/Indra.Ocr.slnx` — 159/159; `cli_parity.py` — 77/77 (untouched by this step).
+- `dotnet test src/Indra.Ocr.slnx` — 155/155; `cli_parity.py` — 77/77 (untouched by this step).

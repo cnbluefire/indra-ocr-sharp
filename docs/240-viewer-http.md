@@ -81,6 +81,6 @@ deterministic to compare. Everything else about the case is.
   stderr, with only the `--tesseract` text masked).
 - `tools/scripts/test/viewer_parity.py` — **11/11**: the API cases of `220`, the `page` case of
   `230`, the new `concurrent` case and `stderr`.
-- `dotnet test src/Indra.Ocr.slnx` — 159/159; `cli_parity.py` — 77/77.
+- `dotnet test src/Indra.Ocr.slnx` — 155/155; `cli_parity.py` — 77/77.
 - The ModelError fix was checked against the reference directly (above) rather than only through
   the harness.
