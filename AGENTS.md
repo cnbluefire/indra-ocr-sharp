@@ -73,7 +73,10 @@ package** (`Microsoft.ML.OnnxRuntime`).
    `IsAotCompatible` and the two executables (`Indra.Ocr.Cli`, `Indra.Ocr.Viewer`) set
    `PublishAot`, so the solution builds with the trim/AOT analyzers on and both hosts publish
    as native binaries. Warnings that come from a third-party assembly and cannot be fixed are
-   suppressed with the reason written down next to them (`docs/290-aot.md`).
+   suppressed with the reason written down next to them (`docs/290-aot.md`). The solution is
+   also **globalization-invariant** (`InvariantGlobalization`), so the native binaries need no
+   ICU; because that turns `string.Normalize` into a no-op, NFC is implemented in Core over
+   tables generated from CPython's `unicodedata` (`docs/295-invariant-globalization.md`).
 
 ## Parity decisions (confirmed with the user)
 

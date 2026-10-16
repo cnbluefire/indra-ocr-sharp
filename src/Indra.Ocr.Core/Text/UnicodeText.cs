@@ -304,25 +304,10 @@ public static class UnicodeText
     /// </summary>
     public static string Canonical(string text)
     {
-        text = NormalizeNfc(text);
+        text = Nfc.Normalize(text);
         text = TranslateCanonTable(text);
         text = ReplaceDoubleSingle(text);
         return CollapseRuns(text);
-    }
-
-    private static string NormalizeNfc(string text)
-    {
-        if (text.IsNormalized(NormalizationForm.FormC))
-            return text;
-        try
-        {
-            return text.Normalize(NormalizationForm.FormC);
-        }
-        catch (ArgumentException)
-        {
-            // .NET refuses to normalize unpaired surrogates; Python passes them through.
-            return text;
-        }
     }
 
     private static string TranslateCanonTable(string text)

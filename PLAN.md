@@ -395,6 +395,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   ImageSharp suppression; build clean with the analyzers on, 203 tests, and the four
   harnesses (83/24/20/12) green on the Debug build *and* on a trimmed self-contained publish
   of each host (`docs/290-aot.md`).
-- 203 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
+- Step `295` done: `<InvariantGlobalization>true</InvariantGlobalization>`, so the native
+  binaries need no ICU. It made `string.Normalize` a no-op, which broke one test: the port's
+  NFC moved into managed code, over tables generated from CPython's own `unicodedata`
+  (`docs/295-invariant-globalization.md`). 206 tests, 83/24/20/12.
+- 206 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 11 cases plus the
   `assets` case.

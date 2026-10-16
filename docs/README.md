@@ -52,3 +52,4 @@ status. Keep these in sync with `PLAN.md`.
 | 270 | [ONNX backend benchmark (ONNX Runtime vs Lokad.Onnx)](270-onnx-benchmark.md) |
 | [280](280-deskew-threads.md) | The deskew search's threads (and why ReadyToRun is not it) |
 | [290](290-aot.md) | NativeAOT: the properties, and the two warnings that had to go |
+| [295](295-invariant-globalization.md) | Invariant globalization, and the NFC it forced |

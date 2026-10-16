@@ -19,5 +19,13 @@
          would also hide another assembly's warnings, so if a new package starts warning, look
          for it with -p:TrimmerSingleWarn=false (docs/290-aot.md). -->
     <NoWarn>$(NoWarn);IL2104;IL3053</NoWarn>
+    <!-- Invariant globalization: the native binary then needs no ICU (on Linux a self-contained
+         one would otherwise depend on it), and it is the honest setting for a port of a Python
+         program — the reference formats and parses with no locale at all, and every
+         culture-sensitive thing the port does is hand-written to match it (FloatFormat,
+         ArgumentNumber, the str.strip/round rules).  It also makes string.Normalize a no-op,
+         which is why NFC lives in Core (Text/Nfc.cs, docs/295-invariant-globalization.md); the
+         tests and the four harnesses are the check that nothing else drifted. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 </Project>
