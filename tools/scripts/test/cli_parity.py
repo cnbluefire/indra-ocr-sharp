@@ -77,6 +77,26 @@ def ensure_inputs() -> None:
             subprocess.run([str(PY), str(script)], check=True, cwd=ROOT, env=ENV)
 
 
+#: ``temp/math-models`` is not in git either: it is downloaded on demand (``models.model_dir``
+#: fetches the Hugging Face snapshot), so the math cases are skipped when it is absent.
+MATH_MODELS = TEMP / "math-models"
+
+#: The reference's math loader reads ``math_meta.json`` with ``read_text()``, i.e. in the locale
+#: encoding, which on a Chinese Windows cannot decode the file's UTF-8 and makes ``--math``
+#: raise.  ``PYTHONUTF8`` has the reference read it the way the port always does; the port
+#: ignores the variable.
+MATH_ENV = {"PYTHONUTF8": "1"}
+
+
+def no_math_models() -> str | None:
+    """Why the math cases cannot run here, or ``None`` when they can."""
+    if not (MATH_MODELS / "math_meta.json").exists():
+        return "temp/math-models is not downloaded"
+    if not (TEMP / "inputs" / "math.png").exists():
+        return "temp/inputs/math.png is missing (delete temp/inputs and rerun)"
+    return None
+
+
 def prepare_inputs() -> None:
     """The inputs the harness builds itself: fixed bytes, so both sides see the same."""
     out = TEMP / "cli_inputs"
@@ -174,6 +194,25 @@ RUN_CASES = [
     parity.Case("no-image-ocr", ("temp/pdf_samples/image.pdf", "--no-image-ocr",
                                  "--model-dir", "resources/models")),
     parity.Case("math", ("temp/inputs/latin.png", "--math", "--model-dir", "resources/models")),
+    # The math models themselves: the classifier fires on the formula lines of math.png and on
+    # the text layer of math.pdf, and MathRec reads them as LaTeX.  latin.png with the models
+    # present is the classifier's all-negative path.
+    parity.Case("math-page", ("temp/inputs/math.png", "--math",
+                              "--model-dir", "temp/math-models"),
+                env=MATH_ENV, skip_if=no_math_models),
+    parity.Case("math-page-json", ("temp/inputs/math.png", "--math", "--format", "json",
+                                   "--model-dir", "temp/math-models"),
+                env=MATH_ENV, skip_if=no_math_models),
+    parity.Case("math-text", ("temp/inputs/math.pdf", "--math",
+                              "--model-dir", "temp/math-models"),
+                env=MATH_ENV, skip_if=no_math_models),
+    parity.Case("math-plain", ("temp/inputs/latin.png", "--math",
+                               "--model-dir", "temp/math-models"),
+                env=MATH_ENV, skip_if=no_math_models),
+    parity.Case("math-pool", ("temp/inputs/math.png", "temp/inputs/math.pdf",
+                              "temp/inputs/latin.png", "temp/inputs/two_columns.png",
+                              "--math", "--model-dir", "temp/math-models"),
+                env=MATH_ENV, skip_if=no_math_models),
     parity.Case("tiff-maxneg", ("temp/inputs/multi.tiff", "--max-pages", "-2",
                                 "--model-dir", "resources/models")),
     parity.Case("image-maxneg", ("temp/inputs/latin.png", "--max-pages", "-1",
@@ -232,6 +271,9 @@ OUT_CASES = [
                             "--model-dir", "resources/models"), outputs=True),
     parity.Case("out-pool", ("temp/cli_inputs/many.pdf", "temp/inputs/latin.png",
                              "--out", "@OUT@", "--model-dir", "resources/models"), outputs=True),
+    parity.Case("out-math", ("temp/inputs/math.pdf", "--math", "--out", "@OUT@",
+                             "--model-dir", "temp/math-models"),
+                outputs=True, env=MATH_ENV, skip_if=no_math_models),
 ]
 
 CASES = [*ARGV_CASES, *RUN_CASES, *OUT_CASES]

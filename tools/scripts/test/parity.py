@@ -40,11 +40,17 @@ class Case:
 
     ``argv`` is what the reference gets; ``@OUT@`` is replaced by each side's own output
     directory when ``outputs`` is set, so the two sides never write to the same place.
+
+    ``env`` is extra environment for both sides (``PYTHONUTF8`` for the reference's math
+    path, say) and ``skip_if`` returns why the case cannot run here — a folder that is not
+    downloaded — or ``None``; a skipped case is reported and neither passes nor fails.
     """
 
     name: str
     argv: tuple[str, ...]
     outputs: bool = False
+    env: dict[str, str] = field(default_factory=dict)
+    skip_if: Callable[[], str | None] | None = None
 
 
 @dataclass
@@ -82,6 +88,7 @@ class Report:
         self._lock = Lock()
         self.stream = stream if stream is not None else sys.stdout
         self.passed = 0
+        self.skipped: list[str] = []
         self.failed: list[str] = []
 
     def case(self, name: str, ok: bool, details: list[str] | None = None) -> bool:
@@ -96,14 +103,21 @@ class Report:
                 self.failed.append(name)
         return ok
 
+    def skip(self, name: str, reason: str) -> None:
+        """Print one case as skipped: it needs something this machine does not have."""
+        with self._lock:
+            print(f"SKIP {name} ({reason})", file=self.stream, flush=True)
+            self.skipped.append(name)
+
     def summary(self) -> int:
         """Print the summary and return the exit code (0 when everything matched)."""
         with self._lock:
+            skipped = f", {len(self.skipped)} skipped" if self.skipped else ""
             if self.failed:
-                print(f"{len(self.failed)} failed, {self.passed} passed: "
+                print(f"{len(self.failed)} failed, {self.passed} passed{skipped}: "
                       f"{', '.join(self.failed)}", file=self.stream, flush=True)
                 return 1
-            print(f"{self.passed} passed", file=self.stream, flush=True)
+            print(f"{self.passed} passed{skipped}", file=self.stream, flush=True)
             return 0
 
 
@@ -150,6 +164,11 @@ class Harness:
         return self.report.summary()
 
     def _case(self, case: Case) -> bool:
+        if case.skip_if is not None:
+            reason = case.skip_if()
+            if reason:
+                self.report.skip(case.name, reason)
+                return True
         try:
             return self._compare(case)
         except Exception as exc:
@@ -166,8 +185,8 @@ class Harness:
         for directory in (ref_dir, port_dir):
             self._clear(directory)
 
-        reference = self._run(case.argv, ref_dir, reference=True)
-        port = self._run(case.argv, port_dir, reference=False)
+        reference = self._run(case.argv, ref_dir, reference=True, env=case.env)
+        port = self._run(case.argv, port_dir, reference=False, env=case.env)
 
         details: list[str] = []
         if reference.code != port.code:
@@ -188,11 +207,13 @@ class Harness:
 
         return self.report.case(case.name, not details, details)
 
-    def _run(self, argv: Sequence[str], out_dir: Path | None, *, reference: bool) -> Result:
+    def _run(self, argv: Sequence[str], out_dir: Path | None, *, reference: bool,
+             env: dict[str, str] | None = None) -> Result:
         argv = [a.replace("@OUT@", str(out_dir)) for a in argv]
         command = (self.reference if reference else self.port)(argv)
+        run_env = {**self.env, **env} if env else self.env
         try:
-            proc = subprocess.run(command, capture_output=True, env=self.env, cwd=self.cwd,
+            proc = subprocess.run(command, capture_output=True, env=run_env, cwd=self.cwd,
                                   timeout=self.timeout)
             result = Result(proc.returncode, proc.stdout, proc.stderr)
         except subprocess.TimeoutExpired as expired:

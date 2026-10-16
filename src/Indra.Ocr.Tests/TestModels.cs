@@ -10,14 +10,23 @@ namespace Indra.Ocr.Tests;
 /// </remarks>
 public static class TestModels
 {
-    public static string? Directory { get; } = Find();
+    /// <summary>The shipped model set, <c>resources/models</c>.</summary>
+    public static string? Directory { get; } = Find("meta.json", "resources", "models");
 
-    private static string? Find()
+    /// <summary>
+    /// The folder with the math models — <c>temp/math-models</c>, the same snapshot plus
+    /// <c>mathcls.onnx</c> and friends. It is downloaded on demand (the reference's
+    /// <c>models.model_dir</c> fetches it) and is not in git, so the math tests are skipped when it
+    /// is missing.
+    /// </summary>
+    public static string? MathDirectory { get; } = Find("math_meta.json", "temp", "math-models");
+
+    private static string? Find(string marker, params string[] parts)
     {
         for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
         {
-            var candidate = Path.Combine(dir.FullName, "resources", "models");
-            if (File.Exists(Path.Combine(candidate, "meta.json")))
+            var candidate = Path.Combine(new[] { dir.FullName }.Concat(parts).ToArray());
+            if (File.Exists(Path.Combine(candidate, marker)))
                 return candidate;
         }
         return null;

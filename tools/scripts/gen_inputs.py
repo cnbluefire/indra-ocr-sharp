@@ -9,6 +9,7 @@ layer, all from fixed content so reference and port see identical bytes.
 from __future__ import annotations
 
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -29,15 +30,24 @@ def font(path: Path, size: int):
         return ImageFont.load_default()
 
 
-def render_lines(lines, size=(900, 700), px=30, ttf=LATIN_TTF) -> Image.Image:
+def render_lines(lines, size=(900, 700), px=30, ttf=LATIN_TTF, step=None) -> Image.Image:
     img = Image.new("L", size, 255)
     d = ImageDraw.Draw(img)
     f = font(ttf, px)
     y = 40
     for ln in lines:
         d.text((50, y), ln, fill=0, font=f)
-        y += px + 18
+        y += step if step is not None else px + 18
     return img
+
+
+def first_font(paths) -> Path:
+    """The first font of ``paths`` that is installed (the page's content does not depend on
+    which one it is; both sides read the same bytes either way)."""
+    for path in paths:
+        if Path(path).exists():
+            return Path(path)
+    return LATIN_TTF
 
 
 def main() -> None:
@@ -76,6 +86,41 @@ def main() -> None:
     # A blank page.
     Image.new("L", (600, 800), 255).save(OUT / "blank.png")
 
+    # A page of math: the formula lines are what the classifier fires on, so `--math` reads
+    # them with MathRec while the prose between them stays as the recognizer read it.  Cambria
+    # has the symbols the classifier knows best; Times and Arial are the fallbacks.
+    math_lines = [
+        "We compute the integral as follows.",
+        "f(x) = \u222b\u2080^\u221e e^\u2212x\u00b2 dx = \u221a\u03c0 / 2",
+        "E = mc\u00b2",
+        "x = \u2212b \u00b1 \u221a(b\u00b2 \u2212 4ac) / 2a",
+        "\u2211\u1d62\u208c\u2081\u207f i = n(n + 1)/2",
+        "lim\u2093\u208a\u2080 sin x / x = 1",
+        "The result follows from the definition.",
+    ]
+    render_lines(
+        math_lines,
+        size=(1400, 120 + 90 * len(math_lines)),
+        px=40,
+        ttf=first_font([WIN_FONTS / "cambria.ttc", WIN_FONTS / "times.ttf", LATIN_TTF]),
+        step=90,
+    ).save(OUT / "math.png")
+
+    # The same math as a born-digital PDF: its text layer has the symbols but not the LaTeX,
+    # so `--math` reads those lines with MathRec and keeps their place in the content order.
+    from fpdf import FPDF
+
+    math_pdf = FPDF(unit="pt", format=(320, 240))
+    math_pdf.set_creation_date(datetime(2026, 1, 1, tzinfo=timezone.utc))
+    math_pdf.set_auto_page_break(False)
+    math_pdf.add_page()
+    math_pdf.add_font("math", "", str(first_font([WIN_FONTS / "times.ttf",
+                                                  WIN_FONTS / "DejaVuSans.ttf"])))
+    math_pdf.set_font("math", size=16)
+    for i, line in enumerate(math_lines):
+        math_pdf.text(20, 40 + i * 32, line)
+    math_pdf.output(str(OUT / "math.pdf"))
+
     # Multi-page TIFF: three frames with distinct content.
     frames = [
         render_lines(["Frame one of the TIFF."]),
@@ -85,8 +130,6 @@ def main() -> None:
     frames[0].save(OUT / "multi.tiff", save_all=True, append_images=frames[1:])
 
     # A born-digital PDF with a real text layer (fpdf2, standard Helvetica).
-    from fpdf import FPDF
-
     pdf = FPDF(unit="pt", format="letter")
     pdf.add_page()
     pdf.set_font("Helvetica", size=14)

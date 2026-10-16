@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Indra.Ocr.Imaging;
+using Indra.Ocr.Maths;
 using Indra.Ocr.Text;
 
 namespace Indra.Ocr.Rec;
@@ -146,6 +147,12 @@ public sealed class RecognizedLine
 /// empty: on empty form fields, checkboxes and rules the recognizer reads <c>"-"</c>, <c>"I"</c>
 /// and other marks with a low peak probability, and the pipeline would rather leave the line
 /// blank than print them.
+/// <para>
+/// With math models loaded (<c>--math</c>) the crops are also offered to
+/// <see cref="MathReader.Flags"/>, and a line the classifier is sure about is read again by
+/// MathRec — a confident reading that holds LaTeX replaces the recognized line, as one token
+/// (it is never split).
+/// </para>
 /// </remarks>
 public sealed class Recognizer
 {
@@ -160,6 +167,7 @@ public sealed class Recognizer
     private readonly Vocab? _vocabCjk;
     private readonly int _height;
     private readonly int _batch;
+    private readonly MathReader? _math;
 
     /// <param name="rec">The line recognizer.</param>
     /// <param name="vocab">Its vocabulary.</param>
@@ -169,9 +177,11 @@ public sealed class Recognizer
     /// <param name="vocabCjk">The CJK vocabulary.</param>
     /// <param name="height"><c>rec_height</c> from <c>meta.json</c> (32).</param>
     /// <param name="batch">Most lines per recognizer call (64).</param>
+    /// <param name="math">The math reader, when the model folder has the math models and the
+    /// caller asked for <c>--math</c>.</param>
     public Recognizer(IRecModel rec, Vocab vocab, IMaskModel? mask = null, IScriptModel? script = null,
                       IRecModel? recCjk = null, Vocab? vocabCjk = null,
-                      int height = RecPreproc.LineHeight, int batch = 64)
+                      int height = RecPreproc.LineHeight, int batch = 64, MathReader? math = null)
     {
         _rec = rec ?? throw new ArgumentNullException(nameof(rec));
         _vocab = vocab ?? throw new ArgumentNullException(nameof(vocab));
@@ -181,6 +191,7 @@ public sealed class Recognizer
         _vocabCjk = vocabCjk;
         _height = height;
         _batch = batch;
+        _math = math;
 
         // The reference sets script, rec_cjk and vocab_cjk together; routing needs all three.
         if (script is not null && (recCjk is null || vocabCjk is null))
@@ -247,6 +258,35 @@ public sealed class Recognizer
                     lines[idx[k]] = ReadLine(boxes, idx[k], crops, vocab, asChars, output, k, stride);
             }
         }
+
+        // The reference reads the math lines last, from the crops it has just made: a confident
+        // reading with LaTeX replaces the line (one token holds the whole line, so it is never
+        // split). The token has no PDF content index — this is the OCR path, not the text layer.
+        if (_math is not null && crops.Count > 0)
+        {
+            bool[] isMath = _math.Flags(crops, _batch, _height);
+            var math = new List<int>();
+            for (int j = 0; j < isMath.Length; j++)
+                if (isMath[j])
+                    math.Add(j);
+
+            if (math.Count > 0)
+            {
+                List<MathReading> readings = _math.Read(gray, Subset(boxes, math));
+                for (int k = 0; k < math.Count; k++)
+                {
+                    int j = math[k];
+                    MathReading reading = readings[k];
+                    if (reading.Text.Contains('$') && reading.Confidence >= MathReader.MinConf)
+                    {
+                        double xc = (double)(boxes[j * 5] + boxes[j * 5 + 2]) / 2;
+                        lines[j] = new RecognizedLine(reading.Text, 1.0,
+                                                      new[] { new RecToken(0, reading.Text, xc) });
+                    }
+                }
+            }
+        }
+
         return lines;
     }
 
@@ -340,6 +380,17 @@ public sealed class Recognizer
         int count = boxes.Length / 5;
         var flat = new float[count * 4];
         for (int i = 0; i < count; i++) boxes.Slice(i * 5, 4).CopyTo(flat.AsSpan(i * 4));
+        return flat;
+    }
+
+    /// <summary>
+    /// The <c>[n, 5]</c> rows of <paramref name="boxes"/> at <paramref name="idx"/> — the
+    /// reference's <c>boxes[math]</c>, which keeps all five columns.
+    /// </summary>
+    private static float[] Subset(ReadOnlySpan<float> boxes, List<int> idx)
+    {
+        var flat = new float[idx.Count * 5];
+        for (int k = 0; k < idx.Count; k++) boxes.Slice(idx[k] * 5, 5).CopyTo(flat.AsSpan(k * 5));
         return flat;
     }
 }

@@ -192,6 +192,36 @@ public class NumericsTests
         Assert.Equal(shape[0], i);
     }
 
+    [Fact]
+    public void Float64_reductions_match_numpy()
+    {
+        // The same tree with double accumulators (npy_pairwise_sum_DOUBLE). `np.mean` over a
+        // Python list of floats goes through it, which is how `math.MathReader.read` averages
+        // the decoder's token probabilities.
+        foreach (var c in Fx.GetProperty("sum64").EnumerateArray())
+        {
+            var x = B64.Doubles(c.GetProperty("x").GetString()!);
+            Assert.Equal(c.GetProperty("n").GetInt32(), x.Length);
+            Assert.Equal(c.GetProperty("sum_bits").GetUInt64(),
+                         BitConverter.DoubleToUInt64Bits(Numerics.Sum64(x)));
+            Assert.Equal(c.GetProperty("mean_bits").GetUInt64(),
+                         BitConverter.DoubleToUInt64Bits(Numerics.Mean64(x)));
+        }
+
+        // r.mean(1): every row of a 2-D array.
+        var rows = Fx.GetProperty("sum64_rows");
+        var all = B64.Doubles(rows.GetProperty("x").GetString()!);
+        var shape = Fixtures.IntArray(rows.GetProperty("shape"));
+        int i = 0;
+        foreach (var want in rows.GetProperty("mean_bits").EnumerateArray())
+        {
+            Assert.Equal(want.GetUInt64(), BitConverter.DoubleToUInt64Bits(
+                Numerics.Mean64(all.AsSpan(i * shape[1], shape[1]))));
+            i++;
+        }
+        Assert.Equal(shape[0], i);
+    }
+
     private static double[] ToDoubleMatrix(JsonElement e, out int rows, out int cols)
     {
         rows = e.GetArrayLength();

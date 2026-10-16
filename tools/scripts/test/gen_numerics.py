@@ -147,6 +147,23 @@ for n in (1, 7, 8, 9, 15, 16, 127, 128, 129, 135, 136, 137, 200, 1000, 4096):
     )
 sum_rows = sum_rng.uniform(0.0, 1.0, (9, 257)).astype(np.float32)
 
+# The float64 tree is the same shape (npy_pairwise_sum_DOUBLE: the eight accumulators are
+# doubles).  `math.MathReader.read` computes its confidence with `np.mean` over a Python list
+# of floats, which numpy turns into a float64 array first, so this is the reduction that
+# matters there.
+sum64_cases = []
+for n in (1, 7, 8, 9, 15, 16, 127, 128, 129, 135, 136, 137, 200, 1000, 4096):
+    x = sum_rng.uniform(-1.0, 1.0, n)
+    sum64_cases.append(
+        {
+            "n": n,
+            "x": b64(x),
+            "sum_bits": int(np.float64(x.sum()).view(np.uint64)),
+            "mean_bits": int(np.float64(x.mean()).view(np.uint64)),
+        }
+    )
+sum64_rows = sum_rng.uniform(0.0, 1.0, (9, 257))
+
 write(
     "numerics.json",
     {
@@ -168,6 +185,12 @@ write(
             "shape": list(sum_rows.shape),
             "x": b64(sum_rows),
             "sum_bits": [int(v) for v in sum_rows.sum(1).view(np.uint32)],
+        },
+        "sum64": sum64_cases,
+        "sum64_rows": {
+            "shape": list(sum64_rows.shape),
+            "x": b64(sum64_rows),
+            "mean_bits": [int(v) for v in sum64_rows.mean(1).view(np.uint64)],
         },
     },
 )

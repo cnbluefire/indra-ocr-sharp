@@ -55,6 +55,8 @@ public static class Numerics
         return copy[lo] + frac * (copy[hi] - copy[lo]);
     }
 
+    /// <summary>A sequential float64 mean, i.e. Python's <c>sum(a) / len(a)</c> (numpy's is
+    /// <see cref="Mean64"/>).</summary>
     public static double Mean(ReadOnlySpan<double> a)
     {
         if (a.Length == 0) return double.NaN;
@@ -77,7 +79,7 @@ public static class Numerics
     /// </summary>
     /// <remarks>
     /// numpy dispatches contiguous float32 reductions to a CPU-specific SIMD kernel
-    /// (8/16-lane accumulators) whose tree is not part of numpy's contract â€?the fallback, and
+    /// (8/16-lane accumulators) whose tree is not part of numpy's contract ï¿½?the fallback, and
     /// the code that runs when SIMD is unavailable, is the pairwise sum reproduced here. The
     /// SIMD tree differs from it only in the last ulp; see <c>docs/090-orientation-deskew.md</c>
     /// for where that can be observed.
@@ -88,9 +90,50 @@ public static class Numerics
     public static float Mean32(ReadOnlySpan<float> a)
         => a.Length == 0 ? float.NaN : Sum32(a) / a.Length;
 
+    /// <summary>
+    /// numpy's <b>float64</b> sum, i.e. <c>np.sum(a)</c> on a float64 array: the accumulator is
+    /// double and the order is numpy's <c>pairwise_sum_DOUBLE</c> â€” the same tree as
+    /// <see cref="Sum32"/>, with eight double accumulators.
+    /// </summary>
+    public static double Sum64(ReadOnlySpan<double> a) => PairwiseSum64(a);
+
+    /// <summary>numpy's <c>float64_array.mean()</c>: the float64 pairwise sum divided by the count.</summary>
+    public static double Mean64(ReadOnlySpan<double> a)
+        => a.Length == 0 ? double.NaN : Sum64(a) / a.Length;
+
+    // numpy's npy_pairwise_sum_DOUBLE: the float32 tree above with double accumulators (which is
+    // what np.mean(list_of_python_floats) reduces through).
+    private static double PairwiseSum64(ReadOnlySpan<double> a)
+    {
+        int n = a.Length;
+        if (n < 8)
+        {
+            double s = 0.0;
+            for (int i = 0; i < n; i++) s += a[i];
+            return s;
+        }
+        if (n <= PairwiseBlockSize)
+        {
+            double r0 = a[0], r1 = a[1], r2 = a[2], r3 = a[3];
+            double r4 = a[4], r5 = a[5], r6 = a[6], r7 = a[7];
+            int i = 8, limit = n - (n % 8);
+            for (; i < limit; i += 8)
+            {
+                r0 += a[i]; r1 += a[i + 1]; r2 += a[i + 2]; r3 += a[i + 3];
+                r4 += a[i + 4]; r5 += a[i + 5]; r6 += a[i + 6]; r7 += a[i + 7];
+            }
+            double res = ((r0 + r1) + (r2 + r3)) + ((r4 + r5) + (r6 + r7));
+            for (; i < n; i++) res += a[i];
+            return res;
+        }
+        int n2 = n / 2;
+        n2 -= n2 % 8;
+        return PairwiseSum64(a[..n2]) + PairwiseSum64(a[n2..]);
+    }
+
     // numpy's npy_pairwise_sum_FLOAT: a straight sum below 8 elements, 8 accumulators up to
     // PW_BLOCKSIZE=128 elements, and a recursive bisection above it. Every accumulator is
-    // float32, so the result is order-dependent and has to be reproduced exactly â€?including
+    // float32, so the result is order-dependent and has to be reproduced exactly ï¿½?including
     // the recursion's split point, which numpy rounds down to a multiple of 8.
     private const int PairwiseBlockSize = 128;
 
@@ -306,9 +349,9 @@ public static class Numerics
     /// <para>
     /// The final division is done in double, which is correctly rounded as long as
     /// <c>10**|digits|</c> is exactly representable (<c>|digits| &lt;= 22</c>, the last exact
-    /// power) and the rounded integer is below <c>2**53</c> â€?both true for page coordinates.
+    /// power) and the rounded integer is below <c>2**53</c> ï¿½?both true for page coordinates.
     /// Validated against Python over 425 110 values (random doubles, float32-derived doubles and
-    /// boundaries) at 0â€? digits: 0 differences; see <c>docs/120-layout-post.md</c>.
+    /// boundaries) at 0ï¿½? digits: 0 differences; see <c>docs/120-layout-post.md</c>.
     /// </para>
     /// </remarks>
     public static double RoundHalfEven(double value, int digits)
@@ -362,7 +405,7 @@ public static class Numerics
     /// <remarks>
     /// While the integer and the power are exact (<c>|q| &lt; 2**53</c>, <c>digits &lt;= 22</c>) the
     /// IEEE division is already correctly rounded. Beyond that the exact rational is written as a
-    /// decimal string and parsed, which .NET also rounds correctly (nearest, ties to even) â€?the
+    /// decimal string and parsed, which .NET also rounds correctly (nearest, ties to even) ï¿½?the
     /// page coordinates this is used on never leave the fast path.
     /// </remarks>
     private static double ScaledToDouble(BigInteger q, int digits)

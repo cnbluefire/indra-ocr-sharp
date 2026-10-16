@@ -38,7 +38,7 @@ status. Keep these in sync with `PLAN.md`.
 | [180](180-cli.md) | CLI (argparse, model folder, output, exit codes) |
 | [190](190-parallel.md) | convert_many (worker-process pool) |
 | [195](195-harness.md) | CLI alignment harness |
-| 200 | MathReader |
+| [200](200-math.md) | MathReader |
 | [205](205-core-shared.md) | Shared helpers move into Core |
 | [210](210-viewer-engine.md) | Viewer Engine |
 | [215](215-argparse-core.md) | Argparse engine + shared options move into Core |

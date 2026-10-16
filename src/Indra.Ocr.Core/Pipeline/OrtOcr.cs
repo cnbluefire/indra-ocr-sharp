@@ -2,10 +2,12 @@ using System.Diagnostics;
 using Indra.Ocr.Det;
 using Indra.Ocr.Imaging;
 using Indra.Ocr.Layout;
+using Indra.Ocr.Maths;
 using Indra.Ocr.Onnx;
 using Indra.Ocr.Order;
 using Indra.Ocr.Rec;
 using Indra.Ocr.Text;
+using Microsoft.ML.OnnxRuntime;
 // The step classes are named after the methods the reference reads from self (detect,
 // orientation, reading_order), so inside this class those names are the methods; the aliases
 // keep the types reachable.
@@ -25,19 +27,22 @@ namespace Indra.Ocr.Pipeline;
 /// <see cref="Orientation"/>); this class owns the model folder and the flags the reference reads
 /// from <c>self</c>, and sequences them exactly as <c>__call__</c> does.
 /// <para>
-/// <c>math=True</c> is not ported yet (step 200, the last step of the plan). The reference only
-/// reaches its <c>FileNotFoundError</c> when the folder has no math models, which the shipped
-/// model set does not, so throwing there is faithful for every model set we have.
+/// <c>math=True</c> loads <see cref="MathReader"/> from the same folder (the reference's
+/// <c>MathReader.load</c>) and hands it to the recognizer; the reference raises
+/// <c>FileNotFoundError</c> when the folder has no math models, which is what the port throws
+/// too.
 /// </para>
 /// </remarks>
 public sealed class OrtOcr : IDisposable
 {
+    private readonly SessionOptions _options;
     private readonly OcrModels _models;
     private readonly OnnxDetModel _det;
     private readonly OnnxOrderModel? _order;
     private readonly OnnxOrientModel? _orient;
     private readonly Recognizer _recognizer;
     private readonly Assembler _assembler;
+    private readonly MathReader? _math;
     private bool _disposed;
 
     /// <param name="onnxDirectory">The model folder (<c>det.onnx</c>, <c>rec.onnx</c>,
@@ -50,7 +55,7 @@ public sealed class OrtOcr : IDisposable
     /// <param name="tableHeads">Build tables from the order model's row/column/cell heads.</param>
     /// <param name="providers">Execution providers; <c>null</c> means CPU.</param>
     /// <param name="furniture">Keep page headers and footers in the markdown.</param>
-    /// <param name="math">Read math lines as LaTeX; needs the math models (not ported).</param>
+    /// <param name="math">Read math lines as LaTeX; needs the math models in the folder.</param>
     public OrtOcr(
         string onnxDirectory,
         int threads = 4,
@@ -62,15 +67,30 @@ public sealed class OrtOcr : IDisposable
         bool math = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(onnxDirectory);
-        if (math)
-            throw new FileNotFoundException($"math=True needs the math models in {onnxDirectory}");
 
-        _models = OcrModels.Load(onnxDirectory, threads, recInt8, providers);
+        // One SessionOptions for every session in the object — the OCR ones and the math ones —
+        // exactly as the reference builds one instance and hands it to each InferenceSession.
+        _options = OnnxSessions.CreateOptions(threads, providers);
+        try
+        {
+            _models = OcrModels.Load(onnxDirectory, _options, recInt8);
+        }
+        catch
+        {
+            _options.Dispose();
+            throw;
+        }
+
+        MathReader? mathReader = null;
         try
         {
             _det = new OnnxDetModel(_models.Det);
             _order = _models.Order is null ? null : new OnnxOrderModel(_models.Order);
             _orient = _models.Orient is null ? null : new OnnxOrientModel(_models.Orient);
+            mathReader = math ? MathModels.Load(onnxDirectory, _options) : null;
+            if (math && mathReader is null)
+                throw new FileNotFoundException($"math=True needs the math models in {onnxDirectory}");
+            _math = mathReader;
             _recognizer = new Recognizer(
                 new OnnxRecModel(_models.Rec),
                 _models.Vocab,
@@ -78,12 +98,15 @@ public sealed class OrtOcr : IDisposable
                 _models.Script is null ? null : new OnnxScriptModel(_models.Script),
                 _models.RecCjk is null ? null : new OnnxRecModel(_models.RecCjk),
                 _models.VocabCjk,
-                _models.RecHeight);
+                _models.RecHeight,
+                math: mathReader);
             _assembler = new Assembler(_order, tableHeads, _models.Vocab, furniture);
         }
         catch
         {
+            mathReader?.Dispose();
             _models.Dispose();
+            _options.Dispose();
             throw;
         }
 
@@ -119,6 +142,12 @@ public sealed class OrtOcr : IDisposable
 
     /// <summary>Whether the CJK recognizer is in use.</summary>
     public bool HasCjk => _models.HasCjk;
+
+    /// <summary>
+    /// <c>self.math</c>: the math reader, or <c>null</c> when <c>math</c> is off — the reference
+    /// tests it with <c>getattr(self.ocr, "math", None) is not None</c>.
+    /// </summary>
+    public MathReader? Math => _math;
 
     // ------------------------------------------------------------------ the steps
 
@@ -277,7 +306,9 @@ public sealed class OrtOcr : IDisposable
         if (_disposed)
             return;
         _disposed = true;
+        _math?.Dispose();
         _models.Dispose();
+        _options.Dispose();
     }
 }
 

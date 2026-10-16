@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Indra.Ocr.Imaging;
+using Indra.Ocr.Maths;
 using Indra.Ocr.Pipeline;
 using Indra.Ocr.Rec;
 using Indra.Ocr.Text;
@@ -232,8 +233,13 @@ public sealed class PdfConverter
         }
 
         // The reference reads the math lines here when the math models are loaded
-        // (`getattr(self.ocr, "math", None) is not None`); OrtOcr refuses math=True until step
-        // 200, so the branch is unreachable.
+        // (`getattr(self.ocr, "math", None) is not None`).
+        if (_ocr.Math is not null)
+        {
+            var mathClock = Stopwatch.StartNew();
+            ReadMath(gray, boxes, rec);
+            timings["math_ms"] = mathClock.Elapsed.TotalMilliseconds;
+        }
 
         var keep = new List<int>(n);
         for (int i = 0; i < n; i++)
@@ -257,6 +263,71 @@ public sealed class PdfConverter
             : outPage.Note;
         return new OcrPage(outPage.Lines, outPage.Timings, outPage.Markdown, source, note,
                            outPage.Blocks, outPage.Rotation, outPage.Skew);
+    }
+
+    /// <summary>
+    /// <c>_read_math</c>: text-layer lines that hold math (the classifier, on their crops) are
+    /// read by MathRec instead — the layer has the symbols but not the LaTeX. The line keeps its
+    /// place in the PDF content order (its first character's index).
+    /// </summary>
+    /// <remarks>
+    /// Only a confident reading that holds <c>"$"</c> replaces the layer's text: the classifier
+    /// sees the line's crop, and a reading that carries no math is no better than the layer.
+    /// </remarks>
+    private void ReadMath(GrayImage gray, ReadOnlySpan<float> boxes, RecognizedLine?[] rec)
+    {
+        MathReader math = _ocr.Math!;
+
+        // The layer's own lines: their first token is a character and carries the PDF content
+        // index (the reference tests `isinstance(r[2][0][0], str)` and `len(r[2][0]) > 2`).
+        var idx = new List<int>();
+        for (int i = 0; i < rec.Length; i++)
+        {
+            RecognizedLine? r = rec[i];
+            if (r is not null && r.Tokens.Count > 0 && r.Tokens[0].IsCharacter
+                && r.Tokens[0].ContentIndex is not null)
+            {
+                idx.Add(i);
+            }
+        }
+
+        if (idx.Count == 0)
+            return;
+
+        // crop_lines(gray, boxes[idx, :4], self.ocr.height, None): the recognizer's crop height,
+        // without CenterMask (the layer's lines are not masked).
+        var cropBoxes = new float[idx.Count * 4];
+        for (int k = 0; k < idx.Count; k++)
+            for (int c = 0; c < 4; c++)
+                cropBoxes[k * 4 + c] = boxes[idx[k] * 5 + c];
+        var crops = LineMask.CropLines(gray, cropBoxes, _ocr.Height);
+
+        bool[] isMath = math.Flags(crops, height: _ocr.Height);
+        var maths = new List<int>();
+        for (int k = 0; k < idx.Count; k++)
+            if (isMath[k])
+                maths.Add(idx[k]);
+
+        if (maths.Count == 0)
+            return;
+
+        List<MathReading> readings = math.Read(gray, Subset(boxes, maths));
+        for (int k = 0; k < maths.Count; k++)
+        {
+            int i = maths[k];
+            MathReading reading = readings[k];
+
+            // A reading without math, or not confident, leaves the layer's text.
+            if (!reading.Text.Contains('$') || reading.Confidence < MathReader.MinConf)
+                continue;
+
+            int first = int.MaxValue;
+            foreach (RecToken token in rec[i]!.Tokens)
+                first = System.Math.Min(first, token.ContentIndex!.Value);
+            double xc = (double)(boxes[i * 5] + boxes[i * 5 + 2]) / 2;
+            rec[i] = new RecognizedLine(reading.Text, 1.0,
+                                        new[] { new RecToken(0, reading.Text, xc, first) });
+        }
     }
 
     /// <summary>

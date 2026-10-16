@@ -139,7 +139,14 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   The viewer's HTTP harness (step `240`) reuses the machinery with its own commands.
 
 ### Phase 5 — Math
-- [ ] `200` MathReader + integration.
+- [x] `200` MathReader + integration — `math.py`'s classifier and MathRec (`Indra.Ocr.Maths`:
+  `MathTensor`/`IMathModel`/`MathReading`/`MathReader`, `OnnxMathModel`, `MathModels.Load`) and its
+  three call sites: the OCR path (`Recognizer`'s math hook), the text-layer path
+  (`PdfConverter.ReadMath` + `math_ms`) and `OrtOcr(math: true)` (the shared `SessionOptions`, the
+  `FileNotFoundException`). `fixtures/math.json` (15 `detokenize` cases, the real four graphs over
+  the math page, four stand-in graphs that assert the decoding loop's invariants), `MathReaderTests`
+  (21), six new harness cases (83 in all) and the float64 pairwise reduction (`Numerics.Sum64`/
+  `Mean64`, now pinned against numpy) (`docs/200-math.md`).
 
 ### Phase 6 — Viewer
 - [x] `205` Shared helpers move into Core — `Py*` (namespace `Indra.Ocr.Py`) and `ModelFolder`
@@ -291,5 +298,17 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   It found a real bug: the reference's viewer prints its `ModelError` to **stdout** (the command
   line prints the same error to stderr) and the port had copied the CLI's choice — fixed, with
   `nofolder` as the regression test (`docs/240-viewer-http.md`).
-- 155 tests green, build clean (0 warnings); the CLI alignment harness 77/77, the viewer's command
+- Step `200` done: the math step (`--math`) — `Indra.Ocr.Maths.MathReader` (the classifier and
+  MathRec, the attention decoder: `MathTensor`/`IMathModel`/`MathReading`, the `detokenize` rule,
+  the width-batched decoding loop with the cache feedback, the EOS/early-stop decisions, the
+  float32 peak probability and the float64 mean), `OnnxMathModel`/`MathModels.Load` (the four
+  graphs plus `math_meta.json`, over the caller's shared `SessionOptions`) and its three call
+  sites: `Recognizer`'s hook (a confident reading with `$` replaces an OCR line with one token),
+  `PdfConverter.ReadMath` (the text-layer path, `math_ms`, the line keeping its content-order
+  index) and `OrtOcr(math: true)` (the `FileNotFoundException`). `fixtures/math.json` records the
+  real four graphs over the math page (probabilities bit-exact, flags, five readings) and four
+  stand-in graphs that assert the loop's invariants; `MathReaderTests` adds 21 tests and
+  `NumericsTests` pins the new `Sum64`/`Mean64` against numpy (`docs/200-math.md`). The harness has
+  six new math cases (83 in all), all byte-identical.
+- 177 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the viewer's command
   line 20/20 and its HTTP harness 11/11.

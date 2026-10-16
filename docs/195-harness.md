@@ -24,7 +24,8 @@ in `240`) needs the same report and diff with different commands and a different
 ## Shape
 
 ```
-Case(name, argv, outputs=False)      one input on both sides; @OUT@ is each side's own dir
+Case(name, argv, outputs=False, env={}, skip_if=None)
+                                     one input on both sides; @OUT@ is each side's own dir
 
 Harness(reference, port, env, cwd, work, mask=None, jobs=1, timeout=300)
   run(cases) -> exit code
@@ -32,6 +33,13 @@ Harness(reference, port, env, cwd, work, mask=None, jobs=1, timeout=300)
 
 Report(stream): one line per case, the diff under a failure, the summary
 ```
+
+`env` is extra environment for **both** sides of that one case and `skip_if` returns why the
+case cannot run on this machine (a model folder that was not downloaded) or `None`; a skipped
+case is reported as `SKIP name (reason)` and counts as neither a pass nor a failure. Step `200`
+added both for the math cases, whose reference needs `PYTHONUTF8=1` (its `math_meta.json` is
+read in the locale encoding) — per case, so the other cases keep the reference's own locale
+behaviour.
 
 A harness supplies only:
 
