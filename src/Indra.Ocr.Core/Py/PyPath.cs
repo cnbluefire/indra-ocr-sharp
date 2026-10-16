@@ -1,11 +1,14 @@
-namespace Indra.Ocr.Cli.Py;
+namespace Indra.Ocr.Py;
 
 /// <summary>
-/// Python's <c>pathlib.Path</c> as far as the command line shows it: <c>str()</c> (the parsed,
-/// normalized form — the reference puts it in messages and in the JSON's <c>file</c> field) and
-/// <c>.stem</c> (the <c>--out</c> file name), plus <c>~/</c> expansion for the model folder.
+/// Python's <c>pathlib.Path</c> as far as the hosts show it: <c>str()</c> (the parsed, normalized
+/// form — the reference puts it in messages and in the JSON's <c>file</c> field) and <c>.stem</c>
+/// (the CLI's <c>--out</c> file name), plus <c>~/</c> expansion for the model folder.
 /// </summary>
 /// <remarks>
+/// It lives in Core because both hosts need it: the CLI parses <c>--out</c>, <c>--model-dir</c> and
+/// the inputs with it, and the viewer parses <c>--model-dir</c> with it — the reference has the
+/// same split, its <c>cli.py</c> and <c>viewer.py</c> both importing from <c>models.py</c>.
 /// <c>--out</c>, <c>--model-dir</c> and the inputs are all <c>type=Path</c> in the reference, so a
 /// path typed with forward slashes comes back with backslashes on Windows and a trailing slash
 /// disappears; the port normalizes the same way. The rules are <c>pathlib</c>'s Windows flavour:

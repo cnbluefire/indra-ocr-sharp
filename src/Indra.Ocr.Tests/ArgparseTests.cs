@@ -1,6 +1,6 @@
 using Indra.Ocr.Cli;
 using Indra.Ocr.Cli.Argparse;
-using Indra.Ocr.Cli.Py;
+using Indra.Ocr.Py;
 
 namespace Indra.Ocr.Tests;
 
@@ -10,8 +10,8 @@ namespace Indra.Ocr.Tests;
 /// namespace the options produce.
 /// </summary>
 /// <remarks>
-/// The byte-exact comparison of every output â€?including the CRLF the reference's
-/// text-mode streams carry â€?lives in <c>tools/scripts/test/cli_parity.py</c>, which runs
+/// The byte-exact comparison of every output ï¿½?including the CRLF the reference's
+/// text-mode streams carry ï¿½?lives in <c>tools/scripts/test/cli_parity.py</c>, which runs
 /// both command lines. These tests keep the parser's behaviour checkable without Python.
 /// </remarks>
 public class ArgparseTests

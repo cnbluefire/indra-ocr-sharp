@@ -108,11 +108,34 @@ public static class ImageFiles
     }
 
     /// <summary>Decodes the first frame of an image held in memory (the viewer upload path).</summary>
+    /// <remarks>
+    /// A failure is an <see cref="InputError"/> carrying the same wording the file path uses, so
+    /// the viewer reports the reference's <c>ValueError</c> text without having to know which
+    /// exception ImageSharp chose (and without taking a dependency on the codec to name it).
+    /// </remarks>
     public static GrayImageData ReadImage(ReadOnlySpan<byte> bytes)
     {
-        using var image = Load(bytes, out var formula);
-        if (image.Frames.Count == 0) throw new InvalidDataException("no image frames");
-        return ToGray(image.Frames[0], formula);
+        Image<Rgba32> image;
+        GrayFormula formula;
+        try
+        {
+            image = Load(bytes, out formula);
+        }
+        catch (Exception e) when (e is UnknownImageFormatException
+                                      or InvalidImageContentException
+                                      or NotSupportedException
+                                      or IOException
+                                      or ArgumentException)
+        {
+            throw new InputError("not a PDF or a readable image");
+        }
+
+        using (image)
+        {
+            if (image.Frames.Count == 0)
+                throw new InputError("not a PDF or a readable image");
+            return ToGray(image.Frames[0], formula);
+        }
     }
 
     /// <summary>Encodes a grayscale image as JPEG (viewer previews; quality 82 like Python).</summary>

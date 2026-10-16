@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Indra.Ocr.Cli.Py;
+namespace Indra.Ocr.Py;
 
 /// <summary>
 /// Python's <c>repr()</c> of a float — what <c>json.dumps</c> writes for a number and what an

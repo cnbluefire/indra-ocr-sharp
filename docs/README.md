@@ -39,7 +39,8 @@ status. Keep these in sync with `PLAN.md`.
 | [190](190-parallel.md) | convert_many (worker-process pool) |
 | [195](195-harness.md) | CLI alignment harness |
 | 200 | MathReader |
-| 210 | Viewer Engine |
+| [205](205-core-shared.md) | Shared helpers move into Core |
+| [210](210-viewer-engine.md) | Viewer Engine |
 | 220 | Minimal API |
 | 230 | PAGE/LOGO |
 | 240 | Viewer HTTP tests |

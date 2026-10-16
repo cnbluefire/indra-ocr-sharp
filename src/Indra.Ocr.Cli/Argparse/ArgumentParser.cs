@@ -1,6 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Indra.Ocr.Cli.Py;
+using Indra.Ocr.Py;
 
 namespace Indra.Ocr.Cli.Argparse;
 

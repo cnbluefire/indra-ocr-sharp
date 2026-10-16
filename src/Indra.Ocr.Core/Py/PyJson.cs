@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Indra.Ocr.Cli.Py;
+namespace Indra.Ocr.Py;
 
 /// <summary>
 /// Python's <c>json.dumps</c> with <c>ensure_ascii=False</c> — the spelling of strings and numbers

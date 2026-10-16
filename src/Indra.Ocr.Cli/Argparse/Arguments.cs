@@ -3,6 +3,8 @@
 // The names follow CPython's Lib/argparse.py — Argument, Namespace, ArgumentError — so the port
 // can be read against the reference.
 
+using Indra.Ocr.Py;
+
 namespace Indra.Ocr.Cli.Argparse;
 
 /// <summary>argparse's <c>nargs</c> (the three the CLI uses).</summary>
@@ -134,17 +136,17 @@ public sealed class Namespace
     public double Float(string dest) => Get(dest) is double value ? value : 0.0;
 
     /// <summary>The value of a <c>type=Path</c> argument, or <c>null</c>.</summary>
-    public Py.PyPath? PathOrNull(string dest) => Get(dest) as Py.PyPath?;
+    public PyPath? PathOrNull(string dest) => Get(dest) as PyPath?;
 
     /// <summary>The values of a <c>type=Path</c>, <c>nargs='+'</c> argument.</summary>
-    public List<Py.PyPath> PathList(string dest)
+    public List<PyPath> PathList(string dest)
     {
-        var paths = new List<Py.PyPath>();
+        var paths = new List<PyPath>();
         if (Get(dest) is List<object?> values)
         {
             foreach (object? value in values)
             {
-                if (value is Py.PyPath path)
+                if (value is PyPath path)
                 {
                     paths.Add(path);
                 }

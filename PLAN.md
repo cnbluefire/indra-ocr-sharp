@@ -132,13 +132,22 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [ ] `200` MathReader + integration.
 
 ### Phase 6 — Viewer
-- [ ] `210` Viewer Engine.
+- [x] `205` Shared helpers move into Core — `Py*` (namespace `Indra.Ocr.Py`) and `ModelFolder`
+  (namespace `Indra.Ocr.Onnx`) leave the CLI, because the viewer is a second host that must
+  agree on `--model-dir`, the environment variable, the cache and the download; this supersedes
+  the earlier "the model folder lives in the CLI" note (`docs/205-core-shared.md`).
+- [x] `210` Viewer Engine — `viewer.Engine`: the uploads it keeps (five, oldest first, temp
+  files and all), one warmed-up recognizer per `(math, furniture)`, and `page` under a single
+  lock (PDFium is not thread-safe) — the preview (render at the converter's scale, turn upright,
+  shrink to 1600 px, JPEG q82), the boxes scaled onto it, the Markdown, and the CLI-shaped
+  `json`. Twelve recorded pages, two error texts and the five-upload limit match the reference
+  (`docs/210-viewer-engine.md`).
 - [ ] `220` Minimal API + source-gen JSON.
 - [ ] `230` PAGE/LOGO port.
 - [ ] `240` HTTP parity tests.
-  Note for `210`: requests arrive on several threads while PDFium is not thread-safe (step `190`
-  keeps one process per core for that reason). The viewer must serialise PDF work — a lock around
-  the document calls, or a single conversion worker with a queue — or it will render garbage.
+  Note for `220`: requests arrive on several threads while PDFium is not thread-safe (step `190`
+  keeps one process per core for that reason). The engine already serialises every page under one
+  lock; the API must not add a second path around it.
 
 ### Phase 7 — Hardening
 - [ ] `250` Port python unit tests.
@@ -208,4 +217,17 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   Inputs are built on demand, a case's output directory is emptied first, `parity_selftest.py`
   checks the machinery against synthetic mismatches, and `tools/scripts/parity.ps1` is the short way
   in. The viewer's HTTP harness (step `240`) reuses the same machinery (`docs/195-harness.md`).
-- 147 tests green, build clean (0 warnings).
+- Step `205` done: the `Py*` helpers (namespace `Indra.Ocr.Py`) and `ModelFolder`
+  (`Indra.Ocr.Onnx`) moved from the CLI into Core, because the viewer is a second host that must
+  agree on `--model-dir`, `INDRA_OCR_MODEL_DIR`, the Hub cache and the download; the earlier
+  "the model folder lives in the CLI" decision is superseded (`docs/205-core-shared.md`).
+- Step `210` done: `Indra.Ocr.Viewer`'s engine — `Upload` (the `%PDF-` prefix, the page count,
+  `uuid4().hex[:12]` ids, five uploads kept, the reference's `not a PDF or a readable image`
+  text) and `Page` (one warmed-up recognizer per `(math, furniture)`, everything under one lock
+  for PDFium's sake, the preview rendered at the converter's scale → turned upright → shrunk to
+  1600 px → JPEG q82, the boxes scaled by the same factor, the CLI-shaped `json` and the console
+  line). `fixtures/viewer.json` records twelve pages, three error texts and the page counts from
+  the reference's own `Engine`, and `ViewerEngineTests` compares the response field by field —
+  the JPEG bytes and the timing values excepted, and the five-upload limit and the error texts
+  checked too (`docs/210-viewer-engine.md`).
+- 151 tests green, build clean (0 warnings); the CLI alignment harness still 77/77.

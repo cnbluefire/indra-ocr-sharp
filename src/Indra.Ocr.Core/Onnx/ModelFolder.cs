@@ -1,7 +1,6 @@
-using Indra.Ocr.Cli.Py;
-using Indra.Ocr.Onnx;
+using Indra.Ocr.Py;
 
-namespace Indra.Ocr.Cli;
+namespace Indra.Ocr.Onnx;
 
 /// <summary>
 /// The reference's <c>models.model_dir</c> — which model folder a run uses: the
@@ -9,15 +8,19 @@ namespace Indra.Ocr.Cli;
 /// (cached, and re-checked at most once a day).
 /// </summary>
 /// <remarks>
+/// It lives in Core because both hosts resolve their models the same way — the reference has
+/// <c>models.model_dir</c> shared by <c>cli.py</c> and <c>viewer.py</c> — and because
+/// <see cref="ModelDownload"/> and <see cref="ModelError"/> are here.
+/// <para>
 /// The download itself (<see cref="ModelDownload"/>) is one self-contained operation — a folder
-/// in, the model files in it — and lives in Core; the lookup order is the host's, as the reference
-/// has it in <c>models.py</c>. The port's cache is the Hub's own cache
+/// in, the model files in it. The port's cache is the Hub's own cache
 /// (<c>HF_HUB_CACHE</c>/<c>HUGGINGFACE_HUB_CACHE</c>, else <c>HF_HOME/hub</c>, else
 /// <c>~/.cache/huggingface/hub</c>) under the repo's folder, so a model set the reference already
 /// downloaded is found and used as it is — and the daily-check stamp is the same file the
 /// reference touches, so the two do not check the Hub twice.
+/// </para>
 /// </remarks>
-internal static class ModelFolder
+public static class ModelFolder
 {
     /// <summary>A cached model folder is checked against the Hub at most this often.</summary>
     private const long CheckEverySeconds = 24 * 3600;

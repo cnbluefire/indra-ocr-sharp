@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Indra.Ocr.Cli.Py;
+namespace Indra.Ocr.Py;
 
 /// <summary>
 /// Python's text-mode streams: a <c>\n</c> written to one becomes <c>os.linesep</c>, so on Windows

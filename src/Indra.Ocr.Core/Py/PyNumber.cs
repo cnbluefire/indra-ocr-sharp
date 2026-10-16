@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Indra.Ocr.Cli.Py;
+namespace Indra.Ocr.Py;
 
 /// <summary>
 /// Python's <c>int()</c> and <c>float()</c> as argparse's <c>type=</c> uses them: what the command
