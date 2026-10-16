@@ -22,13 +22,13 @@ does the same job with less machinery.
 | new project | `src/Indra.Ocr/Indra.Ocr.csproj` | ImageSharp only; references `Core` |
 | moved | `src/Shared/ImageFiles.cs` → `src/Indra.Ocr/Images/ImageFiles.cs` | decoder; `List<GrayImageData> ReadImages(path)`, `ReadImage(bytes)`, `EncodeJpeg` |
 | new | `src/Indra.Ocr/Images/GrayImageData.cs` | owning frame: `Width`/`Height`/`Stride`/`Data` + implicit → `GrayImage` |
-| new | `src/Indra.Ocr/Images/ImageConverter.cs` | the image half of `document.convert` |
+| new | `src/Indra.Ocr/Images/ImageConverter.cs` | the image half of `document.convert` (`Convert` / `ConvertFrames`) |
 | deleted | `src/Shared/ImageFiles.cs`, `src/Shared/` | no linked sources |
 | deleted | `GrayImageConsumer` | the callback form of `ReadImages` |
 | moved | `src/Indra.Ocr.Core/Document/TextLayer.cs` → `src/Indra.Ocr.Core/Text/` | `TextLayer`, `TextChar`, `TextLine`, `TextLayerStats`, `TextLayerReader` |
 | new | `src/Indra.Ocr.Core/Text/TextLayerRuns.cs` | `readable`, `right_to_left`, `assign_runs` (from `document.py`) |
 | new | `src/Indra.Ocr.Core/Pipeline/SafePage.cs` | `document._safe` |
-| moved | `Converter.cs` → `src/Indra.Ocr.Pdf/PdfConverter.cs` | the PDF half |
+| moved | `Converter.cs` → `src/Indra.Ocr.Pdf/PdfConverter.cs` | the PDF half (`Convert` / `ConvertPages`) |
 | new | `src/Indra.Ocr.Pdf/PdfiumError.cs` | the PDFium exception, named as the reference prints it |
 | deleted | `Core/Document/{TextPage.cs, Converter.cs}` | `ITextDocument`, `ITextPage`, `TextPageError`, `Converter` |
 | deleted | `src/Shared/` | — |

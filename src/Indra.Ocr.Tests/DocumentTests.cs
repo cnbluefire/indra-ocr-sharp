@@ -10,8 +10,8 @@ using Indra.Ocr.Text;
 namespace Indra.Ocr.Tests;
 
 /// <summary>
-/// Step 160: the document converters â€?<see cref="PdfConverter"/> for the trusted PDF text layer
-/// and its OCR fallback, <see cref="ImageConverter"/> for image files â€?against
+/// Step 160: the document converters ï¿½?<see cref="PdfConverter"/> for the trusted PDF text layer
+/// and its OCR fallback, <see cref="ImageConverter"/> for image files ï¿½?against
 /// <c>fixtures/document.json</c>, which the Python reference wrote for the sample PDFs of
 /// <c>tools/scripts/test/pdf_samples.py</c> and one example page.
 /// </summary>
@@ -97,10 +97,10 @@ public class DocumentTests
         {
             return new PdfConverter(ocr, Dpi(options), Mode(options), PdfOrder(options),
                                     ImageOcr(options))
-                .Convert(path, maxPages, password);
+                .ConvertPages(path, maxPages, password);
         }
 
-        return new ImageConverter(ocr).Convert(path, maxPages);
+        return new ImageConverter(ocr).ConvertFrames(path, maxPages);
     }
 
     private static double Dpi(JsonElement options) =>
@@ -283,7 +283,7 @@ public class DocumentTests
             string name = c.GetProperty("name").GetString()!;
             string path = Path.Combine(Resources, c.GetProperty("file").GetString()!);
             Assert.True(Sha256(File.ReadAllBytes(path)) == c.GetProperty("sha256").GetString(),
-                        $"{name}: the example page changed â€?regenerate fixtures/document.json");
+                        $"{name}: the example page changed ï¿½?regenerate fixtures/document.json");
 
             var got = ConvertFile(ocr, c.GetProperty("options"), path).ToList();
             var want = c.GetProperty("pages");
@@ -302,6 +302,38 @@ public class DocumentTests
         }
 
         Assert.True(cases >= 1, $"only {cases} cases ran");
+    }
+
+    [Fact]
+    public void Convert_gives_the_first_page_or_frame()
+    {
+        if (TestModels.Directory is null)
+            return;
+        using var ocr = new OrtOcr(TestModels.Directory, threads: 4);
+
+        // The single-result Convert is the first page of the multi-page form.
+        string path = WriteSample("text");
+        var pages = new PdfConverter(ocr).ConvertPages(path, maxPages: 1).ToList();
+        OcrPage? one = new PdfConverter(ocr).Convert(path);
+        Assert.True(pages.Count == 1, $"{pages.Count} pages");
+        Assert.NotNull(one);
+        Assert.True(one!.Markdown == pages[0].Page.Markdown,
+                    "the single page's markdown differs from ConvertPages'");
+        Assert.True(one.Source == pages[0].Page.Source && one.Note == pages[0].Page.Note,
+                    "the single page's source/note differ");
+        Assert.True(one.Lines.Count == pages[0].Page.Lines.Count, "the line count differs");
+
+        if (Resources is null)
+            return;
+
+        // An image file: its one frame (the example page has a single frame).
+        JsonElement ic = Fx.GetProperty("image_cases").EnumerateArray().First();
+        string image = Path.Combine(Resources, ic.GetProperty("file").GetString()!);
+        var frame = new ImageConverter(ocr).ConvertFrames(image, maxPages: 1).Single();
+        OcrPage? img = new ImageConverter(ocr).Convert(image);
+        Assert.NotNull(img);
+        Assert.True(img!.Markdown == frame.Page.Markdown,
+                    "the single frame's markdown differs from ConvertFrames'");
     }
 
     [Fact]
@@ -335,13 +367,13 @@ public class DocumentTests
         string junk = Path.Combine(Work, "junk.txt");
         File.WriteAllText(junk, "not a document");
         var notAnImage = Assert.Throws<InputError>(
-            () => new ImageConverter(ocr).Convert(junk).ToList());
+            () => new ImageConverter(ocr).ConvertFrames(junk).ToList());
         Assert.True(notAnImage.Message == $"{junk}: not a PDF or a readable image",
                     $"junk: '{notAnImage.Message}'");
 
         string missing = Path.Combine(Work, "missing.png");
         var noSuchFile = Assert.Throws<InputError>(
-            () => new ImageConverter(ocr).Convert(missing).ToList());
+            () => new ImageConverter(ocr).ConvertFrames(missing).ToList());
         Assert.True(noSuchFile.Message == $"{missing}: no such file",
                     $"missing: '{noSuchFile.Message}'");
 

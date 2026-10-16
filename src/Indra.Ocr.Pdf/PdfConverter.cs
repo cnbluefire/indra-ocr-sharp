@@ -239,14 +239,14 @@ public sealed class PdfConverter
     }
 
     /// <summary>
-    /// <c>convert</c> for a PDF: (page index, page) for every page, capped at
+    /// <c>convert</c> for a multi-page PDF: (page index, page) for every page, capped at
     /// <paramref name="maxPages"/> (0: all). A page that fails yields an empty page whose
     /// <c>source</c> is "error" and whose <c>note</c> says why; a file that cannot be opened
     /// raises <see cref="InputError"/>. The caller picks this converter or
     /// <c>Indra.Ocr.Images.ImageConverter</c> with <see cref="OrtOcr.IsPdf"/>.
     /// </summary>
-    public IEnumerable<(int Index, OcrPage Page)> Convert(string path, int maxPages = 0,
-                                                          string? password = null)
+    public IEnumerable<(int Index, OcrPage Page)> ConvertPages(string path, int maxPages = 0,
+                                                               string? password = null)
     {
         if (!File.Exists(path))
         {
@@ -281,6 +281,21 @@ public sealed class PdfConverter
         {
             doc.Dispose();
         }
+    }
+
+    /// <summary>
+    /// The one page of a single-page PDF — the first page of a longer one
+    /// (<see cref="ConvertPages"/> for all of them). Null only for a document with no page at
+    /// all.
+    /// </summary>
+    public OcrPage? Convert(string path, string? password = null)
+    {
+        foreach ((int _, OcrPage page) in ConvertPages(path, maxPages: 1, password))
+        {
+            return page;
+        }
+
+        return null;
     }
 
     /// <summary>The detector's boxes for a subset of lines (<c>boxes[idx]</c>).</summary>

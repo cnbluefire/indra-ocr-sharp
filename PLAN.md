@@ -106,7 +106,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   (PDFium + `ExtractRuns`), `Core` (every algorithm over a result); `src/Shared/`,
   `ITextPage`/`ITextDocument`, `GrayImageConsumer` and the callback `ReadImages` deleted
   (`docs/165-project-split.md`).
-- [ ] `170` `models` model_dir + download.
+- [x] `170` `models` — `ModelDownload` (Core): fetch the model set from the Hugging Face repo
+  into a folder the caller names, with the reference's patterns, sizes and failure wording
+  (`docs/170-models.md`).
 
 ### Phase 4 — CLI
 - [ ] `180` argparse-faithful CLI.

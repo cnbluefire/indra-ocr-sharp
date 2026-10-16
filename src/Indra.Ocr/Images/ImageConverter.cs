@@ -24,12 +24,12 @@ public sealed class ImageConverter
     }
 
     /// <summary>
-    /// <c>convert</c> for an image file: (frame index, page) for every frame, capped at
-    /// <paramref name="maxPages"/> (0: all). A frame that fails yields an empty page whose
-    /// <c>source</c> is "error" and whose <c>note</c> says why; a file that cannot be decoded
-    /// raises <see cref="InputError"/>.
+    /// <c>convert</c> for a multi-frame image file (a multi-page TIFF): (frame index, page) for
+    /// every frame, capped at <paramref name="maxPages"/> (0: all). A frame that fails yields an
+    /// empty page whose <c>source</c> is "error" and whose <c>note</c> says why; a file that
+    /// cannot be decoded raises <see cref="InputError"/>.
     /// </summary>
-    public IEnumerable<(int Index, OcrPage Page)> Convert(string path, int maxPages = 0)
+    public IEnumerable<(int Index, OcrPage Page)> ConvertFrames(string path, int maxPages = 0)
     {
         if (!File.Exists(path))
         {
@@ -46,5 +46,20 @@ public sealed class ImageConverter
             int index = i;
             yield return (index, SafePage.Read(() => _ocr.Call(frames[index])));
         }
+    }
+
+    /// <summary>
+    /// The one page of a single-frame image file — the first frame of a multi-frame one
+    /// (<see cref="ConvertFrames"/> for all of them). Null only when the file has no frame at
+    /// all, which the decoder reports as an <see cref="InputError"/> anyway.
+    /// </summary>
+    public OcrPage? Convert(string path)
+    {
+        foreach ((int _, OcrPage page) in ConvertFrames(path, maxPages: 1))
+        {
+            return page;
+        }
+
+        return null;
     }
 }
