@@ -122,7 +122,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   index (`ex.map`'s order), `THREADS_PER_WORKER`, `WORKER_MEMORY`, `MIN_POOL_PAGES`, the serial
   path and the broken-pool fallback. 12 pool cases byte-identical against the reference (77 in the
   harness now); `docs/190-parallel.md`.
-- [ ] `195` CLI alignment harness (fold in `cli_parity.py`; viewer later).
+- [x] `195` CLI alignment harness — the machinery (`tools/scripts/test/parity.py`:
+  `Case`, `Harness`, `Report`, the first-difference diff, parallel `--jobs`, name/glob
+  selection) with the command line's 77 cases on top (`cli_parity.py`), the generated inputs
+  built on demand, and `tools/scripts/parity.ps1` as the short way in; `docs/195-harness.md`.
+  The viewer's HTTP harness (step `240`) reuses the machinery with its own commands.
 
 ### Phase 5 — Math
 - [ ] `200` MathReader + integration.
@@ -195,7 +199,13 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   core (a worker is the CLI itself, started with `INDRA_OCR_WORKER=1`, speaking a private binary
   line protocol), the results published by unit index in `ex.map`'s order, the serial path for
   fewer than `MIN_POOL_PAGES` pages or fewer than two workers, and the fallback to this process
-  when the workers stop. 11 pool cases — including a six-page PDF, two workers over six pages and
+  when the workers stop. 12 pool cases — including a six-page PDF, two workers over six pages and
   a mixed run with plan errors and a worker's error — are byte-identical to the reference
   (`docs/190-parallel.md`).
+- Step `195` done: the comparison harness is official — `tools/scripts/test/parity.py` holds the
+  machinery (`Case`, `Harness`, `Report`, the first-difference diff, `--jobs` parallelism, name and
+  glob selection, a per-side timeout) and `cli_parity.py` the command line's 77 cases on top of it.
+  Inputs are built on demand, a case's output directory is emptied first, `parity_selftest.py`
+  checks the machinery against synthetic mismatches, and `tools/scripts/parity.ps1` is the short way
+  in. The viewer's HTTP harness (step `240`) reuses the same machinery (`docs/195-harness.md`).
 - 147 tests green, build clean (0 warnings).

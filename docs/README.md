@@ -37,7 +37,7 @@ status. Keep these in sync with `PLAN.md`.
 | [170](170-models.md) | models (Hugging Face download) |
 | [180](180-cli.md) | CLI (argparse, model folder, output, exit codes) |
 | [190](190-parallel.md) | convert_many (worker-process pool) |
-| 195 | CLI alignment harness |
+| [195](195-harness.md) | CLI alignment harness |
 | 200 | MathReader |
 | 210 | Viewer Engine |
 | 220 | Minimal API |
