@@ -228,6 +228,16 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   it does run it is 1.6–2.8× slower than ORT on the same graph and allocates ~63 MB per
   `orient` call. `Microsoft.ML.OnnxRuntime` stays the reference backend.
 
+### Phase 9 — Performance
+- [x] `280` the deskew search's threads: `EstimateSkew`/`Upright` take the host's own thread
+  count (the reference's `cv2.setNumThreads`: `--cores` in one process, 1 in a pool worker,
+  `--threads` in the viewer) and score the 32 angles in parallel, still taking the first
+  maximum in index order, so the output stays bit-exact — 3.3× on the deskew (174 → 51 ms),
+  the page 599 → 481 ms on `latin.png`, and the whole process now ahead of the reference's.
+  ReadyToRun (plain and composite) and `TieredCompilation=false` were all measured and all
+  lose: the app is not startup-bound, its ~0.9 s before the page is ONNX Runtime's own
+  session setup, so the default Release publish stays (`docs/280-deskew-threads.md`).
+
 ## Current state
 
 - Environment verified: dotnet 10.0.400, uv 0.12.7, Python ref env at `tools/pyenv`.
@@ -364,6 +374,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   and `viewer_parity.py`'s new `assets` case (two example pages through the API, skipped when
   `resources/` is not downloaded). Byte-identical everywhere; no finding
   (`docs/260-parity-sweep.md`).
+- Step `280` done: the deskew search's threads — the parallel angle scoring above; all five
+  harnesses still byte-identical (203 tests, 83/83 + 24/24 + 20/20 + 12)
+  (`docs/280-deskew-threads.md`).
 - 203 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 11 cases plus the
   `assets` case.

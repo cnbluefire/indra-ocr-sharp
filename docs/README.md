@@ -50,3 +50,4 @@ status. Keep these in sync with `PLAN.md`.
 | [250](250-reference-tests.md) | The reference's own unit tests, ported (26 of 27) |
 | [260](260-parity-sweep.md) | End-to-end parity sweep (the reference's own assets) |
 | 270 | [ONNX backend benchmark (ONNX Runtime vs Lokad.Onnx)](270-onnx-benchmark.md) |
+| [280](280-deskew-threads.md) | The deskew search's threads (and why ReadyToRun is not it) |

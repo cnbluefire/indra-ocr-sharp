@@ -43,6 +43,7 @@ public sealed class OrtOcr : IDisposable
     private readonly Recognizer _recognizer;
     private readonly Assembler _assembler;
     private readonly MathReader? _math;
+    private readonly int _threads;
     private bool _disposed;
 
     /// <param name="onnxDirectory">The model folder (<c>det.onnx</c>, <c>rec.onnx</c>,
@@ -67,6 +68,9 @@ public sealed class OrtOcr : IDisposable
         bool math = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(onnxDirectory);
+
+        // The same number the reference gives OpenCV (cv2.setNumThreads) is the deskew search's.
+        _threads = threads;
 
         // One SessionOptions for every session in the object — the OCR ones and the math ones —
         // exactly as the reference builds one instance and hands it to each InferenceSession.
@@ -194,7 +198,8 @@ public sealed class OrtOcr : IDisposable
     public UprightPage Upright(GrayImage gray, bool turn = true)
     {
         byte[]? page = Orient.Upright(turn ? _orient : null, gray,
-                                      out int width, out int height, out int turns, out double skew);
+                                      out int width, out int height, out int turns, out double skew,
+                                      _threads);
         return new UprightPage(page is null ? gray : new GrayImage(width, height, page), turns, skew);
     }
 

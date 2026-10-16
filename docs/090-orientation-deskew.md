@@ -91,6 +91,11 @@ Ported pieces:
 - **`getRotationMatrix2D`** rounds its centre to `Point2f` (step `040`); the centre is always a
   half-integer here.
 - **`max(..., key=f)`** takes the *first* maximum; `BestAngle` reproduces that (strict `>`).
+- **Threads** (step `280`). The 32 angles are independent, so `EstimateSkew` scores them in
+  parallel on the thread count the host already resolved — the reference's
+  `cv2.setNumThreads(threads)` (`--cores` in one process, 1 in a pool worker, `--threads` in the
+  viewer) — and only then takes the first maximum, in index order: same values, same winner,
+  bit for bit. 174 → 51 ms on the Release probe (`docs/280-deskew-threads.md`).
 
 `warpAffine` here is the float32 `INTER_LINEAR` kernel with the default `BORDER_CONSTANT` 0,
 already ported in step `040`. `Sharpness` is public so the fixture can check the whole profile
@@ -153,6 +158,10 @@ case where the reference hands back the same array object. The `turn` flag is `m
   `estimate_skew` handles `h == 1` (the difference array is empty, every angle scores 0.0 and the
   first candidate `-5.5` wins) and 1×1 pages through the same code. Both are fixture cases
   (`strip_100`, `onepx_64`).
+- **The viewer's deskew thread count.** The reference's viewer sets `OMP_THREAD_LIMIT` but
+  never `cv2.setNumThreads`, so OpenCV keeps its default there while the port hands the deskew
+  `--threads` (4). Timings only — the angle is the same either way
+  (`docs/280-deskew-threads.md`).
 
 ## Verification
 

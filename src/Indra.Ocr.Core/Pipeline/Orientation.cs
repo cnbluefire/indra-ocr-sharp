@@ -100,28 +100,50 @@ public static class Orientation
     /// page — the angle whose horizontal ink profile changes most sharply row to row, on a page
     /// thumbnail, in 0.5 degree steps and then 0.1 degree steps.
     /// </summary>
-    public static double EstimateSkew(GrayImage gray, int side = DeskewSide)
+    /// <param name="threads">How many angles to score at once, i.e. the reference's
+    /// <c>cv2.setNumThreads(threads)</c>: OpenCV splits one <c>warpAffine</c> across threads
+    /// where this scores independent angles in parallel. <c>1</c> is the worker-pool case.</param>
+    public static double EstimateSkew(GrayImage gray, int side = DeskewSide, int threads = 1)
     {
         float[] ink = SkewThumbnail(gray, side, out int w, out int h);
         if (Numerics.Mean32(ink) < BlankInk) return 0.0;  // a blank page has no rows to straighten
         var coarse = NpyArange.Range(-DeskewMax, DeskewMax + 1e-6, 0.5);
-        int best = BestAngle(ink, w, h, coarse);
+        int best = BestAngle(ink, w, h, coarse, threads);
         var fine = NpyArange.Range(coarse[best] - 0.5, coarse[best] + 0.5 + 1e-6, 0.1);
-        return fine[BestAngle(ink, w, h, fine)];
+        return fine[BestAngle(ink, w, h, fine, threads)];
     }
 
     /// <summary>Python's <c>max(angles, key=sharpness)</c>: the first angle with the largest
     /// sharpness.</summary>
-    private static int BestAngle(float[] ink, int width, int height, double[] angles)
+    /// <remarks>
+    /// Every angle is an independent computation — its own warp into its own buffer, reading the
+    /// thumbnail — so scoring them in parallel gives the values the serial order gives, bit for
+    /// bit; only then is the first maximum taken, in index order, as <c>max</c> does. What the
+    /// angles cost is why this is worth splitting: 32 warps of an 800-long-side thumbnail are the
+    /// pipeline's slowest step by far, and the reference has OpenCV's own threads on it.
+    /// </remarks>
+    private static int BestAngle(float[] ink, int width, int height, double[] angles, int threads)
     {
+        var values = new float[angles.Length];
+        if (threads > 1 && angles.Length > 1)
+        {
+            Parallel.For(0, angles.Length,
+                         new ParallelOptions { MaxDegreeOfParallelism = threads },
+                         i => values[i] = Sharpness(ink, width, height, angles[i]));
+        }
+        else
+        {
+            for (int i = 0; i < angles.Length; i++)
+                values[i] = Sharpness(ink, width, height, angles[i]);
+        }
+
         int best = 0;
         float bestValue = float.NegativeInfinity;
-        for (int i = 0; i < angles.Length; i++)
+        for (int i = 0; i < values.Length; i++)
         {
-            float v = Sharpness(ink, width, height, angles[i]);
-            if (i == 0 || v > bestValue)
+            if (i == 0 || values[i] > bestValue)
             {
-                bestValue = v;
+                bestValue = values[i];
                 best = i;
             }
         }
@@ -282,16 +304,21 @@ public static class Orientation
     /// </summary>
     /// <param name="model">The orientation model, or <c>null</c> for <c>turn=False</c> (the page
     /// is known to be upright).</param>
+    /// <param name="threads">Threads for the deskew search (<see cref="EstimateSkew"/>); the
+    /// reference gives OpenCV the same number (<c>cv2.setNumThreads</c>).</param>
     /// <returns>The upright page's pixels — or <c>null</c> when the page did not change, in which
     /// case the caller's buffer behind <paramref name="gray"/> is still the page (the reference
     /// returns the same array object in that case).</returns>
     public static byte[]? Upright(IOrientModel? model, GrayImage gray,
-                                  out int width, out int height, out int turns, out double skew)
-        => Upright(model, gray, OrientSide, DeskewSide, out width, out height, out turns, out skew);
+                                  out int width, out int height, out int turns, out double skew,
+                                  int threads = 1)
+        => Upright(model, gray, OrientSide, DeskewSide, out width, out height, out turns, out skew,
+                   threads);
 
-    /// <inheritdoc cref="Upright(IOrientModel?, GrayImage, out int, out int, out int, out double)"/>
+    /// <inheritdoc cref="Upright(IOrientModel?, GrayImage, out int, out int, out int, out double, int)"/>
     public static byte[]? Upright(IOrientModel? model, GrayImage gray, int orientSide, int deskewSide,
-                                  out int width, out int height, out int turns, out double skew)
+                                  out int width, out int height, out int turns, out double skew,
+                                  int threads = 1)
     {
         byte[]? page = null;
         turns = model is null ? 0 : Turns(model, gray, orientSide);
@@ -306,7 +333,7 @@ public static class Orientation
         }
 
         var view = page is null ? gray : new GrayImage(width, height, page);
-        skew = EstimateSkew(view, deskewSide);
+        skew = EstimateSkew(view, deskewSide, threads);
         if (Math.Abs(skew) >= DeskewMin)
         {
             var straightened = new byte[view.PixelCount];

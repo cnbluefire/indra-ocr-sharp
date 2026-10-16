@@ -89,6 +89,10 @@ package** (`Microsoft.ML.OnnxRuntime`).
   port uses a **stable** argsort (ties keep index order). Keys in the pipeline are mostly
   distinct floats (identical results); divergence is only possible when keys tie exactly.
   Python `sorted(...)` calls are stable and are matched exactly.
+- **Threads**: the deskew search's 32 angles are scored in parallel on the thread count the
+  host already resolved — the reference's `cv2.setNumThreads` (`--cores` in one process, 1 in
+  a pool worker, `--threads` in the viewer). Same values, same winner, bit for bit; the
+  viewer's count is the one timing-only difference (`docs/280-deskew-threads.md`).
 - **Scope**: OCR + PDF text layer first; `--math` last.
 - **Image codecs**: the `Indra.Ocr` project decodes image files with pure-managed
   **ImageSharp 2.1.13** (the last Apache-2.0 release; 3.x/4.x are under the Six Labors Split
