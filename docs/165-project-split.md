@@ -28,7 +28,7 @@ does the same job with less machinery.
 | moved | `src/Indra.Ocr.Core/Document/TextLayer.cs` → `src/Indra.Ocr.Core/Text/` | `TextLayer`, `TextChar`, `TextLine`, `TextLayerStats`, `TextLayerReader` |
 | new | `src/Indra.Ocr.Core/Text/TextLayerRuns.cs` | `readable`, `right_to_left`, `assign_runs` (from `document.py`) |
 | new | `src/Indra.Ocr.Core/Pipeline/SafePage.cs` | `document._safe` |
-| moved | `Converter.cs` → `src/Indra.Ocr.Pdf/PdfConverter.cs` | the PDF half (`Convert` / `ConvertPages`) |
+| moved | `Converter.cs` → `src/Indra.Ocr.Pdf/PdfConverter.cs` | the PDF half (`Open` / `PdfPage` / `ConvertPage` / `ConvertPages`) |
 | new | `src/Indra.Ocr.Pdf/PdfiumError.cs` | the PDFium exception, named as the reference prints it |
 | deleted | `Core/Document/{TextPage.cs, Converter.cs}` | `ITextDocument`, `ITextPage`, `TextPageError`, `Converter` |
 | deleted | `src/Shared/` | — |

@@ -97,6 +97,27 @@ public sealed class PdfConverter
     public double PageScale(PdfPage page) => PageScale(page.Width, page.Height, _dpi);
 
     /// <summary>
+    /// Opens a PDF for conversion, turning PDFium's failure into the reference's
+    /// <see cref="InputError"/> — the wording <c>document.convert</c> and <c>parallel._plan</c>
+    /// both use. The caller checks the file exists first, as the reference does.
+    /// </summary>
+    public static PdfDocument Open(string path, string? password = null)
+    {
+        try
+        {
+            return PdfDocument.Open(path, password);
+        }
+        catch (PdfiumError e)
+        {
+            // pypdfium2 says "password" in the error text when the document is locked.
+            bool locked = e.Message.Contains("password", StringComparison.OrdinalIgnoreCase);
+            throw new InputError(locked
+                ? $"{path}: password-protected PDF (pass password=, or --password)"
+                : $"{path}: cannot open the PDF ({e.Message})");
+        }
+    }
+
+    /// <summary>
     /// <c>pdf_page</c>: one page of a PDF — the text layer when it can be trusted, OCR otherwise.
     /// </summary>
     public OcrPage PdfPage(PdfDocument doc, int index)
@@ -239,41 +260,27 @@ public sealed class PdfConverter
     }
 
     /// <summary>
-    /// <c>convert</c> for a multi-page PDF: (page index, page) for every page, capped at
-    /// <paramref name="maxPages"/> (0: all). A page that fails yields an empty page whose
+    /// <c>convert</c> for the pages of a PDF: (page index, page) for every index in
+    /// <paramref name="pages"/>, in that order. A page that fails yields an empty page whose
     /// <c>source</c> is "error" and whose <c>note</c> says why; a file that cannot be opened
     /// raises <see cref="InputError"/>. The caller picks this converter or
-    /// <c>Indra.Ocr.Images.ImageConverter</c> with <see cref="OrtOcr.IsPdf"/>.
+    /// <c>Indra.Ocr.Images.ImageConverter</c> with <see cref="OrtOcr.IsPdf"/>, and chooses the
+    /// indices (<see cref="PdfDocument.PageCount"/> is the page count).
     /// </summary>
-    public IEnumerable<(int Index, OcrPage Page)> ConvertPages(string path, int maxPages = 0,
-                                                               string? password = null)
+    public IEnumerable<(int Index, OcrPage Page)> ConvertPages(string path, string? password,
+                                                               IEnumerable<int> pages)
     {
         if (!File.Exists(path))
         {
             throw new InputError($"{path}: no such file");
         }
 
-        PdfDocument doc;
+        PdfDocument doc = Open(path, password);
         try
         {
-            doc = PdfDocument.Open(path, password);
-        }
-        catch (PdfiumError e)
-        {
-            // pypdfium2 says "password" in the error text when the document is locked.
-            bool locked = e.Message.Contains("password", StringComparison.OrdinalIgnoreCase);
-            throw new InputError(locked
-                ? $"{path}: password-protected PDF (pass password=, or --password)"
-                : $"{path}: cannot open the PDF ({e.Message})");
-        }
-
-        try
-        {
-            int total = doc.PageCount;
-            int pages = maxPages <= 0 ? total : Math.Min(total, maxPages);
-            for (int i = 0; i < pages; i++)
+            foreach (int page in pages)
             {
-                int index = i;
+                int index = page;
                 yield return (index, SafePage.Read(() => PdfPage(doc, index)));
             }
         }
@@ -283,20 +290,9 @@ public sealed class PdfConverter
         }
     }
 
-    /// <summary>
-    /// The one page of a single-page PDF — the first page of a longer one
-    /// (<see cref="ConvertPages"/> for all of them). Null only for a document with no page at
-    /// all.
-    /// </summary>
-    public OcrPage? Convert(string path, string? password = null)
-    {
-        foreach ((int _, OcrPage page) in ConvertPages(path, maxPages: 1, password))
-        {
-            return page;
-        }
-
-        return null;
-    }
+    /// <summary>One page of a PDF (<c>pdf_page</c>), by index.</summary>
+    public OcrPage ConvertPage(string path, string? password, int pageIndex)
+        => ConvertPages(path, password, [pageIndex]).First().Page;
 
     /// <summary>The detector's boxes for a subset of lines (<c>boxes[idx]</c>).</summary>
     private static float[] Subset(ReadOnlySpan<float> boxes, IReadOnlyList<int> idx)

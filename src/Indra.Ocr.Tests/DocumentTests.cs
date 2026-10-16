@@ -95,9 +95,17 @@ public class DocumentTests
             throw new InputError($"{path}: no such file");
         if (OrtOcr.IsPdf(path))
         {
+            // The host chooses the pages: like the reference's _plan it opens the document for
+            // its page count (InputError for one that will not open) and caps it at max_pages.
+            int n;
+            using (PdfDocument doc = PdfConverter.Open(path, password))
+            {
+                n = maxPages <= 0 ? doc.PageCount : Math.Min(doc.PageCount, maxPages);
+            }
+
             return new PdfConverter(ocr, Dpi(options), Mode(options), PdfOrder(options),
                                     ImageOcr(options))
-                .ConvertPages(path, maxPages, password);
+                .ConvertPages(path, password, Enumerable.Range(0, n));
         }
 
         return new ImageConverter(ocr).ConvertFrames(path, maxPages);
@@ -305,28 +313,32 @@ public class DocumentTests
     }
 
     [Fact]
-    public void Convert_gives_the_first_page_or_frame()
+    public void ConvertPage_and_Convert_give_one_result()
     {
         if (TestModels.Directory is null)
             return;
         using var ocr = new OrtOcr(TestModels.Directory, threads: 4);
 
-        // The single-result Convert is the first page of the multi-page form.
+        // A PDF page: ConvertPage is the one-index form of ConvertPages.
         string path = WriteSample("text");
-        var pages = new PdfConverter(ocr).ConvertPages(path, maxPages: 1).ToList();
-        OcrPage? one = new PdfConverter(ocr).Convert(path);
+        var pages = new PdfConverter(ocr).ConvertPages(path, null, [0]).ToList();
+        OcrPage one = new PdfConverter(ocr).ConvertPage(path, null, 0);
         Assert.True(pages.Count == 1, $"{pages.Count} pages");
-        Assert.NotNull(one);
-        Assert.True(one!.Markdown == pages[0].Page.Markdown,
-                    "the single page's markdown differs from ConvertPages'");
+        Assert.True(one.Markdown == pages[0].Page.Markdown,
+                    "ConvertPage's markdown differs from ConvertPages'");
         Assert.True(one.Source == pages[0].Page.Source && one.Note == pages[0].Page.Note,
-                    "the single page's source/note differ");
+                    "ConvertPage's source/note differ");
         Assert.True(one.Lines.Count == pages[0].Page.Lines.Count, "the line count differs");
+
+        // The pages come back in the order they were asked for (the text sample has two).
+        var order = new PdfConverter(ocr).ConvertPages(path, null, [1, 0])
+                                         .Select(p => p.Index).ToList();
+        Assert.Equal([1, 0], order);
 
         if (Resources is null)
             return;
 
-        // An image file: its one frame (the example page has a single frame).
+        // An image file: Convert is the one-result form of ConvertFrames.
         JsonElement ic = Fx.GetProperty("image_cases").EnumerateArray().First();
         string image = Path.Combine(Resources, ic.GetProperty("file").GetString()!);
         var frame = new ImageConverter(ocr).ConvertFrames(image, maxPages: 1).Single();

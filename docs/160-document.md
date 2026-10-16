@@ -18,8 +18,8 @@ of `extract_runs` stays with the PDF backend (step `140`/`165`).
 
 | File | Contents |
 |---|---|
-| `src/Indra.Ocr.Pdf/PdfConverter.cs` | `PdfConverter` — `PageScale`, `PdfPage`, `TextPage`, `Convert` (one page), `ConvertPages` (all of them) |
-| `src/Indra.Ocr/Images/ImageConverter.cs` | `ImageConverter` — `Convert` (one frame), `ConvertFrames` (all of them) |
+| `src/Indra.Ocr.Pdf/PdfConverter.cs` | `PdfConverter` — `PageScale`, `Open`, `PdfPage`, `TextPage`, `ConvertPage` (one page), `ConvertPages` (the indices you name) |
+| `src/Indra.Ocr/Images/ImageConverter.cs` | `ImageConverter` — `Convert` (one frame), `ConvertFrames` (all of them, capped by `maxPages`) |
 | `src/Indra.Ocr.Core/Text/TextLayerRuns.cs` | `readable`, `right_to_left`, `assign_runs` |
 | `src/Indra.Ocr.Core/Text/TextLayerReader.cs` | `read_text_layer` (step `150`) |
 | `src/Indra.Ocr.Core/Pipeline/SafePage.cs` | `document._safe` → `SafePage.Read` / `From` |
@@ -74,13 +74,21 @@ TextPage(page, layer, t):                  # _text_page
 
 ## Port notes
 
-- **Two entry points per converter.** `ConvertPages(path, maxPages, password)` (PDF) and
-  `ConvertFrames(path, maxPages)` (images) are the reference's `convert`: a lazy `(index, page)`
-  sequence, named for what it walks — pages for a PDF, frames for a multi-page image — because
-  the two converters are interchangeable at the call site (`OrtOcr.IsPdf`). `Convert(path)` is
-  the one-result form: the first page, or the first frame, or null for a document with nothing
-  in it (the lazy form still raises `InputError` for a file it cannot read, because the call
-  runs its first step).
+- **The PDF API is by page index, and there is no `Convert`.** A PDF is multi-page by
+  presumption, so `PdfConverter` has no one-result `Convert`: `ConvertPages(path, password,
+  pages)` walks the indices the caller names, in that order, and `ConvertPage(path, password,
+  pageIndex)` is its one-index form. The caller knows the indices because it asks for the page
+  count (`PdfConverter.Open(path, password).PageCount`), exactly like the reference's
+  `parallel._plan` opens the document, reads `len(doc)` and closes it before planning units —
+  which is also why `max_pages` is the *host's* arithmetic (`min(n, max_pages)`), not a
+  converter parameter. `PdfConverter.PdfPage(doc, index)` stays public for the pool: a worker
+  opens the document once and converts many pages through it, as the reference's `_run` does.
+- **The image API is by frame, capped by `maxPages`.** `ImageConverter.ConvertFrames(path,
+  maxPages)` is the reference's `read_images(path)[: max_pages or None]` — there the slice *is*
+  the operation — and `ImageConverter.Convert(path)` is the one-result form (the first frame).
+- **`PdfConverter.Open` holds the "cannot open" wording once.** The reference repeats that
+  try/except in `document.convert` and in `parallel._plan`; the port has one `Open` that both
+  use, so the message cannot drift between the serial and the pooled path.
 - **The converter is two classes because the decoders are two projects.** `document.convert`'s
   branch on the file's own bytes is `OrtOcr.IsPdf` at the call site, and each half lives with the
   decoder it needs: `PdfConverter` (PDFium, page rasterisation, the text layer) and
