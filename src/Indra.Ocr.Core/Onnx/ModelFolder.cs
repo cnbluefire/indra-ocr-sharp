@@ -34,6 +34,23 @@ public static class ModelFolder
     /// <exception cref="ModelError">The folder is incomplete, or the download failed.</exception>
     public static string Resolve(string? path, bool math,
                                  Action<ModelDownloadProgress>? downloadProgress = null)
+        => ResolveAsync(path, math, downloadProgress).GetAwaiter().GetResult();
+
+    /// <summary>
+    /// <see cref="Resolve"/>, without blocking the calling thread: only the download is
+    /// asynchronous — the folder checks and the daily stamp are a handful of file system calls.
+    /// </summary>
+    /// <remarks>
+    /// Like <see cref="ModelDownload.DownloadAsync"/> it is the only implementation, with
+    /// <see cref="Resolve"/> as the wrapper. A cancelled token travels out as
+    /// <see cref="OperationCanceledException"/>: it is not "offline", so a cached model set is not
+    /// quietly returned in its place.
+    /// </remarks>
+    /// <param name="cancellationToken">Stops the download where it stands.</param>
+    /// <inheritdoc cref="Resolve(string?, bool, Action{ModelDownloadProgress}?)"/>
+    public static async Task<string> ResolveAsync(string? path, bool math,
+                                                  Action<ModelDownloadProgress>? downloadProgress = null,
+                                                  CancellationToken cancellationToken = default)
     {
         string? given = path;
         if (given is null)
@@ -74,7 +91,11 @@ public static class ModelFolder
             // The stamp is only touched when the Hub was really reached (the reference's `_touch`
             // sits on the online branch alone): an offline run keeps the cached models and keeps
             // checking, rather than going quiet for a day.
-            if (ModelDownload.Download(snapshot, math, downloadProgress: downloadProgress))
+            bool reached = await ModelDownload
+                .DownloadAsync(snapshot, math, downloadProgress: downloadProgress,
+                               cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            if (reached)
             {
                 Touch(stamp);
             }

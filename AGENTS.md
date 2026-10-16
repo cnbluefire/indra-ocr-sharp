@@ -101,6 +101,11 @@ package** (`Microsoft.ML.OnnxRuntime`).
   host already resolved — the reference's `cv2.setNumThreads` (`--cores` in one process, 1 in
   a pool worker, `--threads` in the viewer). Same values, same winner, bit for bit; the
   viewer's count is the one timing-only difference (`docs/280-deskew-threads.md`).
+- **Async**: only the network boundary is asynchronous — `ModelDownload.DownloadAsync` and
+  `ModelFolder.ResolveAsync` are the implementations, with the synchronous `Download`/`Resolve`
+  as thin wrappers over them — and a cancelled token is not "the Hub could not be reached". The
+  OCR pipeline stays synchronous: ONNX Runtime's .NET binding has no `RunAsync`, and `GrayImage`
+  is a non-owning `ref struct` that cannot cross an `await` (`docs/320-async-io.md`).
 - **Scope**: OCR + PDF text layer first; `--math` last.
 - **Image codecs**: the `Indra.Ocr` project decodes image files with pure-managed
   **ImageSharp 2.1.13** (the last Apache-2.0 release; 3.x/4.x are under the Six Labors Split

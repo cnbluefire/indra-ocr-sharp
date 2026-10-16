@@ -409,6 +409,13 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   viewer), a line per tenth with the file's name, its size, how much has arrived and the
   percentage (`docs/310-model-download-progress.md`). 216 tests, 83/24/20/12, and both hosts
   checked against a real first-run download.
-- 216 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
+- Step `320` done: the I/O boundary is asynchronous — `ModelDownload.DownloadAsync` and
+  `ModelFolder.ResolveAsync` are the implementations, with the synchronous `Download`/`Resolve`
+  as thin wrappers over them, and a cancelled token is no longer mistaken for "the Hub could not
+  be reached" (`Offline` checks the token). The pipeline itself stays synchronous: ONNX
+  Runtime's .NET binding has no `RunAsync` and `GrayImage` is a non-owning `ref struct`, so a
+  `Task.Run` wrapper would be fake async and a copy per frame
+  (`docs/320-async-io.md`). 218 tests, 83/24/20/12, and a real first run over both paths.
+- 218 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`.

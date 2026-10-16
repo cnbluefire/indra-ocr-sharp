@@ -55,3 +55,4 @@ status. Keep these in sync with `PLAN.md`.
 | [295](295-invariant-globalization.md) | Invariant globalization, and the NFC it forced |
 | [300](300-viewer-ctrl-c.md) | The viewer's Ctrl+C (and what the slim host already had) |
 | [310](310-model-download-progress.md) | The model download's progress (a callback in Core, lines in the hosts) |
+| [320](320-async-io.md) | The I/O boundary is asynchronous (the pipeline is not) |

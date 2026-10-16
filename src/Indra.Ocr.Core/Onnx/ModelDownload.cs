@@ -85,6 +85,30 @@ public static class ModelDownload
     /// </exception>
     public static bool Download(string folder, bool math = false, string? revision = null,
                                 Action<ModelDownloadProgress>? downloadProgress = null)
+        => DownloadAsync(folder, math, revision, downloadProgress).GetAwaiter().GetResult();
+
+    /// <summary>
+    /// <see cref="Download"/>, without blocking the calling thread: the listing, the bodies and the
+    /// files are read and written asynchronously, and <paramref name="cancellationToken"/> stops
+    /// the download where it stands.
+    /// </summary>
+    /// <remarks>
+    /// This is the only implementation — the synchronous <see cref="Download"/> is a wrapper around
+    /// it — so the two cannot drift apart. Nothing here awaits anything but I/O, and every await
+    /// continues on a pool thread, so the wrapper cannot deadlock on a UI or ASP.NET thread.
+    /// <para>
+    /// A cancelled token is the caller's own decision and is <i>not</i> "the Hub could not be
+    /// reached": the offline fallback (keep the folder's own model set) does not apply, and
+    /// <see cref="OperationCanceledException"/> travels out. A file's <c>.part</c> file stays where
+    /// it stopped; the next call overwrites it.
+    /// </para>
+    /// </remarks>
+    /// <param name="cancellationToken">Stops the download where it stands.</param>
+    /// <inheritdoc cref="Download(string, bool, string?, Action{ModelDownloadProgress}?)"/>
+    public static async Task<bool> DownloadAsync(string folder, bool math = false,
+                                                 string? revision = null,
+                                                 Action<ModelDownloadProgress>? downloadProgress = null,
+                                                 CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(folder);
         string rev = revision ?? HfRevision;
@@ -93,9 +117,9 @@ public static class ModelDownload
         List<(string Path, long Size)> wanted;
         try
         {
-            wanted = HubFiles(rev, math);
+            wanted = await HubFilesAsync(rev, math, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or IOException)
+        catch (Exception e) when (Offline(e, cancellationToken))
         {
             // Offline or the Hub is down: a folder that already has the model set is used as it
             // is (the reference's "keep the cached models"); otherwise the caller must be told.
@@ -118,9 +142,10 @@ public static class ModelDownload
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
             try
             {
-                Fetch($"{Host}/{HfRepo}/resolve/{rev}/{path}", dest, path, size, downloadProgress);
+                await FetchAsync($"{Host}/{HfRepo}/resolve/{rev}/{path}", dest, path, size,
+                                 downloadProgress, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception e) when (e is HttpRequestException or TaskCanceledException or IOException)
+            catch (Exception e) when (Offline(e, cancellationToken))
             {
                 throw new ModelError(DownloadFailed(e), e);
             }
@@ -128,6 +153,15 @@ public static class ModelDownload
 
         return true;
     }
+
+    /// <summary>
+    /// Whether an exception means "the Hub could not be reached" — as opposed to a cancellation the
+    /// caller asked for, which is left to travel out of the download. The two are told apart by the
+    /// token: <c>HttpClient</c> reports both as <see cref="TaskCanceledException"/>.
+    /// </summary>
+    private static bool Offline(Exception e, CancellationToken cancellationToken)
+        => !cancellationToken.IsCancellationRequested
+           && e is HttpRequestException or TaskCanceledException or IOException;
 
     /// <summary>
     /// Whether <paramref name="folder"/> holds the model set (and, with <paramref name="math"/>,
@@ -172,10 +206,12 @@ public static class ModelDownload
     /// The Hub's files for <paramref name="rev"/> that the reference's patterns keep, with the
     /// sizes it reports.
     /// </summary>
-    private static List<(string Path, long Size)> HubFiles(string rev, bool math)
+    private static async Task<List<(string Path, long Size)>> HubFilesAsync(
+        string rev, bool math, CancellationToken cancellationToken)
     {
-        string json = Http.GetStringAsync($"{Host}/api/models/{HfRepo}/tree/{rev}?recursive=true")
-                          .GetAwaiter().GetResult();
+        string json = await Http
+            .GetStringAsync($"{Host}/api/models/{HfRepo}/tree/{rev}?recursive=true", cancellationToken)
+            .ConfigureAwait(false);
         var wanted = new List<(string Path, long Size)>();
         using var doc = System.Text.Json.JsonDocument.Parse(json);
         foreach (System.Text.Json.JsonElement entry in doc.RootElement.EnumerateArray())
@@ -205,20 +241,24 @@ public static class ModelDownload
     /// Fetches one file to <paramref name="dest"/> (via a <c>.part</c> file), reporting it under
     /// the repository name <paramref name="name"/>.
     /// </summary>
-    private static void Fetch(string url, string dest, string name, long size,
-                              Action<ModelDownloadProgress>? downloadProgress)
+    private static async Task FetchAsync(string url, string dest, string name, long size,
+                                         Action<ModelDownloadProgress>? downloadProgress,
+                                         CancellationToken cancellationToken)
     {
-        using HttpResponseMessage res = Http
-            .GetAsync(url, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
+        using HttpResponseMessage res = await Http
+            .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
         res.EnsureSuccessStatusCode();
         string part = dest + ".part";
         downloadProgress?.Invoke(new ModelDownloadProgress(name, dest, url, 0, size));
-        using (Stream src = res.Content.ReadAsStream())
-        using (FileStream dst = File.Create(part))
+        using (Stream src = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
+        using (FileStream dst = new FileStream(part, FileMode.Create, FileAccess.Write,
+                                               FileShare.None, Chunk, FileOptions.Asynchronous))
         {
-            Copy(src, dst, size,
-                 done => downloadProgress?.Invoke(
-                     new ModelDownloadProgress(name, dest, url, done, size)));
+            await CopyAsync(src, dst, size,
+                            done => downloadProgress?.Invoke(
+                                new ModelDownloadProgress(name, dest, url, done, size)),
+                            cancellationToken).ConfigureAwait(false);
         }
 
         File.Move(part, dest, overwrite: true);
@@ -230,20 +270,21 @@ public static class ModelDownload
     /// the body does not end on a report (a short file, or a body that is not the size the Hub
     /// listed). A size of 0 (the Hub did not say) is reported at the end alone.
     /// </summary>
-    internal static void Copy(Stream src, Stream dst, long size, Action<long> report)
+    internal static async Task CopyAsync(Stream src, Stream dst, long size, Action<long> report,
+                                         CancellationToken cancellationToken = default)
     {
         byte[] buffer = new byte[Chunk];
         long done = 0;
         long reported = 0;
         while (true)
         {
-            int read = src.Read(buffer, 0, buffer.Length);
+            int read = await src.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 break;
             }
 
-            dst.Write(buffer, 0, read);
+            await dst.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
             done += read;
             if (size > 0 && (int)(done * 100 / size) >= (int)(reported * 100 / size) + Step)
             {
