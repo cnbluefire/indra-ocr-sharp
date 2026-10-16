@@ -1,7 +1,2 @@
-// indra-ocr-viewer (C# port) — placeholder host. Minimal API arrives in step 220.
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
-
-app.MapGet("/", () => "indra-ocr-viewer: not implemented yet");
-
-app.Run();
+// indra-ocr-viewer — the port of indra_ocr.viewer (step 220: the minimal API).
+return Indra.Ocr.Viewer.Viewer.Run(args);

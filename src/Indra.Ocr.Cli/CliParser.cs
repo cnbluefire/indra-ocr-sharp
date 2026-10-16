@@ -1,4 +1,4 @@
-using Indra.Ocr.Cli.Argparse;
+using Indra.Ocr.Argparse;
 
 namespace Indra.Ocr.Cli;
 
@@ -34,7 +34,7 @@ internal static class CliParser
         ap.AddArgument(["--out"], type: ArgType.Path, @default: null,
                        help: "write one file per input here");
         ap.AddArgument(["--format"], choices: ["md", "text", "json"], @default: "md");
-        AddSourceArgs(ap);
+        SourceArgs.AddTo(ap);
         ap.AddArgument(["--model-dir"], type: ArgType.Path, @default: null);
         ap.AddArgument(["--cores", "--threads"], dest: "cores", type: ArgType.Int, @default: 0L,
                        help: "cores to use (default: all this process may run on, here " +
@@ -51,27 +51,6 @@ internal static class CliParser
         ap.AddArgument(["--timings"], action: ArgAction.StoreTrue,
                        help: "print per-page timings to stderr");
         return ap;
-    }
-
-    /// <summary><c>cli.add_source_args</c>: the text layer / OCR group.</summary>
-    private static void AddSourceArgs(ArgumentParser ap)
-    {
-        ArgumentGroup group = ap.AddArgumentGroup("text layer or OCR (PDFs)");
-        group.AddArgument(
-            ["--mode"],
-            choices: ["auto", "ocr", "text"],
-            @default: "auto",
-            help: "auto: text layer where it passes the checks, OCR elsewhere (default); " +
-                  "ocr: never read the text layer; text: use the text layer even when the " +
-                  "checks fail");
-        group.AddArgument(
-            ["--model-order"],
-            action: ArgAction.StoreTrue,
-            help: "order text-layer lines with the order model, not the PDF content order");
-        group.AddArgument(
-            ["--no-image-ocr"],
-            action: ArgAction.StoreTrue,
-            help: "on text-layer pages, do not OCR text inside images");
     }
 
     /// <summary><c>parallel.usable_cores</c>: the cores this process may run on.</summary>

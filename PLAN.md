@@ -142,12 +142,25 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   shrink to 1600 px, JPEG q82), the boxes scaled onto it, the Markdown, and the CLI-shaped
   `json`. Twelve recorded pages, two error texts and the five-upload limit match the reference
   (`docs/210-viewer-engine.md`).
-- [ ] `220` Minimal API + source-gen JSON.
+- [x] `215` Argparse engine + shared options move into Core — `ArgumentParser`/`Namespace`/
+  `ArgparseExit` (namespace `Indra.Ocr.Argparse`) and the new `SourceArgs` (the reference's
+  `add_source_args`/`source_options` in one place), because the viewer is a second host with the
+  same `--help`/`--version`/error surface and the same four source options; the CLI's 77 cases are
+  unchanged by the move (`docs/215-argparse-core.md`).
+- [x] `220` Viewer HTTP layer — the reference's five routes over ASP.NET Core's minimal API
+  (`GET /`+`/index.html`, `GET /info`, `POST /upload`, `POST /page`, a `404 not found` fallback),
+  the answers written by a source-generated `System.Text.Json` context in the reference's key order,
+  the reference's `error: …` + `400 {"error": …}` on anything that throws, and the banner. The JSON
+  bytes are not `json.dumps` (the plan's AOT-friendly serializer), so the comparison is semantic:
+  key order and values match, the spelling of numbers and whitespace does not. `--help`/`--version`
+  are byte-identical; `viewer_parity.py` drives both servers over nine request cases and the console
+  lines (`docs/220-viewer-api.md`).
 - [ ] `230` PAGE/LOGO port.
-- [ ] `240` HTTP parity tests.
-  Note for `220`: requests arrive on several threads while PDFium is not thread-safe (step `190`
-  keeps one process per core for that reason). The engine already serialises every page under one
-  lock; the API must not add a second path around it.
+- [ ] `240` HTTP parity tests — `viewer_parity.py` already runs the API cases; `240` adds the page
+  itself, `--help`/`--version` over the wire, the banner and the `--tesseract` refusal.
+  Note: requests arrive on several threads while PDFium is not thread-safe (step `190` keeps one
+  process per core for that reason). The engine serialises every page under one lock and the API
+  calls it directly — no second path around it.
 
 ### Phase 7 — Hardening
 - [ ] `250` Port python unit tests.
@@ -230,4 +243,18 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   the reference's own `Engine`, and `ViewerEngineTests` compares the response field by field —
   the JPEG bytes and the timing values excepted, and the five-upload limit and the error texts
   checked too (`docs/210-viewer-engine.md`).
-- 151 tests green, build clean (0 warnings); the CLI alignment harness still 77/77.
+- Step `215` done: the argparse engine (`ArgumentParser`, `Namespace`, `ArgparseExit`) moved from
+  the CLI into Core (namespace `Indra.Ocr.Argparse`), with `SourceArgs` holding the option group
+  both hosts share (the reference's `add_source_args`/`source_options`); the CLI's private helper
+  and its inline reading are gone, and its 77 parity cases are unchanged
+  (`docs/215-argparse-core.md`).
+- Step `220` done: the viewer's HTTP layer — `GET /`+`/index.html`, `GET /info`, `POST /upload`,
+  `POST /page` and a `404 not found` fallback over the minimal API, the answers written by the
+  source-generated `ViewerJson` context in the reference's key order, the reference's `error: …`
+  console line + `400 {"error": …}` whenever a handler throws, and the banner. `--help`/`--version`
+  are byte-identical to the reference's; `ViewerArgparseTests` (6) and `viewer_parity.py` (9 cases,
+  both servers driven over the same requests) pass. The JSON bytes are deliberately not
+  `json.dumps`'s (whitespace, non-ASCII escaping, the spelling of integral doubles), so the HTTP
+  comparison is semantic — every key, its position and every value (`docs/220-viewer-api.md`).
+- 157 tests green, build clean (0 warnings); the CLI alignment harness still 77/77 and the viewer's
+  HTTP harness 9/9.

@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Indra.Ocr.Cli.Argparse;
+namespace Indra.Ocr.Argparse;
 
 /// <summary>
 /// A port of <c>argparse.HelpFormatter</c> (CPython 3.14) with

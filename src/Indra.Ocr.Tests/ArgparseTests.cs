@@ -1,5 +1,5 @@
 using Indra.Ocr.Cli;
-using Indra.Ocr.Cli.Argparse;
+using Indra.Ocr.Argparse;
 using Indra.Ocr.Py;
 
 namespace Indra.Ocr.Tests;

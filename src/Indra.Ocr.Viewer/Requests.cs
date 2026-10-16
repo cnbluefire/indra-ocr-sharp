@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Indra.Ocr.Viewer;
 
 /// <summary>
@@ -5,14 +7,19 @@ namespace Indra.Ocr.Viewer;
 /// controls override per request and which <c>GET /info</c> reports back so the page can restore
 /// them.
 /// </summary>
+/// <remarks>
+/// Three keys are snake_case in the reference (<c>pdf_order</c>, <c>image_ocr</c>,
+/// <c>max_pages</c>), so they carry an explicit name; the rest follow the camelCase policy the
+/// JSON context sets.
+/// </remarks>
 public sealed record ViewerDefaults(
     string Mode,
-    bool PdfOrder,
-    bool ImageOcr,
+    [property: JsonPropertyName("pdf_order")] bool PdfOrder,
+    [property: JsonPropertyName("image_ocr")] bool ImageOcr,
     bool Math,
     bool Furniture,
     double Dpi,
-    int MaxPages);
+    [property: JsonPropertyName("max_pages")] int MaxPages);
 
 /// <summary>
 /// The options of one page request — the reference's <c>opts</c> dict. Every field is nullable so
@@ -24,9 +31,13 @@ public sealed record PageOptions(
     bool Math = false,
     bool Furniture = false,
     double? Dpi = null,
-    bool ModelOrder = false,
-    bool? ImageOcr = null,
+    [property: JsonPropertyName("model_order")] bool ModelOrder = false,
+    [property: JsonPropertyName("image_ocr")] bool? ImageOcr = null,
     bool Tesseract = false);
 
-/// <summary>The body of <c>POST /page</c>: which upload, which page, and the options.</summary>
-public sealed record PageRequest(string? Id, int N, PageOptions? Opts);
+/// <summary>
+/// The body of <c>POST /page</c>: which upload, which page, and the options. <c>id</c> and
+/// <c>n</c> are required in the reference (<c>q["id"]</c>, <c>int(q["n"])</c>), so they are
+/// nullable here and the handler reports the missing one the way Python's <c>KeyError</c> reads.
+/// </summary>
+public sealed record PageRequest(string? Id, int? N, PageOptions? Opts);

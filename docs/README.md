@@ -41,7 +41,8 @@ status. Keep these in sync with `PLAN.md`.
 | 200 | MathReader |
 | [205](205-core-shared.md) | Shared helpers move into Core |
 | [210](210-viewer-engine.md) | Viewer Engine |
-| 220 | Minimal API |
+| [215](215-argparse-core.md) | Argparse engine + shared options move into Core |
+| [220](220-viewer-api.md) | Viewer HTTP layer (minimal API + source-gen JSON) |
 | 230 | PAGE/LOGO |
 | 240 | Viewer HTTP tests |
 | 250 | Port python unit tests |

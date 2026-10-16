@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Indra.Ocr.Py;
 
-namespace Indra.Ocr.Cli.Argparse;
+namespace Indra.Ocr.Argparse;
 
 /// <summary>
 /// A port of the slice of Python's <c>argparse</c> (CPython 3.14) that the indra-ocr command line

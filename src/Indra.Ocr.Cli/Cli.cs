@@ -1,5 +1,5 @@
 using System.Text;
-using Indra.Ocr.Cli.Argparse;
+using Indra.Ocr.Argparse;
 using Indra.Ocr.Cli.Worker;
 using Indra.Ocr.Images;
 using Indra.Ocr.Layout;
@@ -86,9 +86,7 @@ internal static class Cli
         bool furniture = a.Flag("keep_furniture");
         bool math = a.Flag("math");
         bool timings = a.Flag("timings");
-        string mode = a.Str("mode") ?? "auto";
-        bool pdfOrder = !a.Flag("model_order");
-        bool imageOcr = !a.Flag("no_image_ocr");
+        (string mode, bool pdfOrder, bool imageOcr) = SourceArgs.Options(a);
 
         // convert_many resolves (and on a first run downloads) the models once, before the
         // workers start; a ModelError reaches main() and becomes one line and exit 1.

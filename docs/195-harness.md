@@ -8,8 +8,8 @@ Make the byte-for-byte comparison against the Python reference the project's *of
 harness rather than a script that grew case by case: one place that runs both sides on the
 same input, compares everything they produce, reports the first difference of a failure,
 and can run the cases in parallel. The machinery is deliberately separate from the CLI's
-cases, because the viewer's HTTP harness (step `240`) needs the same thing with different
-commands and a different comparison.
+cases, because the viewer's HTTP harness (`viewer_parity.py`, written in step `220`, extended
+in `240`) needs the same report and diff with different commands and a different comparison.
 
 ## Files
 

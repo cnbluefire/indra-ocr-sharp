@@ -5,7 +5,7 @@
 
 using Indra.Ocr.Py;
 
-namespace Indra.Ocr.Cli.Argparse;
+namespace Indra.Ocr.Argparse;
 
 /// <summary>argparse's <c>nargs</c> (the three the CLI uses).</summary>
 public enum Nargs
