@@ -416,6 +416,12 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   Runtime's .NET binding has no `RunAsync` and `GrayImage` is a non-owning `ref struct`, so a
   `Task.Run` wrapper would be fake async and a copy per frame
   (`docs/320-async-io.md`). 218 tests, 83/24/20/12, and a real first run over both paths.
+- Step `325` done: the README became the front page — `Indra.Ocr.Sharp`, the upstream project
+  and its models, what this port is (parity, ONNX Runtime through NuGet, no OpenCV, the two
+  decoder projects, AOT), the build and publish commands, the CLI and viewer examples with
+  their option tables, `PdfConverter`/`ImageConverter` examples, and the licensing (code
+  Apache-2.0, weights modified OpenRAIL-M, both as upstream). `NOTICE`'s product name became
+  `Indra.Ocr.Sharp` (`docs/325-readme.md`).
 - 218 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`.
