@@ -9,6 +9,9 @@
          every build, so the whole pipeline has to stay IL2xxx/IL3xxx-clean — the worker mode
          included (see WorkerPool.WorkerStartInfo). -->
     <PublishAot>true</PublishAot>
+    <!-- A host is not a package: it ships as the NativeAOT binaries in the release's per-RID zips
+         (build/publish.*), so `dotnet pack` on the solution must skip it. -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <!-- The CLI is only a front end: Core holds the pipeline, Pdf and Indra.Ocr the two decoders.

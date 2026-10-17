@@ -13,6 +13,14 @@
          the version is the Python package's (pyproject.toml, `__init__.py`). -->
     <Product>indra-ocr</Product>
     <Version>0.3.2</Version>
+    <!-- The NuGet line (docs/340-nuget-packages.md).  `PackageVersion` is what the three packages
+         carry: the parity version above plus the flavor we are publishing.  The major/minor track
+         the reference, so a port of a newer upstream release moves them, and only the flavor moves
+         between our own pushes; bump it every time, because a version once pushed can never be
+         replaced.  `Version` itself is untouched on purpose: the hosts read it back from their
+         assembly for the version flag and the viewer's /info, and those are the parity surface. -->
+    <PackageFlavor>alpha.1</PackageFlavor>
+    <PackageVersion>$(Version)-$(PackageFlavor)</PackageVersion>
     <!-- The informational version is part of the parity surface (the version flag, /info): the
          `+<commit sha>` SourceLink/CI appends to it would break the byte-for-byte match. -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>

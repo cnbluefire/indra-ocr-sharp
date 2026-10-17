@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The manifest of Bluefire.Indra.Ocr.Sharp, the Indra.Ocr project (docs/340-nuget-packages.md),
+     that is the image decoder.  The package id is the project's own name with the author prefix, so the
+     family reads as <prefix>Indra.Ocr.Sharp{.Core,.Pdf}; inside, the assembly is Indra.Ocr.dll and
+     the namespaces are Indra.Ocr.Images / Indra.Ocr.  See Indra.Ocr.Sharp.Core.nuspec for what the
+     tokens, the base path and the explicit <files> list are about. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Bluefire.Indra.Ocr.Sharp</id>
+    <version>$packageVersion$</version>
+    <title>Indra.Ocr.Sharp</title>
+    <authors>cnbluefire</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache-2.0</license>
+    <projectUrl>https://github.com/cnbluefire/indra-ocr-sharp</projectUrl>
+    <repository type="git" url="https://github.com/cnbluefire/indra-ocr-sharp.git" />
+    <summary>The encoded-image decoder of indra-ocr's C# port.</summary>
+    <description>The image half of the C# indra-ocr port's document.convert: it decodes image files
+(with ImageSharp) to grayscale frames and hands them to Indra.Ocr.Core, one GrayImageData per frame.
+The grayscale conversion reproduces OpenCV's fixed-point arithmetic, so the pixels Core sees are the
+reference's.</description>
+    <tags>ocr;indra-ocr;image;imagesharp;tiff</tags>
+    <dependencies>
+      <!-- ImageSharp is capped below 3.0 on purpose: 2.1.13 is the last Apache-2.0 release (3.x and
+           4.x are under the Six Labors Split License and 4.x refuses Release builds without a key),
+           and the port decodes against 2.x's API. -->
+      <group targetFramework="net10.0">
+        <dependency id="Bluefire.Indra.Ocr.Sharp.Core" version="[$packageVersion$]" />
+        <dependency id="SixLabors.ImageSharp" version="[2.1.13,3.0.0)" />
+      </group>
+      <group targetFramework="netstandard2.0">
+        <dependency id="Bluefire.Indra.Ocr.Sharp.Core" version="[$packageVersion$]" />
+        <dependency id="SixLabors.ImageSharp" version="[2.1.13,3.0.0)" />
+        <dependency id="System.Memory" version="4.5.5" />
+        <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
+      </group>
+    </dependencies>
+  </metadata>
+  <!-- Every entry is named on purpose (a wildcard would pick up Indra.Ocr.Core.dll, which the
+       ProjectReference copies into this project's output); the .pdb entries feed the symbols package,
+       see Indra.Ocr.Sharp.Core.nuspec. -->
+  <files>
+    <file src="..\src\Indra.Ocr\bin\$configuration$\net10.0\Indra.Ocr.dll" target="lib\net10.0" />
+    <file src="..\src\Indra.Ocr\bin\$configuration$\net10.0\Indra.Ocr.pdb" target="lib\net10.0" />
+    <file src="..\src\Indra.Ocr\bin\$configuration$\netstandard2.0\Indra.Ocr.dll" target="lib\netstandard2.0" />
+    <file src="..\src\Indra.Ocr\bin\$configuration$\netstandard2.0\Indra.Ocr.pdb" target="lib\netstandard2.0" />
+    <file src="..\LICENSE" target="LICENSE" />
+    <file src="..\NOTICE" target="NOTICE" />
+  </files>
+</package>

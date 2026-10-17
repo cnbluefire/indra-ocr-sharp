@@ -16,6 +16,19 @@
     <IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
   </PropertyGroup>
 
+  <!-- Packing: see Indra.Ocr.Core.csproj (docs/340-nuget-packages.md).  The manifest is the
+       external build/*.nuspec, and only the per-release values and the two names the SDK needs to
+       name the .nupkg are set here. -->
+  <PropertyGroup>
+    <PackageId>Bluefire.Indra.Ocr.Sharp</PackageId>
+    <!-- See Indra.Ocr.Core.csproj: the nuspec describes the contents alone, so the SDK's own
+         build-output collection has to stay out of it (NU5050 otherwise). -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NuspecFile>$(MSBuildThisFileDirectory)..\..\build\Indra.Ocr.Sharp.nuspec</NuspecFile>
+    <NuspecBasePath>$(MSBuildThisFileDirectory)..\..\build</NuspecBasePath>
+    <NuspecProperties>packageVersion=$(PackageVersion);configuration=$(Configuration)</NuspecProperties>
+  </PropertyGroup>
+
   <!-- The encoded-image layer: it decodes image files (ImageSharp) to Core's GrayImage and turns
        them into pages with the pipeline. Pdf is a sibling that also references Core; the two
        decoders never reference each other, because both hand Core the same GrayImage. -->

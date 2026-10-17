@@ -15,6 +15,19 @@
     <IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
   </PropertyGroup>
 
+  <!-- Packing: see Indra.Ocr.Core.csproj (docs/340-nuget-packages.md).  The manifest is the
+       external build/*.nuspec, and only the per-release values and the two names the SDK needs to
+       name the .nupkg are set here. -->
+  <PropertyGroup>
+    <PackageId>Bluefire.Indra.Ocr.Sharp.Pdf</PackageId>
+    <!-- See Indra.Ocr.Core.csproj: the nuspec describes the contents alone, so the SDK's own
+         build-output collection has to stay out of it (NU5050 otherwise). -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NuspecFile>$(MSBuildThisFileDirectory)..\..\build\Indra.Ocr.Sharp.Pdf.nuspec</NuspecFile>
+    <NuspecBasePath>$(MSBuildThisFileDirectory)..\..\build</NuspecBasePath>
+    <NuspecProperties>packageVersion=$(PackageVersion);configuration=$(Configuration)</NuspecProperties>
+  </PropertyGroup>
+
   <!-- The only project that depends on PDFium. It references Core (for GrayImage) but Core
        does not reference it, so no third-party PDF code leaks into the pipeline.
        The dependency is on the native packages, not on a managed wrapper: this project binds

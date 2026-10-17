@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The manifest of Bluefire.Indra.Ocr.Sharp.Core, the Indra.Ocr.Core project (docs/340-nuget-packages.md).
+
+     Every path below is relative to this folder (`NuspecBasePath` is build/, set by the project), so
+     the paths do not depend on where the pack is started from.
+
+     `$packageVersion$` and `$configuration$` are filled by MSBuild from the project's
+     `NuspecProperties` (the version comes from src/Directory.Build.props), so it is spelled once.
+     The token is not called `$version$`: that name is reserved, and NuGet replaces it from the
+     project's own version, which ignores the flavor.
+
+     The <files> list names every file on purpose: a wildcard would pull in whatever else happens to
+     be in the output folder (Indra.Ocr.Pdf's build output holds Indra.Ocr.Core.dll, which must not
+     ride along in the Pdf package). -->
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Bluefire.Indra.Ocr.Sharp.Core</id>
+    <version>$packageVersion$</version>
+    <title>Indra.Ocr.Sharp.Core</title>
+    <authors>cnbluefire</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <!-- The package id carries the author prefix (Bluefire.) only so it does not squat an
+         official-sounding name; the assemblies and namespaces inside are Indra.Ocr.*. -->
+    <!-- Apache-2.0: the licence of the original Python work this is a port of.  An SPDX
+         expression, not a file, because a file path would have to resolve against NuspecBasePath
+         (build/); the licence text itself still ships in the package, see <files>. -->
+    <license type="expression">Apache-2.0</license>
+    <projectUrl>https://github.com/cnbluefire/indra-ocr-sharp</projectUrl>
+    <repository type="git" url="https://github.com/cnbluefire/indra-ocr-sharp.git" />
+    <summary>The OCR pipeline of indra-ocr, ported to C#.</summary>
+    <description>The C# port of indra-ocr's core: the ONNX Runtime inference engine and the whole OCR
+pipeline (detection, recognition, orientation, reading order, layout), plus everything that works on
+the pages it produces: the text layer's runs and the verdict on them, the reading order, the layout
+and the assembled markdown. Behaviour follows the Python reference bit for bit; only timings and
+floats below 1e-3 differ. The models are not bundled: they are downloaded at runtime from
+https://huggingface.co/datalab-to/indra-ocr and are licensed under a modified OpenRAIL-M licence, not
+Apache-2.0 (see NOTICE).</description>
+    <tags>ocr;indra-ocr;onnx;onnxruntime;markdown;reading-order;layout</tags>
+    <dependencies>
+      <!-- The build pins ONNX Runtime to 1.31.0 (Directory.Packages.props): its native library takes
+           part in the numbers the pipeline produces, so the build must not float.  Consumers get the
+           same family, any 1.31.x patch, because a minor upgrade could move those numbers. -->
+      <group targetFramework="net10.0">
+        <dependency id="Microsoft.ML.OnnxRuntime" version="[1.31.0,1.32.0)" />
+      </group>
+      <!-- The netstandard2.0 asset (docs/335-multitarget-netstandard20.md) uses the BCL types that
+           arrived after netstandard2.0: System.Memory for the span types, Unsafe for the compat
+           layer's bit reinterpretation, System.Text.Json for the model metadata.  On net10.0 all
+           three are in-box, hence no entry in the group above. -->
+      <group targetFramework="netstandard2.0">
+        <dependency id="Microsoft.ML.OnnxRuntime" version="[1.31.0,1.32.0)" />
+        <dependency id="System.Memory" version="4.5.5" />
+        <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
+        <dependency id="System.Text.Json" version="8.0.5" />
+      </group>
+    </dependencies>
+  </metadata>
+  <!-- The .pdb files are listed on purpose: a symbols package can only be built from files the
+       nuspec names (NU5005 otherwise), and NuGet then routes them by extension, so the .pdb entries
+       end up in the .snupkg while the assembly stays in the .nupkg. -->
+  <files>
+    <file src="..\src\Indra.Ocr.Core\bin\$configuration$\net10.0\Indra.Ocr.Core.dll" target="lib\net10.0" />
+    <file src="..\src\Indra.Ocr.Core\bin\$configuration$\net10.0\Indra.Ocr.Core.pdb" target="lib\net10.0" />
+    <file src="..\src\Indra.Ocr.Core\bin\$configuration$\netstandard2.0\Indra.Ocr.Core.dll" target="lib\netstandard2.0" />
+    <file src="..\src\Indra.Ocr.Core\bin\$configuration$\netstandard2.0\Indra.Ocr.Core.pdb" target="lib\netstandard2.0" />
+    <file src="..\LICENSE" target="LICENSE" />
+    <file src="..\NOTICE" target="NOTICE" />
+    <file src="..\THIRD-PARTY-LICENSES\MODIFIED-OPENRAIL-M.txt" target="THIRD-PARTY-LICENSES" />
+  </files>
+</package>

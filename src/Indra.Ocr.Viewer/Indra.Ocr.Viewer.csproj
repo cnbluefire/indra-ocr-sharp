@@ -7,6 +7,9 @@
          JSON is source-generated (ViewerJson) and its routes are the minimal API's, so nothing
          in it needs runtime code generation; PublishAot keeps the analyzers honest about that. -->
     <PublishAot>true</PublishAot>
+    <!-- A host is not a package: it ships as the NativeAOT binaries in the release's per-RID zips
+         (build/publish.*), so `dotnet pack` on the solution must skip it. -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <!-- The viewer is a front end like the CLI: Core holds the pipeline, Pdf and Indra.Ocr the two

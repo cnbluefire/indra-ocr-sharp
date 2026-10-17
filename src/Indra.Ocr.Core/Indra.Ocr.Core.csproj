@@ -16,6 +16,27 @@
     <IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
   </PropertyGroup>
 
+  <!-- Packing (docs/340-nuget-packages.md).  The manifest is the external build/*.nuspec: which
+       files go in, at which lib/<tfm> path, and with which dependency ranges is written once, by
+       hand, in build/, and `NuspecFile` makes NuGet use it exclusively, so nothing in this project is
+       packaging information any more.  The properties here are the values that change per release
+       and the two the SDK still needs: it names the produced .nupkg after PackageId/PackageVersion
+       (the nuspec's <id>/<version> only name the package *inside* the file), and `NuspecBasePath`
+       pins the base the nuspec's relative <file src> paths resolve against, so `dotnet pack` and
+       `nuget.exe pack build\X.nuspec` agree on every path.  The values come from
+       Directory.Build.props, which is why they are tokens in the nuspec rather than literals. -->
+  <PropertyGroup>
+    <PackageId>Bluefire.Indra.Ocr.Sharp.Core</PackageId>
+    <!-- The nuspec's <files> list is the only description of what the package holds.  Without this
+         the SDK adds the project's own build output as well (one entry per target framework, from
+         _GetBuildOutputFilesWithTfm, which it does even when a nuspec is used), and the two collide
+         on the same lib/<tfm>/Indra.Ocr.Core.dll destination (NU5050). -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NuspecFile>$(MSBuildThisFileDirectory)..\..\build\Indra.Ocr.Sharp.Core.nuspec</NuspecFile>
+    <NuspecBasePath>$(MSBuildThisFileDirectory)..\..\build</NuspecBasePath>
+    <NuspecProperties>packageVersion=$(PackageVersion);configuration=$(Configuration)</NuspecProperties>
+  </PropertyGroup>
+
   <!-- The tests reach two internals: LayoutPost.IsItem (the reference's _ITEM predicate, checked
        on its own the way tests/test_textlayer.py does) and nothing else. -->
   <ItemGroup>
