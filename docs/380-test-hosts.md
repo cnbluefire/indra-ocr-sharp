@@ -5,7 +5,9 @@
 The first run of `ci.yml`'s `test` job (`ubuntu-latest`) failed **three tests** while every other job
 passed. None of the three was a port bug: two fixtures had captured the machine that generated them,
 and the third recorded pdfium's own font substitution. This step makes those answers the same on
-every host, and lets `ci.yml`'s stand-in publish cover the arm64 RIDs as well.
+every host, and lets `ci.yml`'s stand-in publish cover the arm64 RIDs as well. The next run failed
+**one** test left over from the same class — the rotation matrix's last bit, which belongs to the
+host's `sin`/`cos` — and that is dealt with at the end of this document.
 
 ## What failed, and why
 
@@ -59,6 +61,27 @@ first use):
 fonts included), so the next sample that reaches for a standard font fails at generation time with
 the reason instead of quietly making the fixture host-bound again.
 
+## The rotation matrix's last bit is the platform's `sin`/`cos`
+
+With the three above fixed, the next `ci` run failed **one** test — `CvPrimitivesTests.Rotation_matrix_matches_cv2`,
+on the 45° case: `m[1] = 0.7071067811865475`, expected `0.7071067811865476`. That is a **one-ulp**
+difference in `cos π/4`, and it is nobody's bug: `CvWarpAffine.RotationMatrix2D` calls `Math.Cos`/`Math.Sin`,
+the reference's own C++ calls `std::cos`/`std::sin`, and both are the *host* library — the two always move
+together, but glibc and the Windows CRT round this argument one ulp apart. (The fixture's angle → radians
+expression is the reference's, bit for bit, so the argument is identical; only the function's last bit
+differs. The skew search builds its 32 probe angles through the same matrix, but `OrientationTests`
+compares its sharpness scores at 1e-5 and its chosen angle is a grid value, so it never depended on a
+single last bit.)
+
+Every other comparison in the suite held: the OpenCV fixed-point paths, the connected-components labels,
+the ONNX numbers and the sample PDFs' text layers are all platform-stable. So the one comparison that
+touches a host library now allows the ulps its last bit is worth — `1e-12` relative, ~10⁴ ulps, far below
+the `docs/015` tolerance rule and far above any real formula error (which would be at least 1e-6) — and
+nothing else was loosened. The allowance was checked against **all 651 cases** with `cos` and `sin` each
+moved a ulp in both directions: the worst deviation is `2.6e-13` against the `1e-12` it is given, so
+there is ~4× headroom for a second ulp and no room for a mistake. `docs/040-opencv-primitives.md` records
+why the port cannot be bit-exact here on a fixture captured on another host.
+
 ## Why not `FPDF_SetSystemFontInfo`
 
 pdfium can be told to use the embedder's own system-font interface:
@@ -98,5 +121,9 @@ trim/AOT analyzers on the architecture the release will publish for.
 * The two host-dependent tests were checked from both sides: the help fixture's substitution is
   asserted to have happened exactly once, and the detect floors were re-derived from what the
   no-model run actually produces.
-* The Linux half (the runner's own substitution, the arm64 RIDs) is verified where a Linux host
-  exists — a dispatched `ci` run — as with `335`/`370`/`375` (`docs/370-path-flavour.md`).
+* `CvPrimitivesTests.Rotation_matrix_matches_cv2` now allows the ulps the host's `cos`/`sin` are worth
+  (1e-12 relative) and every other comparison in the suite is still bit for bit — the run that found
+  the one-ulp failure had all of the others green, including the OpenCV fixed-point paths, the
+  connected-components labels, the ONNX numbers and the sample PDFs' text layers.
+* The Linux half (the runner's own substitution, its libm, the arm64 RIDs) is verified where a Linux
+  host exists — a dispatched `ci` run — as with `335`/`370`/`375` (`docs/370-path-flavour.md`).

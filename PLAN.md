@@ -271,8 +271,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
 - [x] `380` the suite made host-independent: the help fixture's core count is substituted from the
   host, the detect floors know whether the model is there, and the sample PDFs embed a font
   (Liberation Sans, OFL 1.1) instead of fpdf2's standard `Helvetica`, so pdfium's text-layer boxes
-  stop being the capture machine's; `ci.yml`'s stand-in publish gained the two arm64 RIDs
-  (`docs/380-test-hosts.md`).
+  stop being the capture machine's; `ci.yml`'s stand-in publish gained the two arm64 RIDs. Then the
+  one failure the next run had left — `CvWarpAffine.RotationMatrix2D`'s `cos π/4`, one ulp apart
+  between the Windows CRT and glibc — is compared within the ulps that last bit is worth, and
+  everything else stays bit for bit (`docs/380-test-hosts.md`).
 
 ## Current state
 
@@ -576,8 +578,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   invisible layer is *moved* out of the page's stream rather than hand-written, the broken font map is
   built from the subset's own map, whole run included), and `pdf_samples.build_all()` now refuses a
   sample whose font is not embedded. `ci.yml`'s stand-in publish covers `linux-arm64`/`win-arm64`
-  too, so all four RIDs a release publishes are exercised (`docs/380-test-hosts.md`). Still 380 tests,
-  83/24/20/12.
+  too, so all four RIDs a release publishes are exercised (`docs/380-test-hosts.md`). The next run
+  left one failure, of the same class: `RotationMatrix2D`'s `cos π/4` is one ulp apart between the
+  Windows CRT and glibc (the reference's own C++ calls the same host library, so both sides move
+  together); that one comparison now allows the ulps its last bit is worth, 1e-12 relative, and every
+  other comparison in the suite is still bit for bit. Still 380 tests, 83/24/20/12.
 - 380 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework

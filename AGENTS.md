@@ -112,7 +112,10 @@ package** (`Microsoft.ML.OnnxRuntime`).
   from the reference running on the same host (the reference is a separate process we must leave
   unmodified); the fixtures' samples embed their own font instead (`docs/380-test-hosts.md`).
 - **Parity level**: bit-exact for deterministic output (markdown / text / JSON-lines);
-  tolerance only for timings and sub-1e-3 floats.
+  tolerance only for timings and sub-1e-3 floats. One number is the *host*'s rather than the port's:
+  `Math.Cos`/`Math.Sin` in the rotation matrix — the reference's own C++ calls the same library, so the
+  two always move together, but glibc and the Windows CRT round `cos π/4` one ulp apart — and the test
+  compares it within 1e-12 relative for that reason (`docs/380-test-hosts.md`).
 
   The `netstandard2.0` asset is a **functional**, not bit-exact, target, and only there: .NET
   Framework has no fused multiply-add and no CRT `expf` behind `MathF.Exp`, and its

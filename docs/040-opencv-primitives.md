@@ -127,9 +127,13 @@ m = [alpha, beta,  (1-alpha)*cx - beta*cy,
 ```
 
 The centre is a `Point2f` in OpenCV, so the API takes `float` centres to make the narrowing
-explicit (the pipeline passes half-integers, which are exact in float32). `Math.Cos`/`Math.Sin`
-were verified to agree bit-for-bit with the reference's `cos`/`sin` over all 651 fixture cases,
-including the exact `np.arange(base-0.5, base+0.5+1e-6, 0.1)` doubles the skew search probes.
+explicit (the pipeline passes half-integers, which are exact in float32). On this machine
+`Math.Cos`/`Math.Sin` agree bit-for-bit with the reference's `cos`/`sin` over all 651 fixture cases,
+including the exact `np.arange(base-0.5, base+0.5+1e-6, 0.1)` doubles the skew search probes — but
+the *library* behind them is the host's, not the port's: the reference's own C++ calls the same one,
+so the two always move together, while glibc and the Windows CRT round `cos(π/4)` one ulp apart. The
+fixture was captured on Windows, so `Rotation_matrix_matches_cv2` compares the six values within the
+relative ulps that last bit is worth, and nothing wider (`docs/380-test-hosts.md`).
 
 ## connectedComponentsWithStats (4-connectivity)
 
