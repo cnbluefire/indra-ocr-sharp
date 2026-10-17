@@ -198,20 +198,33 @@ jobs:
         with:
           name: packages
           path: dist/packages
+      - name: the nuget.org profile name
+        env:
+          NUGET_USER: ${{ vars.NUGET_USER || secrets.NUGET_USER }}
+        shell: bash
+        run: |
+          if [ -z "$NUGET_USER" ]; then
+            echo "::error::NUGET_USER is not set: add it under Settings -> Secrets and variables ->"
+            echo "::error::Actions -> Variables (the repository, not an environment) with your"
+            echo "::error::nuget.org profile name as the value -- the name, not the email address."
+            exit 1
+          fi
+          echo "the nuget.org profile is $NUGET_USER"
       # Last, right before the push: the key is only good for the hour after it is issued.
       - name: nuget.org login (OIDC -> a short-lived API key)
         id: login
         uses: NuGet/login@v1
         with:
-          # The nuget.org *profile name* (not the email address): a repository variable.
-          user: ${{ vars.NUGET_USER }}
+          # The nuget.org *profile name* (not the email address): a repository variable, or a
+          # secret if you would rather keep it out of the log.
+          user: ${{ vars.NUGET_USER || secrets.NUGET_USER }}
       - name: dotnet nuget push
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         shell: bash
         run: |
           if [ -z "${NUGET_API_KEY:-}" ]; then
-            echo "::error::nuget.org issued no API key (is the NUGET_USER variable set?)"
+            echo "::error::nuget.org issued no API key: check the Trusted Publishing policy"
             exit 1
           fi
           # One push per file: `dotnet nuget push` takes one path, and --skip-duplicate is what makes
@@ -237,11 +250,23 @@ jobs:
       contents: read
       id-token: write
     steps:
+      - name: the nuget.org profile name
+        env:
+          NUGET_USER: ${{ vars.NUGET_USER || secrets.NUGET_USER }}
+        shell: bash
+        run: |
+          if [ -z "$NUGET_USER" ]; then
+            echo "::error::NUGET_USER is not set: add it under Settings -> Secrets and variables ->"
+            echo "::error::Actions -> Variables (the repository, not an environment) with your"
+            echo "::error::nuget.org profile name as the value -- the name, not the email address."
+            exit 1
+          fi
+          echo "the nuget.org profile is $NUGET_USER"
       - name: nuget.org login (OIDC -> a short-lived API key)
         id: login
         uses: NuGet/login@v1
         with:
-          user: ${{ vars.NUGET_USER }}
+          user: ${{ vars.NUGET_USER || secrets.NUGET_USER }}
       - name: the key came back
         env:
           KEY: ${{ steps.login.outputs.NUGET_API_KEY }}

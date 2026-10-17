@@ -344,16 +344,20 @@ nuget.org the repository's ID; a public repository's policy is active at once. I
 two must agree.
 
 The GitHub half is one repository **variable** (Settings → Secrets and variables → Actions →
-Variables):
+Variables — the repository's own, not an environment's):
 
 | name | value |
 |---|---|
 | `NUGET_USER` | the nuget.org *profile name* (not the email address) that owns the three package ids |
 
-It is a variable rather than a secret on purpose: a profile name is public information, and a
-variable shows up in the log, which is where a wrong one is easiest to notice. A secret works exactly
-the same way if you prefer — swap `vars.` for `secrets.` in `release.yml` — and the two mismatching is
-the one mistake that looks like "nuget.org issued no API key".
+The workflow reads `vars.NUGET_USER || secrets.NUGET_USER`, so a **secret** of the same name works
+just as well and nothing else has to change — that is the one to use if you would rather the name did
+not appear in the log. A variable is what it is by default because the name is public information.
+
+Both jobs run a step called "the nuget.org profile name" before the login, which fails with these
+instructions when neither is set. It is there because the login action's own message for that case
+("Input required and not supplied: user") does not say whether the variable or the secret is the one
+that is missing, or that a repository-level value was wanted at all.
 
 The `auth` job is how you try that out. The push is skipped on a dry run, so the policy would
 otherwise only ever be exercised by a release that had already published nothing yet — this job does
