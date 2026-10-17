@@ -1,0 +1,18 @@
+indra-ocr-sharp
+Copyright 2026 cnbluefire
+
+This product includes software developed at Datalab
+(https://github.com/datalab-to).
+
+Original code: https://github.com/datalab-to/indra
+Original code license: Apache License, Version 2.0
+
+The C# code in this repository is a derivative work of the original indra
+Python codebase. The original code is licensed under Apache 2.0, a copy of
+which is in the LICENSE file at the root of this repository.
+
+The ONNX models used by this product are downloaded at runtime from
+https://huggingface.co/datalab-to/indra-ocr. They are not bundled with this
+repository. The model weights are licensed under a modified OpenRAIL-M
+license, not Apache 2.0. See
+THIRD-PARTY-LICENSES/MODIFIED-OPENRAIL-M.txt for the full terms.
