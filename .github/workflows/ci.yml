@@ -61,8 +61,15 @@ jobs:
         include:
           - rid: linux-x64
             os: ubuntu-24.04
+          # The arm64 half of the two release architectures: a stand-in publish needs no platform
+          # toolchain, so these runners exercise the RID's own runtime pack and the trim/AOT
+          # analyzers on the architecture the release will publish for (docs/290-aot.md).
+          - rid: linux-arm64
+            os: ubuntu-24.04-arm
           - rid: win-x64
             os: windows-latest
+          - rid: win-arm64
+            os: windows-11-arm
     runs-on: ${{ matrix.os }}
     env:
       # No platform toolchain on a runner without the workload either, so the host projects are

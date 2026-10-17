@@ -150,8 +150,12 @@ public class DetectTests
             boxes += actual.Length / 5;
             cases++;
         }
+        // The floors are coverage guards, and how much the fixture can cover depends on the model
+        // folder: `det.onnx` is externally downloaded (`resources/models`), so a machine without it
+        // runs the stand-in cases only. `DetSession.TryOpen` answers null only when the file is
+        // absent -- a load failure throws -- so the lower floor cannot hide a broken model.
         Assert.True(cases >= (det is null ? 10 : 20), $"only {cases} cases");
-        Assert.True(boxes >= 100, $"only {boxes} boxes");
+        Assert.True(boxes >= (det is null ? 50 : 100), $"only {boxes} boxes");
     }
 
     [Fact]

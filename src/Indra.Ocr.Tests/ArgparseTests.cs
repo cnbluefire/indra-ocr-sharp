@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Indra.Ocr.ArgumentParsing;
 using Indra.Ocr.Cli;
 
@@ -22,11 +23,28 @@ public class ArgparseTests
 
     private static string Normalize(string text) => text.Replace("\r\n", "\n");
 
+    /// <summary>The one host-dependent token of the captured help: <c>--threads</c>' default.</summary>
+    private static readonly Regex HelpCores = new(@"here \d+\)");
+
     [Fact]
     public void Help_matches_the_reference()
     {
         string path = Path.Combine(AppContext.BaseDirectory, "fixtures", "cli_help.txt");
-        string expected = Normalize(File.ReadAllText(path));
+        string reference = Normalize(File.ReadAllText(path));
+        // The fixture is the reference's own `--help` (`uv run indra-ocr --help`), captured on a
+        // machine with eight usable cores — and `--threads`' help spells the host's count
+        // (`usable_cores()`), so that one number belongs to the machine that captured it. It is put
+        // back to this host's before the comparison; everything else is the reference's bytes. The
+        // count's rule is `CliParser.UsableCores` and the whole text is compared against the
+        // reference running on the *same* machine by tools/scripts/test/cli_parity.py.
+        int substituted = 0;
+        string expected = HelpCores.Replace(reference, _ =>
+        {
+            substituted++;
+            return $"here {CliParser.UsableCores()})";
+        });
+        Assert.Equal(1, substituted);
+
         Assert.Equal(expected, Normalize(CliParser.Build().FormatHelp()));
     }
 

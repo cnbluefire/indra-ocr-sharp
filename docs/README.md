@@ -63,3 +63,4 @@ status. Keep these in sync with `PLAN.md`.
 | 345, 350, 355, 360 | the consumer smoke, the package check, the host publish and its smoke, `release.sh` + the two workflows (all in [340](340-nuget-packages.md)) |
 | [370](370-path-flavour.md) | The path flavour is the host's (`pathlib`'s `os.name`), not the port's |
 | [375](375-path-parity.md) | `PathHelper` is `pathlib`'s rules (the fuzz that found 1270 differences) |
+| [380](380-test-hosts.md) | The suite on a host that is not the capture host (the samples embed their font) |

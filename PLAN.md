@@ -268,6 +268,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   machines without the platform toolchain.
 - [x] `360` `build/release.sh` and the two workflows: `release.yml` (manual, dry by default, one
   runner per RID, push and release last) and `ci.yml` (the quick check, on demand).
+- [x] `380` the suite made host-independent: the help fixture's core count is substituted from the
+  host, the detect floors know whether the model is there, and the sample PDFs embed a font
+  (Liberation Sans, OFL 1.1) instead of fpdf2's standard `Helvetica`, so pdfium's text-layer boxes
+  stop being the capture machine's; `ci.yml`'s stand-in publish gained the two arm64 RIDs
+  (`docs/380-test-hosts.md`).
 
 ## Current state
 
@@ -559,10 +564,27 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   `PathHelperTests.The_fuzz_corpus_matches_cpython` runs every row, with the rules named as cases
   beside it. Deep sweeps in `temp/`: four seeds × ~36 000 and two seeds × ~76 500 cases, 0
   mismatches. Ordinary paths do not move — `cli_parity.py` stays 83/83 (`docs/375-path-parity.md`).
+- Step `380` done: the `ci` test job's three failures were all about the *host*, not the port. The
+  help text spells the host's usable cores, so the test puts this host's count back into the captured
+  text; the detect fixture's coverage floor assumed `resources/models` (it is `det is null ? 50 : 100`
+  now, and `TryOpen` still throws on a model it cannot load); and the text layer's boxes came from
+  pdfium's *substitute* for fpdf2's never-embedded standard `Helvetica`, so every sample now embeds
+  `tools/scripts/test/fonts/LiberationSans-Regular.ttf` (SIL OFL 1.1, metric-compatible with
+  Helvetica) — the second binary the repository commits on purpose, after `build/smoke/latin.*`. The
+  three fixtures carrying sample PDFs were regenerated against the new samples and the port matches
+  them unchanged; the two patched samples were reworked for an `/Identity-H` font's own codes (the
+  invisible layer is *moved* out of the page's stream rather than hand-written, the broken font map is
+  built from the subset's own map, whole run included), and `pdf_samples.build_all()` now refuses a
+  sample whose font is not embedded. `ci.yml`'s stand-in publish covers `linux-arm64`/`win-arm64`
+  too, so all four RIDs a release publishes are exercised (`docs/380-test-hosts.md`). Still 380 tests,
+  83/24/20/12.
 - 380 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework
   4.6.2 with the same answers (`docs/335-multitarget-netstandard20.md`). The three libraries are
   packaged as three NuGet packages — 89 checks on what each one holds, and 85 + 85 on a real
   consumer, on `net10.0` and on .NET Framework — and a release carries them together with the two
-  hosts as native AOT zips for the four RIDs (`docs/340-nuget-packages.md`).
+  hosts as native AOT zips for the four RIDs (`docs/340-nuget-packages.md`). The suite answers the
+  same on a runner that is not the machine the fixtures were captured on — the sample PDFs embed
+  their own font, and every sample is checked to — so `ci.yml`'s test job can be dispatched from
+  anywhere (`docs/380-test-hosts.md`).

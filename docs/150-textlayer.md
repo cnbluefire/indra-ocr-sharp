@@ -98,7 +98,7 @@ otherwise                                -> trusted
   reason string, its stats, and its line count) on the same `check_scale` render.
 - Coverage of the checks: trusted text (plain, fractional page, cropped page, image page,
   encrypted page), "no text layer" (a rotated page, and a page with no text), "invisible text
-  50% (OCR layer)", "broken font map" (8 bad characters out of 11), and the no-ink verdict
+  50% (OCR layer)", "broken font map" (all 11 characters of the run), and the no-ink verdict
   (forced with a white render: "100% of text runs have no ink").
 - `BadCharCount` is checked on 19 recorded cases.
 

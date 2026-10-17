@@ -105,11 +105,12 @@ textlayer.invisible_text_frac(page)                    # page.get_objects(max_de
 - `dotnet build src\Indra.Ocr.slnx` → 0 warnings, 0 errors.
 - `dotnet test src\Indra.Ocr.slnx` → **112 passed** (was 104; +8 `PdfTests`), 15 s.
 - `fixtures/pdf.json` (77 KB) holds 8 sample documents (13 pages) and 5 unopenable-document cases.
-  The PDFs travel base64-encoded inside the fixture (nothing binary in git); every page records its
+  The PDFs travel base64-encoded inside the fixture, so the tests need neither Python nor separate
+  input files, and each sample embeds its own font (`docs/380-test-hosts.md`). Every page records its
   size, rotation, renders at the sample's scales (raw bytes, zlib+base64), every character (code,
   angle, `has_box`, box), the affine, the invisible-text share — and the reference
   `read_text_layer` result (runs, stats, verdict) that step 150 consumes.
-- Sample coverage: two pages of Helvetica text (the second with a fractional page size), an
+- Sample coverage: two pages of text in the embedded font (the second with a fractional page size), an
   embedded grayscale image, a `/Rotate 90` page, a page whose crop box is smaller than its media
   box, a page with an invisible (render mode 3) content stream, a page with no text at all, a page
   whose font has a broken `/ToUnicode` map (private-use + control characters), and an AES-256

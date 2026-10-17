@@ -67,7 +67,11 @@ package** (`Microsoft.ML.OnnxRuntime`).
    - Tools installed for the work go under `tools/`.
    - Test scripts go under `tools/scripts/test/`; other scripts under `tools/scripts/`.
    - Generated / temporary files go under `temp/`.
-   - Binaries and `resources/` contents must never be committed to git.
+   - Binaries and `resources/` contents must never be committed to git — with two deliberate
+     exceptions, both of them test inputs a machine with neither Python nor `resources/` still
+     needs: the release smoke's `build/smoke/latin.png`/`latin.pdf` (`tools/scripts/gen_smoke_samples.py`)
+     and the sample PDFs' font, `tools/scripts/test/fonts/LiberationSans-Regular.ttf` (SIL OFL 1.1,
+     `fonts/README.md`, `docs/380-test-hosts.md`).
 7. **Git**
    - Commit after every step, so work can be traced back later.
 8. **AOT.** The three class libraries (`Indra.Ocr.Core`, `Indra.Ocr`, `Indra.Ocr.Pdf`) set
@@ -103,7 +107,10 @@ package** (`Microsoft.ML.OnnxRuntime`).
   target, and one binding for both targets cannot drift. The members the port needs
   (`FPDFText_GetCharAngle`, `FPDFTextObj_GetTextRenderMode`, `FPDF_PageToDevice`, …) are
   transcribed from the headers the Win32 package ships, keeping the C names
-  (`docs/335-multitarget-netstandard20.md`).
+  (`docs/335-multitarget-netstandard20.md`). `FPDF_SetSystemFontInfo` is deliberately **not** called:
+  it is process-global, so pinning the font a non-embedded PDF gets substituted with would diverge
+  from the reference running on the same host (the reference is a separate process we must leave
+  unmodified); the fixtures' samples embed their own font instead (`docs/380-test-hosts.md`).
 - **Parity level**: bit-exact for deterministic output (markdown / text / JSON-lines);
   tolerance only for timings and sub-1e-3 floats.
 
