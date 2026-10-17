@@ -4,7 +4,9 @@
 #
 # Manual only (`workflow_dispatch`), and dry by default: pushing a version to nuget.org cannot be
 # undone, and neither can a published GitHub release.  The dry run does the whole pipeline except
-# those two steps, which is also how the workflow is tested.
+# those two steps, which is also how the workflow is tested -- and it still does the nuget.org login
+# (`auth`), so a Trusted Publishing policy that does not match is a red dry run rather than a release
+# that fails after it has already built everything.
 #
 # The work itself is in build/, not here: this file chooses the runner for each RID (Native AOT
 # compiles with the platform's own linker and does not cross-compile, so each RID needs a runner of
@@ -221,6 +223,35 @@ jobs:
               --source https://api.nuget.org/v3/index.json \
               --skip-duplicate
           done
+
+  # The dry run does everything except the two irreversible steps, and the push is one of them -- so
+  # without this job the Trusted Publishing policy would only ever be tried by a real release.  This
+  # one spends the same OIDC exchange on a dry run (it publishes nothing: it holds a key that expires
+  # an hour later), where a policy that does not match, or a missing NUGET_USER, is a red run instead
+  # of a failed release.  No other job depends on it, so it can only ever warn.
+  auth:
+    name: the nuget.org login
+    if: ${{ inputs.dry_run }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: nuget.org login (OIDC -> a short-lived API key)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+      - name: the key came back
+        env:
+          KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        shell: bash
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::nuget.org issued no API key (the policy, or NUGET_USER, does not match)"
+            exit 1
+          fi
+          echo "the policy matched and nuget.org issued a key, which expires an hour from now"
 
   release:
     name: the GitHub release

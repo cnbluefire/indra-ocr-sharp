@@ -285,6 +285,7 @@ version to nuget.org cannot be undone, and neither can a published release.
 | `publish` | one runner per RID | `build/publish.ps1` / `build/publish.sh`: real AOT plus the platform smoke |
 | `pack` | windows | `build/pack.sh` (both smoke targets), then uploads the six files |
 | `push` | ubuntu | nuget.org Trusted Publishing (OIDC → a short-lived API key), then `dotnet nuget push` per file with `--skip-duplicate` |
+| `auth` | ubuntu | the same login, on a **dry run only**: proves the policy and `NUGET_USER` without publishing anything |
 | `release` | ubuntu | `build/release.sh` with `GH_TOKEN` and `contents: write`, on a depth-0 checkout |
 
 Details that are decisions, not accidents:
@@ -353,6 +354,14 @@ It is a variable rather than a secret on purpose: a profile name is public infor
 variable shows up in the log, which is where a wrong one is easiest to notice. A secret works exactly
 the same way if you prefer — swap `vars.` for `secrets.` in `release.yml` — and the two mismatching is
 the one mistake that looks like "nuget.org issued no API key".
+
+The `auth` job is how you try that out. The push is skipped on a dry run, so the policy would
+otherwise only ever be exercised by a release that had already published nothing yet — this job does
+the login on the dry run instead and holds the key until it expires, publishing nothing. It is the
+only job that runs on a dry run and has no dependents, so a policy that does not match, or a
+`NUGET_USER` that is not set, turns a dry run red rather than failing a release half-way through; a
+real run skips it. Creating the policy and the variable first is therefore the order that makes the
+next dry run green.
 
 ## Running it all locally
 
