@@ -13,7 +13,7 @@
 # ubuntu-24.04-arm) and calls this script once on each.
 #
 # Layer 1 of the three release gates (docs/340-nuget-packages.md): INDRA_OCR_FAKE_AOT republishes
-# with `-p:PublishAot=false -p:IndraOcrFakeAot=true --self-contained` for machines that have no
+# with `-p:PublishAot=false -p:IndraOcrFakeAot=true -p:PublishSingleFile=true` for machines that have no
 # platform toolchain.  The stand-in is not AOT (the JIT still compiles what the trimmer keeps), so
 # the artifacts are named ..._notaot and the zip name carries it too; pack/push and the release
 # refuse the suffix.

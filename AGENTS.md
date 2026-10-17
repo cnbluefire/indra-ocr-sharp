@@ -84,7 +84,12 @@ package** (`Microsoft.ML.OnnxRuntime`).
    stay `net10.0`. The net10.0 asset must remain exactly what it was — the compatibility layer is
    `#if`-dispatched per member (each `#if` naming the *real* minimum version of the API it guards),
    never a rewrite — and the ns2.0 asset must be the same port functionally, verified by running it
-   on .NET Framework 4.6.2 (`docs/335-multitarget-netstandard20.md`).
+   on .NET Framework 4.6.2 (`docs/335-multitarget-netstandard20.md`). The three libraries are
+   published as `Bluefire.Indra.Ocr.Sharp.Core`, `Bluefire.Indra.Ocr.Sharp.Pdf` and
+   `Bluefire.Indra.Ocr.Sharp` — only the package ids carry that prefix; the assemblies and
+   namespaces stay `Indra.Ocr.*` — with the version written down once in
+   `src/Directory.Build.props`. Packaging, the host publish and the release are scripted in
+   `build/` and only orchestrated by `.github/workflows/` (`docs/340-nuget-packages.md`).
 
 ## Parity decisions (confirmed with the user)
 
@@ -147,6 +152,18 @@ package** (`Microsoft.ML.OnnxRuntime`).
   this machine, so the AOT publish is verified where it exists; the analyzers and a trimmed
   self-contained publish are verified here (`docs/290-aot.md`).
 - `uv` 0.12.7 available; Python reference env at `tools/pyenv` (gitignored).
+- Packaging and release live in `build/`: `pack.ps1`/`pack.sh` (the NuGet packages, the manifest
+  check and the consumer smoke), `publish.ps1`/`publish.sh` (the native AOT publish for one RID plus
+  the zip), `smoke-win.ps1`/`smoke-linux.sh` (the published binaries themselves, with nothing but
+  the platform's own tools) and `release.sh` (the GitHub release). The work is there, not in
+  `.github/workflows/` — `ci.yml` is the quick check on demand (manual, so a branch cannot spend the
+  repository's minutes), `release.yml` the manual, dry-by-default release. Native AOT does not
+  cross-compile, so a release needs one runner per architecture, and
+  `INDRA_OCR_FAKE_AOT` is the stand-in for a machine without the platform toolchain (this one);
+  every release path refuses it.
+- `gh` is not installed on this machine and the repository has no tags, so `build/release.sh`'s gh
+  calls and the workflows can only be checked statically here; the AOT publish and the arm64 runners
+  are verified on GitHub.
 - Local models at `resources/models` (det/rec/rec_cjk/order/orient/script/meta.json).
   `mask.onnx` and the math models are absent; handle their absence the way Python does.
 - Reference tool invocation used for alignment:

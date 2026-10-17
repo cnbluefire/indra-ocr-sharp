@@ -59,3 +59,5 @@ status. Keep these in sync with `PLAN.md`.
 | [325](325-readme.md) | The README (the front page: upstream, port, build, CLI/viewer, library, license) |
 | [330](330-product-version.md) | The product line lives in the build, not in a C# constant |
 | [335](335-multitarget-netstandard20.md) | The three libraries multi-target (`net10.0;netstandard2.0`) |
+| [340](340-nuget-packages.md) | The three NuGet packages, and the release that carries them |
+| 345, 350, 355, 360 | the consumer smoke, the package check, the host publish and its smoke, `release.sh` + the two workflows (all in [340](340-nuget-packages.md)) |

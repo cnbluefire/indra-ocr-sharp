@@ -36,11 +36,15 @@ its viewer and its library — to C# on .NET 10.
 - **No OpenCV, no Python.** The OpenCV operations the pipeline needs — fixed-point resize and
   warp, connected components, the deskew search — are implemented in managed C#.
 - **The decoders are separate projects.** Image files are decoded with ImageSharp (pure
-  managed); PDFs are rasterised and their text layer read with PDFiumCore, which renders
-  straight to grayscale. Core itself sees only pixels.
+  managed); PDFs are rasterised and their text layer read with PDFium, bound by this port's own
+  P/Invoke, which renders straight to grayscale. Core itself sees only pixels.
+- **Packaged.** The three libraries are on NuGet as `Bluefire.Indra.Ocr.Sharp.Core`,
+  `Bluefire.Indra.Ocr.Sharp.Pdf` and `Bluefire.Indra.Ocr.Sharp`, each with a `net10.0` and a
+  `netstandard2.0` asset, so a .NET Framework application can reference them too. The assemblies
+  and namespaces inside stay `Indra.Ocr.*`.
 - **AOT-ready.** The three libraries are `IsAotCompatible` and both hosts `PublishAot`, so
-  `dotnet publish -r <rid>` produces one native binary; the solution is globalization-invariant,
-  so that binary needs no ICU.
+  `dotnet publish -r <rid>` produces native binaries, one per host, with no runtime to install; the
+  solution is globalization-invariant, so they need no ICU.
 - **Same models.** The same Hugging Face repository and revision (v3.1.1) the Python package
   uses, downloaded on the first run (about 18 MB) and cached. `--model-dir` or
   `INDRA_OCR_MODEL_DIR` uses a local copy instead, and the math models download only with
@@ -55,11 +59,12 @@ are part of the surface that has to match; `Indra.Ocr.Sharp` is this port's own 
 |---|---|
 | `src/Indra.Ocr.slnx` | The .NET solution (build and test entry point). |
 | `src/Indra.Ocr.Core` | Core pipeline: models, detection, recognition, reading order, layout, text layer, and the model download. Consumes grayscale pixels only (`GrayImage`, a non-owning `ref struct` over 8-bit single-channel pixels); no image-codec or PDF dependency. |
-| `src/Indra.Ocr.Pdf` | `PdfConverter`: PDF rasterisation + text layer via PDFiumCore — the only project that references it. |
+| `src/Indra.Ocr.Pdf` | `PdfConverter`: PDF rasterisation + text layer over PDFium (bound by this port) — the only project that touches it. |
 | `src/Indra.Ocr` | `ImageConverter`: encoded image files (ImageSharp) to grayscale, one page per frame. |
 | `src/Indra.Ocr.Cli` | The `indra-ocr` console app, plus the argument parser and console helpers the viewer shares. |
 | `src/Indra.Ocr.Viewer` | The `indra-ocr-viewer` local web viewer (ASP.NET Core minimal API). |
 | `src/Indra.Ocr.Tests` | xUnit tests: the ported reference unit tests, the parity tests and the library's own. |
+| `build/` | The release scripts: the NuGet packages, the native AOT publish and its smoke, the GitHub release. |
 | `docs/` | The step-by-step port record; `PLAN.md` is the plan. |
 | `tools/scripts/` | Helper scripts; `tools/scripts/test/` holds the alignment harnesses. |
 | `resources/` | The upstream Python source and a local model copy (read-only, not in git). |
@@ -84,13 +89,29 @@ dotnet run --project src/Indra.Ocr.Cli    -- paper.pdf --format text
 dotnet run --project src/Indra.Ocr.Viewer -- --port 8765
 ```
 
-Publish a native single-file binary (`PublishAot`; any RID: `win-x64`, `linux-x64`,
-`osx-arm64`):
+Publish native AOT binaries (`PublishAot`; the RID has to be the machine's — native AOT links with
+the platform's own toolchain and does not cross-compile):
 
 ```powershell
 dotnet publish src/Indra.Ocr.Cli/Indra.Ocr.Cli.csproj       -c Release -r win-x64 -o out
 dotnet publish src/Indra.Ocr.Viewer/Indra.Ocr.Viewer.csproj -c Release -r win-x64 -o out
 ```
+
+For the release itself — one zip per RID, holding both hosts, the native libraries they share,
+`LICENSE` and `NOTICE`, and smoked afterwards — use the scripts in `build/`:
+
+```powershell
+build/publish.ps1 -Rid win-x64      # win-x64, win-arm64, linux-x64, linux-arm64
+```
+
+```shell
+bash build/publish.sh --rid linux-x64
+```
+
+On a machine without the platform toolchain (the MSVC linker + Windows SDK, or clang),
+`INDRA_OCR_FAKE_AOT` publishes a trimmed self-contained single-file stand-in instead: everything
+runs and is checked, but the artifact is not AOT and is named `..._notaot`, which every release gate
+refuses.
 
 ## Command line
 
@@ -149,8 +170,18 @@ the CLI writes, where the text came from and the time of each stage. Files stay 
 
 ## Using the library
 
-The libraries are not on NuGet: add `ProjectReference`s to `Indra.Ocr.Core` and to the decoder
-you need — `Indra.Ocr.Pdf` for PDFs, `Indra.Ocr` for image files — or to both.
+The three libraries are on NuGet: add `Bluefire.Indra.Ocr.Sharp.Core` and the decoder you need.
+
+```shell
+dotnet add package Bluefire.Indra.Ocr.Sharp.Core   # the pipeline and the model download
+dotnet add package Bluefire.Indra.Ocr.Sharp.Pdf    # PDFs (PdfConverter)
+dotnet add package Bluefire.Indra.Ocr.Sharp        # image files (ImageConverter)
+```
+
+The assemblies and namespaces inside are `Indra.Ocr.*` (only the package ids carry the `Bluefire.`
+prefix), every package ships both a `net10.0` and a `netstandard2.0` asset, and the details —
+dependency ranges, what each package holds, and the .NET Framework caveats — are in
+`docs/340-nuget-packages.md`.
 
 `PdfConverter` and `ImageConverter` are the two halves of the reference's `document.convert`, and
 `OrtOcr.IsPdf` dispatches on the file's own bytes, exactly as `pipeline.is_pdf` does.
@@ -172,7 +203,7 @@ if (OrtOcr.IsPdf(input))
     using PdfDocument doc = PdfConverter.Open(input, password: null);
     for (int i = 0; i < doc.PageCount; i++)
     {
-        OcrPage page = pdf.PdfPage(doc, i);
+        OcrPage page = pdf.ConvertPage(doc, i);
         Console.WriteLine($"{i + 1}: {page.Source}, {page.Timings["total_ms"]:0} ms");
         Console.WriteLine(page.Markdown ?? page.Text);
         foreach (OcrLine line in page.Lines) // Box = x0, y0, x1, y1 in image pixels
@@ -206,6 +237,35 @@ Notes:
 - `ModelFolder.Resolve` downloads into the Hugging Face cache and keeps the reference's daily
   check. `ModelDownload.DownloadAsync` and `ModelFolder.ResolveAsync` are the asynchronous
   versions, and `ModelDownloadProgress` reports each file as it arrives, if you want to show it.
+
+### On .NET Framework
+
+The `netstandard2.0` assets are the same port and run on .NET Framework 4.6.2 and later, with three
+things a consumer has to add (NuGet cannot arrange them): the native libraries are per-architecture,
+the `netstandard2.0` assets' BCL dependencies need binding redirects, and ONNX Runtime's native
+library is copied by a `build/` target that only runs for a direct reference.
+
+```xml
+<PropertyGroup>
+  <PlatformTarget>x64</PlatformTarget>
+  <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+</PropertyGroup>
+<ItemGroup>
+  <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="[1.31.0,1.32.0)" />
+  <!-- 4.6.x only: 4.7+ has the type, and the packages leave it out so it never collides with mscorlib. -->
+  <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+</ItemGroup>
+```
+
+Two caveats, both deliberate:
+
+- The `netstandard2.0` asset is functionally, not bit-for-bit, identical: .NET Framework has no
+  fused multiply-add and no CRT `expf` behind `MathF.Exp`, and its `CharUnicodeInfo` tables are
+  older than .NET 10's. The `net10.0` asset is the reference.
+- `SixLabors.ImageSharp` is pinned below 3.0 (2.1.13 is the last Apache-2.0 release), which carries
+  advisories fixed only in 3.x — under the Six Labors Split License. The port takes that knowingly,
+  so you will see the same `NU1902`/`NU1903`/`NU1904` warnings and can suppress them the same way.
 
 ## License
 
@@ -241,6 +301,25 @@ tools/pyenv/Scripts/python.exe tools/scripts/test/parity_sweep.py       # 24 end
 tools/pyenv/Scripts/python.exe tools/scripts/test/viewer_cli_parity.py  # 20 cases
 tools/pyenv/Scripts/python.exe tools/scripts/test/viewer_parity.py      # 12 HTTP cases
 ```
+
+The packaging and release side is scripted too, and runs the same way locally:
+
+```powershell
+build/pack.ps1                        # the three NuGet packages, checked and smoked
+$env:INDRA_OCR_FAKE_AOT = "1"         # no MSVC/Windows SDK: publish the trimmed stand-in
+build/publish.ps1 -Rid win-x64        # one host zip for the RID, smoked afterwards
+```
+
+```shell
+bash build/pack.sh
+bash build/release.sh --dry-run       # what a release would attach, and the notes it would carry
+```
+
+`.github/workflows/ci.yml` runs the suite, the packages and a trimmed stand-in publish — on demand:
+`workflow_dispatch` only, nothing on a push or a pull request, so a branch cannot spend the
+repository's minutes. `.github/workflows/release.yml` does the real thing — real AOT, one runner per
+RID, push to NuGet, GitHub release — manually and dry by default. The logic is all in `build/`; the
+workflows only decide what runs where.
 
 `INDRA_OCR_EXE` and `INDRA_OCR_VIEWER_EXE` point a harness at another binary. `docs/` records
 every step of the port, `PLAN.md` is the plan, and `AGENTS.md` holds the working rules.

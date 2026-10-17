@@ -253,6 +253,22 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   those binaries (`INDRA_OCR_EXE` / `INDRA_OCR_VIEWER_EXE` point them at any build)
   (`docs/290-aot.md`).
 
+### Phase 11 — Packaging & release
+- [x] `340` the three NuGet packages: `src/Directory.Build.props` gains the flavor and
+  `PackageVersion`, the three libraries their `PackageId` and the nuspec plumbing, the two hosts
+  `IsPackable=false`, and `build/*.nuspec` is the one place that says what each package holds
+  (`docs/340-nuget-packages.md`).
+- [x] `345` `tools/nuget-smoke`, a real consumer of the packages (never of the projects) that walks
+  both their behaviour and their public surface on `net10.0` **and** on `net462`, over the two
+  samples committed in `build/smoke/` — 85 checks on each target.
+- [x] `350` `tools/scripts/test/check_nupkg.py` (89 checks, standard library only) and
+  `build/pack.ps1`/`build/pack.sh`, the one command that packs, checks and smokes.
+- [x] `355` `build/publish.ps1`/`build/publish.sh` (one native AOT publish per host, the per-RID zip,
+  then `build/smoke-win.ps1`/`build/smoke-linux.sh`) and the `INDRA_OCR_FAKE_AOT` stand-in for
+  machines without the platform toolchain.
+- [x] `360` `build/release.sh` and the two workflows: `release.yml` (manual, dry by default, one
+  runner per RID, push and release last) and `ci.yml` (the quick check, on demand).
+
 ## Current state
 
 - Environment verified: dotnet 10.0.400, uv 0.12.7, Python ref env at `tools/pyenv`.
@@ -456,7 +472,62 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   reads -- by reinterpreting the list as a class laid out the same way, with the same contract
   (read-only; no growth while the span is live). The net10.0 asset is untouched, and
   `temp/ns20-test` now asserts the alias on both runtimes (`docs/335-multitarget-netstandard20.md`).
+- Step `340` done: the port is packaged — three NuGet packages
+  (`Bluefire.Indra.Ocr.Sharp{,`.Core`,`.Pdf`}`; the assemblies and namespaces inside are unchanged)
+  whose manifest is an external, hand-written `build/*.nuspec` (`NuspecFile` +
+  `IncludeBuildOutput=false` + an explicit `<file>` per assembly and per `.pdb`, with
+  `$packageVersion$` from `src/Directory.Build.props`: `Version` 0.3.2 and `PackageFlavor` alpha.1,
+  so the package version is `0.3.2-alpha.1` and the parity version stays the hosts' own). Both
+  targets are in every package (`lib/net10.0` and `lib/netstandard2.0`) with the dependency groups
+  written by hand — ONNX Runtime `[1.31.0,1.32.0)` for both, PDFium `156.0.8076` (exact: the
+  P/Invoke is transcribed from that release), ImageSharp `[2.1.13,3.0.0)`, and for `netstandard2.0`
+  System.Memory/Unsafe/Text.Json. Licence expression Apache-2.0, `LICENSE` + `NOTICE` +
+  `THIRD-PARTY-LICENSES/MODIFIED-OPENRAIL-M.txt` beside them, no build script and no analyzer in any
+  package, and `.snupkg` symbols from the same pack (`docs/340-nuget-packages.md`).
+- Step `345` done: `tools/nuget-smoke` consumes the packages from a local feed
+  (`tools/nuget-smoke/nuget.config`, `<clear/>`ed so a published version can never satisfy it) and
+  never the projects: a functional walk over the two samples committed in `build/smoke/`
+  (`latin.png`, `latin.pdf`; deterministic, written by `tools/scripts/gen_smoke_samples.py`) and a
+  reflection walk that materialises every public member of the three assemblies — which is what
+  catches a dependency group a nuspec forgot. **85 checks on `net10.0` and 85 on `net462`**, the
+  latter needing the two references a .NET Framework consumer adds itself (`Microsoft.ML.OnnxRuntime`
+  directly — its native library is copied by a `build/` target that only runs for a direct
+  reference — and `System.ValueTuple`, which stays out of the package's ns2.0 group so 4.7/4.8 do
+  not select it against `mscorlib`), plus `PlatformTarget=x64` and binding redirects.
+- Step `350` done: `tools/scripts/test/check_nupkg.py` checks the six files entry by entry — names,
+  `lib/<tfm>/<assembly>.dll` for all six pairs, the licence files, the `<dependencies>` groups with
+  their ranges, the metadata, and that nothing else is in there — **89 checks**, standard library
+  only (a nupkg is a zip). `build/pack.ps1`/`build/pack.sh` is the one command: pack the solution,
+  check the packages, smoke them on both runtimes; the version is read from
+  `src/Directory.Build.props`, never typed twice. `.gitattributes` keeps `*.sh` LF, which is what a
+  Windows checkout needs to run them at all.
+- Step `355` done: `build/publish.ps1`/`build/publish.sh` publish the two hosts for one RID
+  natively — one output folder per host, because publish owns its folder and a trimmed publish would
+  otherwise write `indra-ocr.dll` twice, once as the CLI's app and once as the library the viewer
+  links — zip them into `temp/publish/indra-ocr-sharp_<rid>.zip` (both folders merged, `*.pdb`/
+  `*.dbg` dropped, `LICENSE`/`NOTICE` at the root) and smoke the result with
+  `build/smoke-win.ps1`/`build/smoke-linux.sh`: the CLI on the committed samples and the viewer over
+  plain HTTP, 23 checks with nothing but the platform's own tools. Native AOT does not cross-compile,
+  so the RID has to be the machine's; `INDRA_OCR_FAKE_AOT` publishes the trimmed self-contained
+  single-file stand-in instead (`IndraOcrFakeAot` → `PublishTrimmed` in the two host projects, since
+  a global `PublishTrimmed` would reach the libraries' netstandard2.0 target), marked `_notaot`
+  everywhere. On this machine (no MSVC/Windows SDK) the stand-in run is green end to end: exit 0, a
+  27 363 811-byte zip, `smoke-win: OK (23 checks)`.
+- Step `360` done: `build/release.sh` creates the release — the ten assets checked by name (a
+  missing one and a `_notaot` one both fatal), the notes out of `git log --oneline` since the
+  previous tag, `gh release create` with `--prerelease` for a suffixed version (or `upload
+  --clobber` when it exists), `--dry-run` printing the plan — and the two workflows orchestrate it:
+  `release.yml` (manual and dry by default; `preflight` reads the version and asks nuget.org whether
+  it is already there, `test`, `publish` on four runners — Native AOT has one architecture per
+  runner — `pack` on Windows so the `net462` smoke runs, `push` with `--skip-duplicate`, then the
+  release) and `ci.yml` (the quick check, on demand: the suite, the packages on Linux, and a trimmed
+  stand-in publish of both hosts on `linux-x64`/`win-x64`). Every release-side job refuses
+  `INDRA_OCR_FAKE_AOT` before it does any work, and the work itself stays in `build/`, so a workflow
+  change cannot change what a release contains (`docs/340-nuget-packages.md`).
 - 218 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework
-  4.6.2 with the same answers (`docs/335-multitarget-netstandard20.md`).
+  4.6.2 with the same answers (`docs/335-multitarget-netstandard20.md`). The three libraries are
+  packaged as three NuGet packages — 89 checks on what each one holds, and 85 + 85 on a real
+  consumer, on `net10.0` and on .NET Framework — and a release carries them together with the two
+  hosts as native AOT zips for the four RIDs (`docs/340-nuget-packages.md`).
