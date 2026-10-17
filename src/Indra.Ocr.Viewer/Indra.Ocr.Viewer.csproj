@@ -7,6 +7,11 @@
          JSON is source-generated (ViewerJson) and its routes are the minimal API's, so nothing
          in it needs runtime code generation; PublishAot keeps the analyzers honest about that. -->
     <PublishAot>true</PublishAot>
+    <!-- build/publish.* with INDRA_OCR_FAKE_AOT: the trimmed stand-in for a machine that has no
+         platform linker (docs/290-aot.md).  PublishTrimmed is asked for here instead of on the
+         command line, because a command-line property reaches the netstandard2.0 target of the
+         three libraries as well, and trimming does not exist there (NETSDK1124). -->
+    <PublishTrimmed Condition="'$(IndraOcrFakeAot)' == 'true'">true</PublishTrimmed>
     <!-- A host is not a package: it ships as the NativeAOT binaries in the release's per-RID zips
          (build/publish.*), so `dotnet pack` on the solution must skip it. -->
     <IsPackable>false</IsPackable>
