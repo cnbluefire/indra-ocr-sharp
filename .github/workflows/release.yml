@@ -1,0 +1,250 @@
+# The release: build and publish the two hosts for the four RIDs, pack the three NuGet packages,
+# and -- only after everything passed -- push the packages to nuget.org and create the GitHub
+# release with every artifact attached.  See docs/340-nuget-packages.md.
+#
+# Manual only (`workflow_dispatch`), and dry by default: pushing a version to nuget.org cannot be
+# undone, and neither can a published GitHub release.  The dry run does the whole pipeline except
+# those two steps, which is also how the workflow is tested.
+#
+# The work itself is in build/, not here: this file chooses the runner for each RID (Native AOT
+# compiles with the platform's own linker and does not cross-compile, so each RID needs a runner of
+# its own architecture), passes the version around, and decides what runs when.  The three release
+# gates against the stand-in live in build/publish.*, build/pack.* and build/release.sh; the guard
+# steps here are the same gate at the workflow's edge, so an INDRA_OCR_FAKE_AOT that arrived from
+# the repository's settings cannot get as far as an artifact.
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build, pack, publish and smoke everything, but do not push to NuGet or create the release"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: the version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      published: ${{ steps.nuget.outputs.published }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: read the version
+        id: version
+        shell: bash
+        run: |
+          base="$(sed -n 's/^[[:space:]]*<Version>\([^<]*\)<\/Version>.*/\1/p' src/Directory.Build.props | head -1)"
+          flavor="$(sed -n 's/^[[:space:]]*<PackageFlavor>\([^<]*\)<\/PackageFlavor>.*/\1/p' src/Directory.Build.props | head -1)"
+          if [ -z "$base" ]; then
+            echo "::error::src/Directory.Build.props has no <Version>"
+            exit 1
+          fi
+          version="$base"
+          if [ -n "$flavor" ]; then version="$base-$flavor"; fi
+          echo "version=$version" >>"$GITHUB_OUTPUT"
+          echo "::notice::the package version is $version"
+      - name: is this version already on nuget.org?
+        id: nuget
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # The flat-container index of each package id; a package that has never been published
+          # answers 404, and one that has lists every version there is.  "Published" is only true
+          # when all three are there: a run that died between the pushes has to be able to finish.
+          published=true
+          for id in bluefire.indra.ocr.sharp.core bluefire.indra.ocr.sharp.pdf bluefire.indra.ocr.sharp; do
+            if curl -fsS "https://api.nuget.org/v3-flatcontainer/$id/index.json" | grep -qF "\"$VERSION\""; then
+              echo "$id has $VERSION"
+            else
+              echo "$id does not have $VERSION"
+              published=false
+            fi
+          done
+          echo "published=$published" >>"$GITHUB_OUTPUT"
+          if [ "$published" = true ]; then
+            echo "::notice::$VERSION is already on nuget.org: the push will be skipped"
+          fi
+
+  # The unit and parity suite.  It also builds the two hosts against the libraries, so a broken host
+  # stops the run here, long before anything is pushed.
+  test:
+    name: the test suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: dotnet test
+        run: dotnet test src/Indra.Ocr.slnx
+
+  # Native AOT, one runner per RID, no cross-compilation.  The platform smoke then runs the
+  # published binaries -- the CLI on the committed samples and the viewer's API over HTTP -- and
+  # resolves the models from the Hub, exactly as a release user does.
+  publish:
+    name: publish ${{ matrix.rid }}
+    needs: preflight
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+          - rid: win-arm64
+            os: windows-11-arm
+          - rid: linux-x64
+            os: ubuntu-24.04
+          - rid: linux-arm64
+            os: ubuntu-24.04-arm
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: no stand-in
+        shell: bash
+        run: |
+          if [ -n "${INDRA_OCR_FAKE_AOT:-}" ]; then
+            echo "::error::INDRA_OCR_FAKE_AOT is set: a release must be the real AOT build"
+            exit 1
+          fi
+      - name: publish and smoke (Windows)
+        if: runner.os == 'Windows'
+        run: ./build/publish.ps1 -Rid ${{ matrix.rid }}
+      - name: publish and smoke (Linux)
+        if: runner.os != 'Windows'
+        run: bash build/publish.sh --rid ${{ matrix.rid }}
+      - name: the logs
+        # On failure always; on the arm64 runners whether or not anything failed, because that is
+        # the one architecture a developer is least likely to be able to reproduce locally.
+        if: ${{ failure() || contains(matrix.rid, 'arm64') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.rid }}
+          path: temp/logs/**
+          if-no-files-found: ignore
+      - name: the zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: zip-${{ matrix.rid }}
+          path: temp/publish/indra-ocr-sharp_${{ matrix.rid }}.zip
+          if-no-files-found: error
+
+  # The packages.  Windows, because the net462 smoke -- the only proof that the netstandard2.0
+  # assets work on .NET Framework -- needs .NET Framework, and Git Bash there runs build/pack.sh the
+  # same way Linux does (ci.yml runs it on Linux, where the net462 half is skipped by design).
+  pack:
+    name: the packages
+    needs: preflight
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: no stand-in
+        shell: bash
+        run: |
+          if [ -n "${INDRA_OCR_FAKE_AOT:-}" ]; then
+            echo "::error::INDRA_OCR_FAKE_AOT is set: a release must be the real packages"
+            exit 1
+          fi
+      - name: pack, check and smoke
+        shell: bash
+        run: bash build/pack.sh
+      - name: the logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-pack
+          path: temp/logs/**
+          if-no-files-found: ignore
+      - name: the packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: |
+            temp/packages/*.nupkg
+            temp/packages/*.snupkg
+          if-no-files-found: error
+
+  push:
+    name: nuget.org
+    needs: [preflight, test, publish, pack]
+    if: ${{ !inputs.dry_run && needs.preflight.outputs.published != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: dist/packages
+      - name: dotnet nuget push
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        shell: bash
+        run: |
+          if [ -z "${NUGET_API_KEY:-}" ]; then
+            echo "::error::the NUGET_API_KEY secret is not set"
+            exit 1
+          fi
+          # One push per file: `dotnet nuget push` takes one path, and --skip-duplicate is what makes
+          # a re-run after a half-finished run work.
+          for file in dist/packages/*.nupkg dist/packages/*.snupkg; do
+            echo "pushing $(basename "$file")"
+            dotnet nuget push "$file" \
+              --api-key "$NUGET_API_KEY" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done
+
+  release:
+    name: the GitHub release
+    needs: [preflight, test, publish, pack, push]
+    # !cancelled() so that a skipped push does not skip the release as well: a run whose packages
+    # are already on nuget.org (published == 'true', so the push was skipped on purpose) still has
+    # to create or update the release.  Everything else must have gone through, which is the point
+    # of having the release depend on all of it.
+    if: >-
+      ${{ !cancelled() && !inputs.dry_run
+          && needs.test.result == 'success'
+          && needs.publish.result == 'success'
+          && needs.pack.result == 'success'
+          && needs.preflight.result == 'success'
+          && (needs.push.result == 'success'
+              || (needs.push.result == 'skipped' && needs.preflight.outputs.published == 'true')) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The notes are the commit log, so the tags and the history have to be there.
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: dist/packages
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: zip-*
+          path: dist/zips
+          merge-multiple: true
+      - name: gh release create
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          bash build/release.sh \
+            --version "${{ needs.preflight.outputs.version }}" \
+            --packages dist/packages \
+            --zips dist/zips

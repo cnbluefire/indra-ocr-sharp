@@ -1,0 +1,95 @@
+# The quick check, on demand: the things a change can break without being obvious -- the test suite,
+# the packages (their manifest as much as their contents), and the two host projects through a
+# trimmed stand-in publish.  See docs/340-nuget-packages.md.
+#
+# It is manual on purpose (`workflow_dispatch` only): nothing here runs on a push or on a pull
+# request, so a busy branch cannot spend the repository's Actions minutes; dispatch it when a change
+# deserves the whole check.  The AOT publish itself is not here either -- it needs a platform
+# toolchain and a runner of the matching architecture, and the release workflow (manual, dry by
+# default) is where that happens.  Neither is the full platform smoke: it resolves the models from
+# the Hub, which is minutes of download a quick check does not need, and the package smoke in
+# build/pack.sh already exercises the same code paths against the same samples.
+name: ci
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: the test suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: dotnet test
+        run: dotnet test src/Indra.Ocr.slnx
+
+  pack:
+    name: the packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      # pack, check_nupkg.py, and the consumer smoke on net10.0.  The net462 half is skipped here by
+      # design (only .NET Framework runs it); the release workflow packs on Windows, where it runs.
+      - name: pack, check and smoke
+        run: bash build/pack.sh
+      - name: the logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-pack
+          path: temp/logs/**
+          if-no-files-found: ignore
+
+  hosts:
+    name: the stand-in publish (${{ matrix.rid }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: linux-x64
+            os: ubuntu-24.04
+          - rid: win-x64
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    env:
+      # No platform toolchain on a runner without the workload either, so the host projects are
+      # published as the trimmed stand-in: it still compiles both hosts, still goes through
+      # build/publish.*, still produces the zip, and still has to be rejected by every release gate.
+      INDRA_OCR_FAKE_AOT: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: the stand-in publish (Windows)
+        if: runner.os == 'Windows'
+        run: ./build/publish.ps1 -Rid ${{ matrix.rid }} -SkipSmoke
+      - name: the stand-in publish (Linux)
+        if: runner.os != 'Windows'
+        run: bash build/publish.sh --rid ${{ matrix.rid }} --skip-smoke
+      - name: the logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-standin-${{ matrix.rid }}
+          path: temp/logs/**
+          if-no-files-found: ignore
+      - name: the stand-in zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: standin-${{ matrix.rid }}
+          path: temp/publish/indra-ocr-sharp_${{ matrix.rid }}_notaot.zip
+          if-no-files-found: error
