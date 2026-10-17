@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>nuget-smoke</AssemblyName>
+    <RootNamespace>NugetSmoke</RootNamespace>
+    <!-- A consumer of the packages, and nothing else: never a ProjectReference (build/pack.ps1 packs
+         first and then runs this against the feed).  Both halves of the packages are walked: the
+         net10.0 assets on the .NET the hosts run, and the netstandard2.0 assets on .NET Framework
+         (docs/335-multitarget-netstandard20.md). -->
+    <TargetFrameworks>net10.0;net462</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- The native libraries (onnxruntime, pdfium) ship x64/x86/arm64 and the app has to say which
+         one it is; the same is true of the reference's own .NET Framework instructions. -->
+    <PlatformTarget Condition="'$(TargetFramework)' == 'net462'">x64</PlatformTarget>
+    <!-- The netstandard2.0 assets bring System.Memory/Unsafe/Text.Json along, whose assembly
+         versions are not the framework's: .NET Framework needs the redirects for them. -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType Condition="'$(TargetFramework)' == 'net462'">true</GenerateBindingRedirectsOutputType>
+    <!-- SixLabors.ImageSharp 2.1.13 reaches us through the packages and carries advisories that are
+         only fixed in 3.x, which is under a different licence: the same intentional pin as
+         src/Directory.Build.props, which suppresses these codes for the same reason.  A consumer
+         sees them too; the README says so. -->
+    <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Three packages, one version: $(SmokePackageVersion) is what build/pack.ps1 read out of
+         src/Directory.Build.props and just packed into the local feed (see nuget.config). -->
+    <PackageReference Include="Bluefire.Indra.Ocr.Sharp.Core" Version="$(SmokePackageVersion)" />
+    <PackageReference Include="Bluefire.Indra.Ocr.Sharp.Pdf" Version="$(SmokePackageVersion)" />
+    <PackageReference Include="Bluefire.Indra.Ocr.Sharp" Version="$(SmokePackageVersion)" />
+    <!-- Two references a .NET Framework consumer has to add itself, and the README says why:
+         System.ValueTuple, because the netstandard2.0 assets expose tuples and .NET Framework 4.6.2
+         does not have the type (4.7+ does; it deliberately stays out of the package's ns2.0 group,
+         where 4.7/4.8 would select it and collide with mscorlib), and Microsoft.ML.OnnxRuntime,
+         because its native library is copied by a build/ target that runs for a direct reference
+         only (the package has no buildTransitive half for netstandard2.0). -->
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="[1.31.0,1.32.0)" Condition="'$(TargetFramework)' == 'net462'" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net462'" />
+  </ItemGroup>
+
+  <!-- The version has one source (src/Directory.Build.props) and the caller reads it there, so it is
+       never typed twice.  Failing loudly beats restoring some other version of the packages. -->
+  <Target Name="_RequireSmokePackageVersion" BeforeTargets="CollectPackageReferences">
+    <Error Condition="'$(SmokePackageVersion)' == ''"
+           Text="SmokePackageVersion is not set. Run the smoke through build/pack.ps1 (or build/pack.sh), or pass -p:SmokePackageVersion=&lt;version of the packages in the feed&gt; (e.g. 0.3.2-alpha.1)." />
+  </Target>
+
+</Project>
