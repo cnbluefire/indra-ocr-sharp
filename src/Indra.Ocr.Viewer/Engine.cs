@@ -186,7 +186,7 @@ public sealed class Engine : IDisposable
                 // the converter's own scale, so the boxes land on the picture
                 gray = rendered.Render(conv.PageScale(rendered));
                 renderMs = clock.Elapsed.TotalMilliseconds;
-                page = conv.PdfPage(doc, n);
+                page = conv.ConvertPage(doc, n);
             }
             else
             {

@@ -86,7 +86,7 @@ internal static class WorkerHost
 
             int index = unit.PageIndex.Value;
             PdfDocument doc = document;
-            OcrPage page = SafePage.Read(() => pdf.PdfPage(doc, index));
+            OcrPage page = SafePage.Read(() => pdf.ConvertPage(doc, index));
             return new WorkResult([(index, page)]);
         }
         catch (InputError e)

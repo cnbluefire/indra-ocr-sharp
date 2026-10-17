@@ -444,6 +444,11 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   patterns; `temp/ns20-probe/unicode-equiv` checks the Unicode shim over all 1 114 112 code points
   (0 mismatches), and a cold-cache `--download` run on .NET Framework fetched the model set
   byte-identical to `resources/models` through the ns2.0 shims.
+- Step `335` follow-up: `PdfConverter`'s page API is `ConvertPage` — the one page of a path
+  (`ConvertPage(path, password, pageIndex)`) and one page of a document the caller already opened
+  (`ConvertPage(doc, index)`, which the worker pool and the viewer need); the body that places a
+  trusted text layer, the reference's `_text_page`, is `ConvertPageCore` and **private**, because
+  nothing outside the class calls it (`docs/160-document.md`).
 - 218 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework

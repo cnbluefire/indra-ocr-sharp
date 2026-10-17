@@ -18,7 +18,7 @@ of `extract_runs` stays with the PDF backend (step `140`/`165`).
 
 | File | Contents |
 |---|---|
-| `src/Indra.Ocr.Pdf/PdfConverter.cs` | `PdfConverter` — `PageScale`, `Open`, `PdfPage`, `TextPage`, `ConvertPage` (one page), `ConvertPages` (the indices you name) |
+| `src/Indra.Ocr.Pdf/PdfConverter.cs` | `PdfConverter` — `PageScale`, `Open`, `ConvertPage` (one page: of a path, or of a document the caller already opened), `ConvertPages` (the indices you name), `ConvertPageCore` (the trusted-layer body, private) |
 | `src/Indra.Ocr/Images/ImageConverter.cs` | `ImageConverter` — `Convert` (one frame), `ConvertFrames` (all of them, capped by `maxPages`) |
 | `src/Indra.Ocr.Core/Text/TextLayerRuns.cs` | `readable`, `right_to_left`, `assign_runs` |
 | `src/Indra.Ocr.Core/Text/TextLayerReader.cs` | `read_text_layer` (step `150`) |
@@ -81,8 +81,10 @@ TextPage(page, layer, t):                  # _text_page
   count (`PdfConverter.Open(path, password).PageCount`), exactly like the reference's
   `parallel._plan` opens the document, reads `len(doc)` and closes it before planning units —
   which is also why `max_pages` is the *host's* arithmetic (`min(n, max_pages)`), not a
-  converter parameter. `PdfConverter.PdfPage(doc, index)` stays public for the pool: a worker
-  opens the document once and converts many pages through it, as the reference's `_run` does.
+  converter parameter. `PdfConverter.ConvertPage(doc, index)` stays public for the pool: a worker
+  opens the document once and converts many pages through it, as the reference's `_run` does. The
+  reference's intra-class helpers are just as private here: `ConvertPageCore` (`_text_page`) is the
+  rest of `ConvertPage` once a trusted layer has been read, and nothing outside the class calls it.
 - **The image API is by frame, capped by `maxPages`.** `ImageConverter.ConvertFrames(path,
   maxPages)` is the reference's `read_images(path)[: max_pages or None]` — there the slice *is*
   the operation — and `ImageConverter.Convert(path)` is the one-result form (the first frame).

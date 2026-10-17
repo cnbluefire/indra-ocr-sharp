@@ -121,7 +121,12 @@ public sealed class PdfConverter
     /// <summary>
     /// <c>pdf_page</c>: one page of a PDF — the text layer when it can be trusted, OCR otherwise.
     /// </summary>
-    public OcrPage PdfPage(PdfDocument doc, int index)
+    /// <remarks>
+    /// Public because a host converts the pages of a document it has already opened itself: the
+    /// CLI's worker pool plans the batch by opening it once (<c>parallel._plan</c>) and the viewer
+    /// renders a preview of the same page. The path-taking overloads below open and close it.
+    /// </remarks>
+    public OcrPage ConvertPage(PdfDocument doc, int index)
     {
         using PdfPage page = doc.LoadPage(index);
         var timings = new Dictionary<string, double>();
@@ -140,7 +145,7 @@ public sealed class PdfConverter
                               && !TextLayerRuns.Readable(_ocr, layer.Lines);
             if (layer.Lines.Count > 0 && (layer.Trusted || _mode == "text" || unreadable))
             {
-                return TextPage(page, layer, timings);
+                return ConvertPageCore(page, layer, timings);
             }
 
             note = layer.Reason;
@@ -184,9 +189,10 @@ public sealed class PdfConverter
 
     /// <summary>
     /// <c>_text_page</c>: the trusted text layer, placed on the detected lines, with OCR only for
-    /// the lines the layer does not cover.
+    /// the lines the layer does not cover. The rest of <see cref="ConvertPage(PdfDocument, int)"/>
+    /// once the page's layer has been read — private, because nothing outside this class needs it.
     /// </summary>
-    public OcrPage TextPage(PdfPage page, TextLayer layer, IDictionary<string, double> timings)
+    private OcrPage ConvertPageCore(PdfPage page, TextLayer layer, IDictionary<string, double> timings)
     {
         double k = PageScale(page);
         var renderClock = Stopwatch.StartNew();
@@ -352,7 +358,7 @@ public sealed class PdfConverter
             foreach (int page in pages)
             {
                 int index = page;
-                yield return (index, SafePage.Read(() => PdfPage(doc, index)));
+                yield return (index, SafePage.Read(() => ConvertPage(doc, index)));
             }
         }
         finally

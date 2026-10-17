@@ -446,7 +446,7 @@ internal static class Cli
         var pages = new List<(int Index, OcrPage Page)>();
         for (int i = 0; i < count; i++)
         {
-            pages.Add((i, SafePage.Read(() => pdf.PdfPage(doc, i))));
+            pages.Add((i, SafePage.Read(() => pdf.ConvertPage(doc, i))));
         }
 
         return pages;
