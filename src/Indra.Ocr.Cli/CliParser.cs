@@ -29,7 +29,7 @@ internal static class CliParser
     {
         var ap = new ArgumentParser("indra-ocr", Description);
         ap.AddArgument(["--version"], action: ArgumentAction.Version,
-                       version: $"{ProductInfo.Name} {ProductInfo.Version}");
+                       version: ProductAttributes.VersionLine(typeof(CliParser).Assembly));
         ap.AddPositional("inputs", nargs: ArgumentArity.OneOrMore, type: ArgumentType.Path);
         ap.AddArgument(["--out"], type: ArgumentType.Path, @default: null,
                        help: "write one file per input here");

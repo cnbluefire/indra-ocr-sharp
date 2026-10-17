@@ -422,6 +422,13 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   their option tables, `PdfConverter`/`ImageConverter` examples, and the licensing (code
   Apache-2.0, weights modified OpenRAIL-M, both as upstream). `NOTICE`'s product name became
   `Indra.Ocr.Sharp` (`docs/325-readme.md`).
+- Step `330` done: `ProductInfo` (Core's two `const string`s) is gone — `Product` and `Version`
+  are set in `src/Directory.Build.props` and each host reads them back from its own assembly
+  (`Indra.Ocr.Cli.ArgumentParsing.ProductAttributes`; the name is the *product* `indra-ocr`, not the
+  viewer's assembly name `indra-ocr-viewer`, because the reference prints `indra-ocr {__version__}`
+  in both hosts), with `IncludeSourceRevisionInInformationalVersion` off so no `+<sha>` can reach
+  the parity surface (`docs/330-product-version.md`). 218 tests, 83/24/20/12, both hosts' `--version`
+  and the viewer's `/info` byte-identical.
 - 218 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`.

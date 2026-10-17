@@ -5,6 +5,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
+    <!-- The product line, read back from the assembly where it is used
+         (Indra.Ocr.Cli/ArgumentParsing/ProductAttributes.cs).  The reference prints
+         `indra-ocr {__version__}` in both hosts (cli.py:72, viewer.py:609) and the viewer's
+         /info reports the same `__version__` (viewer.py:262), so the name is the *product* —
+         `indra-ocr` — and not the assembly name, which for the viewer is `indra-ocr-viewer`;
+         the version is the Python package's (pyproject.toml, `__init__.py`). -->
+    <Product>indra-ocr</Product>
+    <Version>0.3.2</Version>
+    <!-- The informational version is part of the parity surface (the version flag, /info): the
+         `+<commit sha>` SourceLink/CI appends to it would break the byte-for-byte match. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <NuGetAuditMode>direct</NuGetAuditMode>
     <!-- SixLabors.ImageSharp 2.1.13 is the last Apache-2.0 release (3.x/4.x are under the
          Six Labors Split License), and it carries advisories that are only fixed in 3.x.

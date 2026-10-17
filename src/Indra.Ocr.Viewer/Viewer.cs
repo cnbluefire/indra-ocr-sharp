@@ -99,7 +99,9 @@ internal static class Viewer
         // "tesseract" answers whether the Tesseract backend could be loaded; the port refuses
         // --tesseract at startup (Engine's constructor), so a running server never has one.
         app.MapGet("/info", () => Json(
-            new InfoResponse(Tesseract: false, Version: ProductInfo.Version, Defaults: engine.Defaults),
+            new InfoResponse(Tesseract: false,
+                             Version: ProductAttributes.Version(typeof(ViewerParser).Assembly),
+                             Defaults: engine.Defaults),
             ViewerJson.Default.InfoResponse));
 
         // POST /upload: the raw bytes of the file. POST /page: {"id", "n", "opts"}. Both answer

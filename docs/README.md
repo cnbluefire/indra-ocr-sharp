@@ -57,3 +57,4 @@ status. Keep these in sync with `PLAN.md`.
 | [310](310-model-download-progress.md) | The model download's progress (a callback in Core, lines in the hosts) |
 | [320](320-async-io.md) | The I/O boundary is asynchronous (the pipeline is not) |
 | [325](325-readme.md) | The README (the front page: upstream, port, build, CLI/viewer, library, license) |
+| [330](330-product-version.md) | The product line lives in the build, not in a C# constant |

@@ -48,7 +48,8 @@ is **Indra.Ocr.Sharp**.
 - `docs/README.md`, `PLAN.md` — this step.
 
 The names that are parity targets did not move: the executables stay `indra-ocr` and
-`indra-ocr-viewer`, and `ProductInfo.Name`/`Version` (`indra-ocr 0.3.2`) are untouched.
+`indra-ocr-viewer`, and the `--version` line stays `indra-ocr 0.3.2` (`ProductInfo`, the constant
+it came from, was deleted in step `330`, which moved the values into `Directory.Build.props`).
 
 ## Verification
 

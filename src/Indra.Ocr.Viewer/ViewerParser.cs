@@ -37,7 +37,7 @@ internal static class ViewerParser
                        help: "folder with the models (default: download from Hugging Face)");
         SourceArguments.AddTo(ap);
         ap.AddArgument(["--version"], action: ArgumentAction.Version,
-                       version: $"{ProductInfo.Name} {ProductInfo.Version}");
+                       version: ProductAttributes.VersionLine(typeof(ViewerParser).Assembly));
         ap.AddArgument(["--port"], type: ArgumentType.Int, @default: 8765L);
         ap.AddArgument(["--threads"], type: ArgumentType.Int, @default: 4L);
         ap.AddArgument(["--dpi"], type: ArgumentType.Float, @default: 200.0,
