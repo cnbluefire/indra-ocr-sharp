@@ -284,7 +284,7 @@ version to nuget.org cannot be undone, and neither can a published release.
 | `test` | ubuntu | `dotnet test` |
 | `publish` | one runner per RID | `build/publish.ps1` / `build/publish.sh`: real AOT plus the platform smoke |
 | `pack` | windows | `build/pack.sh` (both smoke targets), then uploads the six files |
-| `push` | ubuntu | `dotnet nuget push` per file with `--skip-duplicate`, `secrets.NUGET_API_KEY` |
+| `push` | ubuntu | nuget.org Trusted Publishing (OIDC → a short-lived API key), then `dotnet nuget push` per file with `--skip-duplicate` |
 | `release` | ubuntu | `build/release.sh` with `GH_TOKEN` and `contents: write`, on a depth-0 checkout |
 
 Details that are decisions, not accidents:
@@ -311,6 +311,48 @@ Details that are decisions, not accidents:
 The workflows only orchestrate. Choosing a runner, passing the version around and deciding what runs
 after what is what they are for; the work itself is in `build/`, so the same steps can be run (and
 are run) locally, and a workflow change can never change what a release *contains*.
+
+### The nuget.org push needs no stored secret
+
+The `push` job authenticates with **Trusted Publishing**: GitHub issues the job an OIDC token
+(`permissions: id-token: write`), `NuGet/login@v1` exchanges that token with nuget.org for a
+short-lived API key, and `dotnet nuget push` uses the key. One token buys one key and the key lasts an
+hour, which is why the login step is the step immediately before the push, and why no `NUGET_API_KEY`
+secret exists any more (if one is still configured on the repository, delete it: nothing reads it).
+`id-token: write` has to sit on the **job**: a workflow-level `permissions:` block — this file's
+`contents: read` — is otherwise the whole set of permissions, and GitHub would refuse the token.
+
+The nuget.org half is a policy on the account that owns the packages — nuget.org → your username →
+**Trusted Publishing** → add a policy. All four fields are case-insensitive, and the workflow file is
+the **file name only** (`release.yml`, not `.github/workflows/release.yml`):
+
+| field | value |
+|---|---|
+| Repository Owner | `cnbluefire` |
+| Repository | `indra-ocr-sharp` |
+| Workflow File | `release.yml` |
+| Environment | *leave empty* — the job uses no GitHub Actions environment |
+
+If the policy form asks who **owns** it, pick whoever owns `Bluefire.Indra.Ocr.Sharp*`: the individual
+account, or the organization the packages belong to (an org-owned policy goes inactive while you are
+not a member). Its **scopes** decide what the key may publish, so give it the three package ids —
+`Bluefire.Indra.Ocr.Sharp*` covers `…Sharp`, `…Sharp.Core` and `…Sharp.Pdf`. A **private** repository
+leaves the new policy "temporarily active for 7 days" until the first successful publish hands
+nuget.org the repository's ID; a public repository's policy is active at once. If you ever add
+`environment: release` to the job, set the policy's Environment to `release` in the same change — the
+two must agree.
+
+The GitHub half is one repository **variable** (Settings → Secrets and variables → Actions →
+Variables):
+
+| name | value |
+|---|---|
+| `NUGET_USER` | the nuget.org *profile name* (not the email address) that owns the three package ids |
+
+It is a variable rather than a secret on purpose: a profile name is public information, and a
+variable shows up in the log, which is where a wrong one is easiest to notice. A secret works exactly
+the same way if you prefer — swap `vars.` for `secrets.` in `release.yml` — and the two mismatching is
+the one mistake that looks like "nuget.org issued no API key".
 
 ## Running it all locally
 

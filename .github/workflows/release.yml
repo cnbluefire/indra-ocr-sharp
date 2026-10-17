@@ -175,11 +175,19 @@ jobs:
             temp/packages/*.snupkg
           if-no-files-found: error
 
+  # nuget.org through Trusted Publishing, so there is no long-lived secret to store or rotate: this
+  # job asks GitHub for an OIDC token, `NuGet/login` exchanges it for a short-lived API key (one
+  # token, one key, good for an hour), and the push uses that.  The other half is a policy on
+  # nuget.org naming this repository and this file (`release.yml`); what to fill in there, and which
+  # repository variable it needs, is in docs/340-nuget-packages.md.
   push:
     name: nuget.org
     needs: [preflight, test, publish, pack]
     if: ${{ !inputs.dry_run && needs.preflight.outputs.published != 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # the OIDC token nuget.org validates the policy against
     steps:
       - uses: actions/setup-dotnet@v6
         with:
@@ -188,13 +196,20 @@ jobs:
         with:
           name: packages
           path: dist/packages
+      # Last, right before the push: the key is only good for the hour after it is issued.
+      - name: nuget.org login (OIDC -> a short-lived API key)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          # The nuget.org *profile name* (not the email address): a repository variable.
+          user: ${{ vars.NUGET_USER }}
       - name: dotnet nuget push
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         shell: bash
         run: |
           if [ -z "${NUGET_API_KEY:-}" ]; then
-            echo "::error::the NUGET_API_KEY secret is not set"
+            echo "::error::nuget.org issued no API key (is the NUGET_USER variable set?)"
             exit 1
           fi
           # One push per file: `dotnet nuget push` takes one path, and --skip-duplicate is what makes

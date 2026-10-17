@@ -585,7 +585,10 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   other comparison in the suite is still bit for bit. Still 380 tests, 83/24/20/12. The workflows'
   actions moved to their node24 majors at the same time (`checkout@v7`, `setup-dotnet@v6`,
   `upload-artifact@v7`, `download-artifact@v8`), which is what every job's deprecation warning was
-  about (`docs/340-nuget-packages.md`).
+  about (`docs/340-nuget-packages.md`). The nuget.org push moved to Trusted Publishing at the same
+  time: the `push` job asks for `id-token: write`, `NuGet/login@v1` trades that OIDC token for a
+  short-lived API key, and the old `NUGET_API_KEY` secret is gone — the policy to create on nuget.org
+  and the one repository variable it needs are written down in `docs/340-nuget-packages.md`.
 - 380 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework
