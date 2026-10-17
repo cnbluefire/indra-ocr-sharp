@@ -1,0 +1,4 @@
+# The shell scripts have to be LF in the working tree: bash treats a carriage return as part of the
+# word (and of the shebang line), and core.autocrlf=true -- the usual Windows setting, and the one
+# this checkout uses -- would put CRLF in them on checkout.
+*.sh text eol=lf
