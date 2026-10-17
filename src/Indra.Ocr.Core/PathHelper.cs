@@ -22,12 +22,24 @@ namespace Indra.Ocr;
 /// reference spells them on the machine the binary runs on.
 /// </para>
 /// <para>
-/// The Windows flavour: <c>altsep</c> to <c>sep</c>, empty and <c>.</c> components dropped,
-/// <c>..</c> kept, a drive or a UNC share kept in front. The POSIX flavour: <c>/</c> and nothing
-/// else separates, empty and <c>.</c> components dropped, <c>..</c> kept, a leading <c>/</c> (or a
-/// doubled <c>//</c>) kept. <c>.stem</c> is python 3.14's: the final component minus its last
-/// suffix, with a stem that has to keep at least one non-dot character (<c>c.</c> is <c>c</c>,
-/// <c>.gitignore</c> has no suffix at all).
+/// The rules are python 3.14's, and they are structural rather than textual: a spelling is parsed
+/// into pathlib's <c>(drive, root, parts)</c> — <c>ntpath.splitroot</c> / <c>posixpath.splitroot</c>
+/// plus <c>PurePath._parse_path</c>'s "a rooted drive with no root of its own is <c>\\server\share</c>
+/// and takes one" rule — and every answer is built from that triple. So <c>str()</c> is
+/// <c>_format_parsed_parts</c> (<c>drive + root + sep.join(parts)</c>, or <c>.</c> when it is empty),
+/// <c>.name</c>/<c>.stem</c> read the last <em>part</em> (a path that is only a drive or a root has
+/// none: <c>Path(".")</c>, <c>Path("C:\\")</c> and <c>Path("\\\\srv~")</c> all have an empty stem),
+/// and <c>Path(a) / b</c> is <c>ntpath.join</c>/<c>posixpath.join</c> over the two <em>raw</em>
+/// strings followed by that parse — not a concatenation: <c>Path("") / "b"</c> is <c>b</c> and
+/// <c>Path("C:") / "b"</c> is <c>C:b</c>, because <c>ntpath.join</c> inserts its separator only
+/// where it owns one.
+/// </para>
+/// <para>
+/// The Windows thinking this reproduces: <c>/</c> is an altsep replaced before the parse, a drive or
+/// a UNC share anchors, and the degenerate shapes follow from the slicing in <c>ntpath.splitroot</c>
+/// rather than from a special case here (<c>\\</c> is a drive with no root, <c>\\srv..a\\</c> keeps
+/// the share's separator, an empty server is the drive <c>\\</c>). See
+/// <c>docs/370-path-flavour.md</c> and <c>docs/375-path-parity.md</c>.
 /// </para>
 /// </remarks>
 public static class PathHelper
@@ -40,23 +52,14 @@ public static class PathHelper
     public static string Normalize(string path) => Normalize(path, Host);
 
     /// <inheritdoc cref="Normalize(string)"/>
-    internal static string Normalize(string path, PathFlavour flavour)
-    {
-        if (path.Length == 0)
-        {
-            return ".";
-        }
-
-        (string drive, string root, List<string> parts) = Parse(path, flavour);
-        string result = drive + root + string.Join(Separator(flavour), parts);
-        return result.Length == 0 ? "." : result;
-    }
+    internal static string Normalize(string path, PathFlavour flavour) => Format(Parse(path, flavour), flavour);
 
     /// <summary>
-    /// <c>Path(s).expanduser()</c>: <c>~</c> becomes the home directory — <c>%USERPROFILE%</c> on
-    /// Windows, <c>$HOME</c> (and then the passwd entry) on POSIX — while <c>~user</c> is left
-    /// alone (ntpath does not look users up, and the posix <c>pwd</c> lookup is not ported). The
-    /// result is normalized.
+    /// <c>Path(s).expanduser()</c>: the first component of a relative path becomes the home
+    /// directory when it is <c>~</c> — <c>%USERPROFILE%</c> on Windows, <c>$HOME</c> (and then the
+    /// passwd entry) on POSIX. <c>~user</c> is left alone: ntpath's lookup raises
+    /// <c>RuntimeError</c> when the user is not found there, and the port does not look users up.
+    /// The result is normalized.
     /// </summary>
     public static string ExpandUser(string path) => ExpandUser(path, Host, Home(Host));
 
@@ -66,29 +69,30 @@ public static class PathHelper
     /// <summary><see cref="ExpandUser(string)"/> with the home directory handed in instead of read.</summary>
     internal static string ExpandUser(string path, PathFlavour flavour, string? home)
     {
-        string text = Normalize(path, flavour);
-        if (!text.StartsWith('~'))
+        (string drive, string root, List<string> parts) = Parse(path, flavour);
+        // `home is null` before the length check: netstandard2.0's string.IsNullOrEmpty carries no
+        // NotNullWhen, so the nullable flow would not be known there.
+        if (drive.Length > 0 || root.Length > 0 || parts.Count == 0 || parts[0] != "~" ||
+            home is null || home.Length == 0)
         {
-            return text;
+            return Normalize(path, flavour);
         }
 
-        int separator = text.IndexOf(flavour == PathFlavour.Windows ? '\\' : '/', 1);
-        if (separator < 0)
+        // pathlib expands the first *component* (a component holds no separator, so "~user" is the
+        // only other thing it can be), parses what came back and appends the rest of the tail.
+        (string homeDrive, string homeRoot, List<string> homeParts) = Parse(home, flavour);
+        for (int i = 1; i < parts.Count; i++)
         {
-            separator = text.Length;
+            homeParts.Add(parts[i]);
         }
 
-        if (separator != 1 || string.IsNullOrEmpty(home))
-        {
-            return text;
-        }
-
-        return Normalize(home + text[1..], flavour);
+        return Format((homeDrive, homeRoot, homeParts), flavour);
     }
 
     /// <summary>
     /// <c>Path.stem</c>: the last component without its last suffix. A name that is all suffix
-    /// (<c>.gitignore</c>) or whose stem would be all dots (<c>..</c>) keeps its name.
+    /// (<c>.gitignore</c>) or whose stem would be all dots (<c>..</c>) keeps its name, and a path
+    /// with no component at all (<c>.</c>, <c>/</c>, <c>C:\</c>, <c>\\srv</c>) has none.
     /// </summary>
     public static string Stem(string path) => Stem(path, Host);
 
@@ -111,50 +115,202 @@ public static class PathHelper
 
     /// <inheritdoc cref="Join(string, string)"/>
     internal static string Join(string left, string right, PathFlavour flavour)
-    {
-        string normalized = Normalize(right, flavour);
-        if (PrefixLength(normalized, flavour) > 0)
-        {
-            return normalized;
-        }
+        => Normalize(JoinRaw(left, right, flavour), flavour);
 
-        return Normalize(left + Separator(flavour) + right, flavour);
-    }
-
-    /// <summary>The last component (<c>Path.name</c>; empty when the path is only a drive).</summary>
+    /// <summary>The last component (<c>Path.name</c>; empty when the path has no components).</summary>
     private static string Name(string path, PathFlavour flavour)
     {
-        string text = Normalize(path, flavour);
-        int start = PrefixLength(text, flavour);
-        int end = text.Length;
-        while (end > start && IsSeparator(text[end - 1], flavour))
-        {
-            end--;
-        }
-
-        int begin = end;
-        while (begin > start && !IsSeparator(text[begin - 1], flavour))
-        {
-            begin--;
-        }
-
-        return text[begin..end];
+        (_, _, List<string> parts) = Parse(path, flavour);
+        return parts.Count == 0 ? "" : parts[^1];
     }
+
+    /// <summary>
+    /// pathlib's <c>_format_parsed_parts</c> as <c>str()</c> uses it: the drive, the root and the
+    /// components back in one spelling, <c>.</c> when there is nothing to spell.
+    /// </summary>
+    private static string Format((string Drive, string Root, List<string> Parts) parsed, PathFlavour flavour)
+    {
+        (string drive, string root, List<string> parts) = parsed;
+        if (drive.Length > 0 || root.Length > 0)
+        {
+            return drive + root + string.Join(Separator(flavour), parts);
+        }
+
+        if (parts.Count > 0 && SplitRoot(parts[0], flavour).Drive.Length > 0)
+        {
+            // A first component that carries a drive of its own — `Path("a") / "C:b"` keeps it as a
+            // component — is written with a leading ".", so it cannot be read back as a drive.
+            parts = new List<string> { "." };
+            parts.AddRange(parsed.Parts);
+        }
+
+        string text = string.Join(Separator(flavour), parts);
+        return text.Length == 0 ? "." : text;
+    }
+
+    /// <summary>
+    /// pathlib's <c>_parse_path</c>: a spelling into its <c>(drive, root, parts)</c> triple.
+    /// </summary>
+    private static (string Drive, string Root, List<string> Parts) Parse(string path, PathFlavour flavour)
+    {
+        if (path.Length == 0)
+        {
+            return ("", "", new List<string>());
+        }
+
+        string text = flavour == PathFlavour.Windows ? path.Replace('/', '\\') : path;
+        (string drive, string root, string tail) = SplitRoot(text, flavour);
+        if (root.Length == 0 && drive.Length > 0 && drive[0] == SeparatorChar(flavour) &&
+            drive[^1] != SeparatorChar(flavour))
+        {
+            string[] driveParts = drive.Split(SeparatorChar(flavour));
+            // `//server/share` is a UNC path and `//?/unc/server/share` a device form of one, so
+            // both take the root that splitroot could not see; `//./device` and `//?/device` do not.
+            // The membership test is python's `drv_parts[2] not in '?.'`, a *substring* test: an
+            // empty component (`\\\server` splits into `['', '', '', 'server']`) counts as one of
+            // them too, and so does the two-character `?.`.
+            bool device = "?.".IndexOf(driveParts[2], StringComparison.Ordinal) >= 0;
+            if ((driveParts.Length == 4 && !device) || driveParts.Length == 6)
+            {
+                root = Separator(flavour);
+            }
+        }
+
+        var parts = new List<string>();
+        foreach (string part in tail.Split(SeparatorChar(flavour)))
+        {
+            if (part.Length > 0 && part != ".")
+            {
+                parts.Add(part);
+            }
+        }
+
+        return (drive, root, parts);
+    }
+
+    /// <summary><c>ntpath.splitroot</c> and <c>posixpath.splitroot</c>: drive, root and tail.</summary>
+    /// <remarks>
+    /// The Windows rule (ntpath) replaces <c>/</c> with <c>\</c> for its <em>checks</em> only and
+    /// slices the string it was handed, so the caller gets its own separators back. pathlib's
+    /// <c>_parse_path</c> has replaced them before calling; <c>ntpath.join</c> has not, and that is
+    /// why <c>ntpath.join("a/b", "c")</c> keeps the forward slash.
+    /// </remarks>
+    private static (string Drive, string Root, string Tail) SplitRoot(string path, PathFlavour flavour)
+    {
+        if (flavour == PathFlavour.Posix)
+        {
+            if (path.Length == 0 || path[0] != '/')
+            {
+                return ("", "", path);
+            }
+
+            if (path.Length == 1 || path[1] != '/' || (path.Length > 2 && path[2] == '/'))
+            {
+                return ("", "/", path[1..]);
+            }
+
+            // Precisely two leading slashes are a root of their own (POSIX leaves it up to the
+            // implementation, and python keeps them).
+            return ("", "//", path[2..]);
+        }
+
+        string normalized = path.Replace('/', '\\');
+        if (normalized.Length > 0 && normalized[0] == '\\')
+        {
+            if (normalized.Length > 1 && normalized[1] == '\\')
+            {
+                // UNC and device drives: the share, or `\\?\UNC\server\share`, is the drive and the
+                // separator after it the root — a shape with only one separator has neither.
+                int start = normalized.Length >= 8 &&
+                            string.Equals(normalized[..8], @"\\?\UNC\", StringComparison.OrdinalIgnoreCase)
+                    ? 8
+                    : 2;
+                int index = normalized.IndexOf('\\', start);
+                if (index < 0)
+                {
+                    return (path, "", "");
+                }
+
+                int share = normalized.IndexOf('\\', index + 1);
+                if (share < 0)
+                {
+                    return (path, "", "");
+                }
+
+                return (path[..share], path[share..(share + 1)], path[(share + 1)..]);
+            }
+
+            return ("", path[..1], path[1..]);
+        }
+
+        if (normalized.Length > 1 && normalized[1] == ':')
+        {
+            if (normalized.Length > 2 && normalized[2] == '\\')
+            {
+                return (path[..2], path[2..3], path[3..]);
+            }
+
+            return (path[..2], "", path[2..]);
+        }
+
+        return ("", "", path);
+    }
+
+    /// <summary><c>ntpath.join</c> and <c>posixpath.join</c>: two raw spellings joined.</summary>
+    private static string JoinRaw(string left, string right, PathFlavour flavour)
+    {
+        if (flavour == PathFlavour.Posix)
+        {
+            if (right.StartsWith('/') || left.Length == 0)
+            {
+                return right;
+            }
+
+            return left.EndsWith('/') ? left + right : left + "/" + right;
+        }
+
+        (string drive, string root, string tail) = SplitRoot(left, flavour);
+        (string rightDrive, string rightRoot, string rightTail) = SplitRoot(right, flavour);
+        if (rightRoot.Length > 0)
+        {
+            // A rooted right side is taken as it is, and keeps its drive when the left has none.
+            return Finish(rightDrive.Length > 0 || drive.Length == 0 ? rightDrive : drive, rightRoot,
+                          rightTail);
+        }
+
+        if (rightDrive.Length > 0 && rightDrive != drive)
+        {
+            if (!rightDrive.Equals(drive, StringComparison.OrdinalIgnoreCase))
+            {
+                // Another drive: the left path is dropped altogether.
+                return Finish(rightDrive, rightRoot, rightTail);
+            }
+
+            drive = rightDrive; // the same drive in another case
+        }
+
+        if (tail.Length > 0 && tail[^1] != '\\' && tail[^1] != '/')
+        {
+            tail += "\\";
+        }
+
+        return Finish(drive, root, tail + rightTail);
+    }
+
+    /// <summary>ntpath.join's last step: a separator between a bare UNC drive and a tail.</summary>
+    private static string Finish(string drive, string root, string tail)
+        => tail.Length > 0 && root.Length == 0 && drive.Length > 0 &&
+           drive[^1] != ':' && drive[^1] != '\\' && drive[^1] != '/'
+            ? drive + "\\" + tail
+            : drive + root + tail;
 
     /// <summary>The separator the flavour's <c>str()</c> joins with (pathlib's <c>sep</c>).</summary>
     private static string Separator(PathFlavour flavour)
         => flavour == PathFlavour.Windows ? "\\" : "/";
 
-    private static bool IsSeparator(char c, PathFlavour flavour)
-        => c == '/' || (flavour == PathFlavour.Windows && c == '\\');
-
-    private static bool IsDriveLetter(char c) => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z';
-
-    private static int PrefixLength(string path, PathFlavour flavour)
-    {
-        (string drive, string root, _) = Parse(path, flavour);
-        return drive.Length + root.Length;
-    }
+    /// <inheritdoc cref="Separator(PathFlavour)"/>
+    private static char SeparatorChar(PathFlavour flavour)
+        => flavour == PathFlavour.Windows ? '\\' : '/';
 
     /// <summary>The home directory <c>expanduser</c> reads for <c>~</c> in one flavour.</summary>
     /// <remarks>
@@ -166,102 +322,6 @@ public static class PathHelper
         ? Environment.GetEnvironmentVariable("USERPROFILE")
         : Environment.GetEnvironmentVariable("HOME")
           ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-    /// <summary>pathlib's <c>_Flavour.parse_parts</c> for a single string, in one flavour.</summary>
-    private static (string Drive, string Root, List<string> Parts) Parse(string path, PathFlavour flavour)
-        => flavour == PathFlavour.Windows ? ParseWindows(path) : ParsePosix(path);
-
-    /// <summary>pathlib's Windows parse: <c>/</c> is an altsep, and drives and UNC shares anchor.</summary>
-    private static (string Drive, string Root, List<string> Parts) ParseWindows(string path)
-    {
-        string text = path.Replace('/', '\\');
-        string drive = "";
-        string root = "";
-        int i = 0;
-        if (text.StartsWith(@"\\"))
-        {
-            // A UNC path: \\server\share is the drive, the separator after it the root.
-            int server = text.IndexOf('\\', 2);
-            if (server > 2)
-            {
-                int share = text.IndexOf('\\', server + 1);
-                int end = share < 0 ? text.Length : share;
-                drive = text[..end];
-                root = share < 0 ? "" : "\\";
-                i = end;
-            }
-            else
-            {
-                root = "\\";
-            }
-        }
-        else if (text.Length >= 2 && text[1] == ':' && IsDriveLetter(text[0]))
-        {
-            drive = text[..2];
-            i = 2;
-            if (i < text.Length && text[i] == '\\')
-            {
-                root = "\\";
-                i++;
-            }
-        }
-        else if (text[0] == '\\')
-        {
-            root = "\\";
-            i = 1;
-        }
-
-        var parts = new List<string>();
-        foreach (string part in text[i..].Split('\\'))
-        {
-            if (part.Length == 0 || part == ".")
-            {
-                continue;
-            }
-
-            parts.Add(part);
-        }
-
-        return (drive, root, parts);
-    }
-
-    /// <summary>pathlib's POSIX parse: <c>/</c> separates, and <c>//</c> is a root of its own.</summary>
-    /// <remarks>
-    /// <c>PurePosixPath</c> has no drive and no altsep: a backslash and a <c>C:</c> are ordinary
-    /// characters. <c>posixpath.splitroot</c> keeps a doubled leading slash (<c>//a</c>) and folds
-    /// three or more into one (<c>///a</c> is <c>/a</c>).
-    /// </remarks>
-    private static (string Drive, string Root, List<string> Parts) ParsePosix(string path)
-    {
-        string root = "";
-        int i = 0;
-        if (path.StartsWith('/'))
-        {
-            if (path.Length > 1 && path[1] == '/' && (path.Length == 2 || path[2] != '/'))
-            {
-                root = "//";
-                i = 2;
-            }
-            else
-            {
-                root = "/";
-                i = 1;
-            }
-        }
-
-        var parts = new List<string>();
-        foreach (string part in path[i..].Split('/'))
-        {
-            if (part.Length == 0 || part == ".")
-            {
-                continue;
-            }
-
-            parts.Add(part);
-        }
-
-        return ("", root, parts);
-    }
 }
 
 /// <summary>

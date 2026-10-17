@@ -127,9 +127,10 @@ package** (`Microsoft.ML.OnnxRuntime`).
   `--out`, `--model-dir`, `INDRA_OCR_MODEL_DIR` and the inputs all go through it, so the messages,
   the output file names and the JSON's `file` field are spelled the way the reference spells them
   on the machine the binary runs on. The port had the Windows rules unconditionally, which broke
-  every path on Linux (`docs/370-path-flavour.md`). Two corners are **not** reproduced: `~user`
-  (the port leaves the name; the reference looks the user up and raises `RuntimeError` without it)
-  and a UNC *share root*'s trailing separator (`\\server\share\`).
+  every path on Linux, and then still spelled paths by string surgery, which `pathlib`'s structural
+  parse (`_parse_path` / `_format_parsed_parts` / `join` / `name`) only agrees with on ordinary paths
+  (`docs/370-path-flavour.md`, `docs/375-path-parity.md`). One corner is **not** reproduced: `~user`
+  (the port leaves the name; the reference looks the user up and raises `RuntimeError` without it).
 - **Threads**: the deskew search's 32 angles are scored in parallel on the thread count the
   host already resolved — the reference's `cv2.setNumThreads` (`--cores` in one process, 1 in
   a pool worker, `--threads` in the viewer). Same values, same winner, bit for bit; the

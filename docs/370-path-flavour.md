@@ -50,7 +50,9 @@ why 83/83 of the alignment harness stayed green.
   slashes folded into one, exactly as `posixpath.splitroot` does (`//a` is `//a`, `///a` is `/a`).
 - `Path(...) / name` joins with the flavour's separator (the right side still wins when it carries
   an anchor), and `Path.name` divides on the flavour's separator — so on POSIX the name of
-  `a\b.txt` is `a\b.txt`, and its stem is `a\b`.
+  `a\b.txt` is `a\b.txt`, and its stem is `a\b`. (Step 375 replaced both with `pathlib`'s own
+  structural rule — `docs/375-path-parity.md` — which spells ordinary paths the same way and the
+  corners the way `pathlib` does.)
 - `expanduser` reads the variable `os.path.expanduser` reads on that platform: `USERPROFILE` on
   Windows, `HOME` (and then `GetFolderPath(UserProfile)`, which is the passwd entry on POSIX) on
   POSIX. The result is normalized, and a home that is not set leaves the `~` alone.
@@ -98,7 +100,7 @@ POSIX-only name — Windows drops it — which is exactly the kind of input this
 - **`~user`**: `posixpath`/`ntpath` look a named user up (`pwd`, `HOMEDRIVE`+`HOMEPATH`); the port
   only expands a bare `~`, so `~user/…` stays a name. The reference then raises
   `RuntimeError("Could not determine home directory.")`; the port reports the folder it was given.
-- **A UNC path's corners**: `str(PureWindowsPath(r"\\server\share"))` is `\\server\share\` (and
-  `\\server` stays `\\server`) while the port's Windows parse gives `\\server\share`/`\server`. It is
-  a message-text difference for a model folder or an input that is a share *root*, unreachable from
-  the port's four call sites, and the Windows parse is deliberately untouched here.
+- ~~**A UNC path's corners**~~: this step recorded `str(PureWindowsPath(r"\\server\share"))` as
+  `\\server\share\` (and `\\server` as `\\server`) while the port gave `\\server\share`/`\server`.
+  Step 375 made the parse structural and now reproduces those spellings — and the degenerate ones
+  around them — exactly; the deviation is gone (`docs/375-path-parity.md`).

@@ -37,6 +37,8 @@ def write(name: str, obj: dict) -> Path:
     """Write a fixture; numpy arrays in ``obj`` are converted automatically."""
     path = fixtures_dir() / name
     clean = {k: (to_list(v) if isinstance(v, np.ndarray) else v) for k, v in obj.items()}
-    path.write_text(json.dumps(clean, ensure_ascii=False, indent=1))
+    # encoding: the fixtures are UTF-8 (the C# side reads UTF-8), which is not what write_text
+    # picks on its own -- it uses the locale (cp1252 here) and would mangle a non-ASCII case.
+    path.write_text(json.dumps(clean, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"wrote {path} ({path.stat().st_size} bytes)")
     return path

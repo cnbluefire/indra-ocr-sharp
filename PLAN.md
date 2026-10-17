@@ -542,7 +542,24 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   command line 20/20 and its HTTP harness 12 cases plus `stderr` — and the Linux side is verified
   where a Linux host exists: the `pack` job that failed and the release's platform smoke
   (`docs/370-path-flavour.md`).
-- 321 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
+- Step `375` done: 370 gave `PathHelper` the right *flavour*; a fuzz sweep against CPython 3.14.7's own
+  answers showed it still did not have the right *rules* — string surgery matches `pathlib` on every
+  ordinary path and drifts on the corners (**1270 distinct divergences** over 15 000 path-shaped
+  words). `pathlib` parses first and prints after, which is structural, so `PathHelper` now
+  transcribes that instead: `SplitRoot` is `ntpath`/`posixpath.splitroot`, `Parse` is `_parse_path`
+  (`(drive, root, parts)`), `Format` is `_format_parsed_parts` (`drive + root + sep.join(parts)`, or
+  `.`), `name`/`.stem` read the last *part* (so `.`, `/` and `C:\` have no stem at all),
+  `__truediv__` is `ntpath.join`/`posixpath.join` over the **raw** spellings (`Path("") / "b"` is
+  `b`; `Path("C:") / "b"` is `C:b`, the drive already ends in its anchor), and the device-form test is
+  a *substring* test (`drv_parts[2] not in '?.'` — an empty component and the two-character `?.`
+  count too, which is what `\\\server` needed). `\\server\share` now spells `\\server\share\`, so the
+  UNC corner 370 had listed as a deviation is reproduced. The corpus is a fixture now:
+  `tools/scripts/test/gen_path_fuzz.py` writes `fixtures/path_fuzz.json` (1907 cases, the four kinds
+  over both flavours, the pinned homes recorded in it) and
+  `PathHelperTests.The_fuzz_corpus_matches_cpython` runs every row, with the rules named as cases
+  beside it. Deep sweeps in `temp/`: four seeds × ~36 000 and two seeds × ~76 500 cases, 0
+  mismatches. Ordinary paths do not move — `cli_parity.py` stays 83/83 (`docs/375-path-parity.md`).
+- 380 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework
   4.6.2 with the same answers (`docs/335-multitarget-netstandard20.md`). The three libraries are
