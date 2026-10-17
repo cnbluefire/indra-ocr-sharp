@@ -67,7 +67,7 @@ public static class RecPreproc
         int cw = Math.Max(1, ix1 - ix0), ch = Math.Max(1, iy1 - iy0);
 
         var crop = new byte[ch * cw];
-        Array.Fill(crop, (byte)255);                     // white outside the page
+        crop.AsSpan().Fill((byte)255);                   // white outside the page
         int sx0 = Math.Max(0, ix0), sy0 = Math.Max(0, iy0);
         int sx1 = Math.Min(pageW, ix1), sy1 = Math.Min(pageH, iy1);
         if (sx1 > sx0 && sy1 > sy0)

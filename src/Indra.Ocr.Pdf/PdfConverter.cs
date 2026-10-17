@@ -60,7 +60,7 @@ public sealed class PdfConverter
         bool pdfOrder = true,
         bool imageOcr = true)
     {
-        ArgumentNullException.ThrowIfNull(ocr);
+        Guard.NotNull(ocr);
         if (mode is not ("auto" or "ocr" or "text"))
         {
             throw new ArgumentException($"mode must be auto, ocr or text, not {Repr(mode)}",

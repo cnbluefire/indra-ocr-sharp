@@ -4,10 +4,26 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.31.0" />
-    <PackageVersion Include="PDFiumCore" Version="156.0.8076" />
     <!-- 2.1.x is the last Apache-2.0 release (3.x/4.x use the Six Labors Split License
          and 4.x refuses Release builds without a licence key). -->
     <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.13" />
+    <!-- The netstandard2.0 half of the three libraries (docs/335-multitarget-netstandard20.md):
+         PolySharp generates the language-level polyfills (`init`, `record`, `Index`/`Range`,
+         `[CallerArgumentExpression]`, ...) and the rest are the BCL types that arrived after
+         netstandard2.0.  All of them are scoped to the ns2.0 target, so the net10.0 build keeps
+         using the framework's own types.  PolySharp is an analyzer/generator and must not leak
+         into the package. -->
+    <PackageVersion Include="PolySharp" Version="1.16.0" />
+    <PackageVersion Include="System.Memory" Version="4.5.5" />
+    <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.5" />
+    <!-- The native PDFium.  Indra.Ocr.Pdf binds PDFium itself (Native/PdfiumBindings.cs) rather
+         than through a managed wrapper: PDFiumCore, the obvious wrapper, has no netstandard2.0
+         asset, and .NET Framework cannot reference netstandard2.1 at all.  These are the same
+         native packages, at the same PDFium build, that wrapper depended on. -->
+    <PackageVersion Include="bblanchon.PDFium.Linux" Version="156.0.8076" />
+    <PackageVersion Include="bblanchon.PDFium.Win32" Version="156.0.8076" />
+    <PackageVersion Include="bblanchon.PDFium.macOS" Version="156.0.8076" />
     <!-- test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />

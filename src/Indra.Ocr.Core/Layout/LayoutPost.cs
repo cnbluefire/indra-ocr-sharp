@@ -150,7 +150,7 @@ public static class LayoutPost
     {
         if (cp < 0 || cp > 0x10FFFF)
             return false;
-        return System.Globalization.CharUnicodeInfo.GetUnicodeCategory(cp) is
+        return UnicodeCompat.Category(cp) is
             System.Globalization.UnicodeCategory.DecimalDigitNumber
             or System.Globalization.UnicodeCategory.LetterNumber
             or System.Globalization.UnicodeCategory.OtherNumber;
@@ -243,7 +243,7 @@ public static class LayoutPost
                 scratch.Clear();
                 foreach (int k in last)
                     scratch.Add(cy[k]);
-                float mean = Numerics.Mean32(CollectionsMarshal.AsSpan(scratch));
+                float mean = Numerics.Mean32(ListCompat.AsSpan(scratch));
                 if (MathF.Abs(cy[i] - mean) < halfH)
                 {
                     last.Add(i);
@@ -576,7 +576,7 @@ public static class LayoutPost
                 foreach (int i in cells[a])
                     foreach (int j in cells[b])
                         buffer.Add(tab[head * n * n + i * n + j]);
-                float mean = Numerics.Mean32(CollectionsMarshal.AsSpan(buffer));
+                float mean = Numerics.Mean32(ListCompat.AsSpan(buffer));
                 outv[a * m + b] = mean;
                 outv[b * m + a] = mean;
             }
@@ -726,7 +726,7 @@ public static class LayoutPost
                 }
             }
         }
-        return TableHtml(CollectionsMarshal.AsSpan(cellBoxes), cellTexts.Count, cellTexts);
+        return TableHtml(ListCompat.AsSpan(cellBoxes), cellTexts.Count, cellTexts);
     }
 
     // _WHOLE_MATH = re.compile(r"^\$[^$]+\$$") on t.strip()

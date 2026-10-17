@@ -110,7 +110,7 @@ public static class ModelDownload
                                                  Action<ModelDownloadProgress>? downloadProgress = null,
                                                  CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(folder);
+        Guard.NotNullOrEmpty(folder);
         string rev = revision ?? HfRevision;
         Directory.CreateDirectory(folder);
 
@@ -209,9 +209,21 @@ public static class ModelDownload
     private static async Task<List<(string Path, long Size)>> HubFilesAsync(
         string rev, bool math, CancellationToken cancellationToken)
     {
+        // HttpClient.GetStringAsync(string, CancellationToken) is .NET 5; below it the request is
+        // made by hand, still under the caller's token.
+#if NET5_0_OR_GREATER
         string json = await Http
             .GetStringAsync($"{Host}/api/models/{HfRepo}/tree/{rev}?recursive=true", cancellationToken)
             .ConfigureAwait(false);
+#else
+        string json;
+        using (HttpResponseMessage listing = await Http.GetAsync(
+            $"{Host}/api/models/{HfRepo}/tree/{rev}?recursive=true", cancellationToken).ConfigureAwait(false))
+        {
+            listing.EnsureSuccessStatusCode();
+            json = await listing.Content.ReadAsStringAsync().ConfigureAwait(false);
+        }
+#endif
         var wanted = new List<(string Path, long Size)>();
         using var doc = System.Text.Json.JsonDocument.Parse(json);
         foreach (System.Text.Json.JsonElement entry in doc.RootElement.EnumerateArray())
@@ -251,7 +263,12 @@ public static class ModelDownload
         res.EnsureSuccessStatusCode();
         string part = dest + ".part";
         downloadProgress?.Invoke(new ModelDownloadProgress(name, dest, url, 0, size));
+        // HttpContent.ReadAsStreamAsync(CancellationToken) is .NET 5.
+#if NET5_0_OR_GREATER
         using (Stream src = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
+#else
+        using (Stream src = await res.Content.ReadAsStreamAsync().ConfigureAwait(false))
+#endif
         using (FileStream dst = new FileStream(part, FileMode.Create, FileAccess.Write,
                                                FileShare.None, Chunk, FileOptions.Asynchronous))
         {
@@ -261,7 +278,19 @@ public static class ModelDownload
                             cancellationToken).ConfigureAwait(false);
         }
 
+        // File.Move(string, string, bool) arrived with .NET Core 3.0 / netstandard2.1; below it
+        // File.Move refuses an existing destination, and the reference replaces the file
+        // (os.replace), so the replace is spelled out there.
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         File.Move(part, dest, overwrite: true);
+#else
+        if (File.Exists(dest))
+        {
+            File.Delete(dest);
+        }
+
+        File.Move(part, dest);
+#endif
     }
 
     /// <summary>

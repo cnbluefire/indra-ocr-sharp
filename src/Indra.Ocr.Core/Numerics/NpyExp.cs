@@ -53,7 +53,7 @@ public static class NpyExp
     /// <see cref="float.NaN"/> is the negative one. A NaN result only ever reaches a
     /// comparison that is false either way, but the port keeps the bit pattern exact.
     /// </summary>
-    private static readonly float PositiveNaN = BitConverter.Int32BitsToSingle(unchecked((int)0x7FC00000));
+    private static readonly float PositiveNaN = Bits.Int32BitsToSingle(unchecked((int)0x7FC00000));
 
     /// <summary>numpy's <c>np.exp(np.float32(x))</c>.</summary>
     public static float Exp(float x)
@@ -124,15 +124,15 @@ public static class NpyExp
     {
         if (quadrant > MinQuadrant)
         {
-            unchecked { return BitConverter.Int32BitsToSingle(BitConverter.SingleToInt32Bits(poly) + (RoundToInt(quadrant) << 23)); }
+            unchecked { return Bits.Int32BitsToSingle(Bits.SingleToInt32Bits(poly) + (RoundToInt(quadrant) << 23)); }
         }
 
         float quadDiff = 0f - (quadrant - MinQuadrant);     // >= 0 on this path
         int shift = RoundToInt(quadDiff);
         int twoPowerDiff = shift < 32 ? unchecked(1 << shift) : 0;   // AVX2 shifts by >= 32 give 0
         float q = MathF.Max(quadrant, MinQuadrant);
-        float scaled = unchecked(BitConverter.Int32BitsToSingle(
-            BitConverter.SingleToInt32Bits(poly) + (RoundToInt(q) << 23)));
+        float scaled = unchecked(Bits.Int32BitsToSingle(
+            Bits.SingleToInt32Bits(poly) + (RoundToInt(q) << 23)));
         return scaled / twoPowerDiff;
     }
 

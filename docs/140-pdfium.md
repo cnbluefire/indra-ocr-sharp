@@ -44,7 +44,8 @@ textlayer.invisible_text_frac(page)                    # page.get_objects(max_de
 ## Port notes
 
 - **The PDFium build is the reference's build.** pypdfium2 5.14.0 bundles PDFium **156.0.8076**
-  (`pypdfium2_raw/version.json`), the same build as the `PDFiumCore` 156.0.8076 package, so
+  (`pypdfium2_raw/version.json`), the same build the `bblanchon.PDFium.*` 156.0.8076 packages
+  carry — the ones the project binds itself since step `335` — so
   rendering is bit-exact rather than merely close. Verified: every recorded render matches byte for
   byte.
 - **Documents are loaded from memory, not by path.** pypdfium2 passes a path as explicit UTF-8

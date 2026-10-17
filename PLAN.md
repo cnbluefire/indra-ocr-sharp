@@ -11,8 +11,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   dependency — its only image input is 8-bit grayscale `GrayImage`, a `ref struct` view it
   never owns (outputs are caller-provided buffers). The encoded-image decoder (ImageSharp) is
   the `Indra.Ocr` project (`Images/ImageFiles.cs`, one owning `GrayImageData` per frame) and
-  PDF rasterisation (`PDFiumCore` + `bblanchon.PDFium`) is `Indra.Ocr.Pdf`, which emits
-  grayscale directly. The two are siblings: neither references the other, and the host picks one
+  PDF rasterisation is `Indra.Ocr.Pdf`, which binds PDFium itself over the
+  `bblanchon.PDFium.*` native packages and emits grayscale directly (`docs/335-multitarget-netstandard20.md`).
+  The two are siblings: neither references the other, and the host picks one
   with `OrtOcr.IsPdf` (`docs/165-project-split.md`). ONNX: `Microsoft.ML.OnnxRuntime`.
 - Parity: bit-exact for deterministic output; tolerance only for timings and <1e-3 floats.
 - numpy's float32 `exp` is not the CRT's `expf`, so the port reproduces numpy's own vector
@@ -429,6 +430,21 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   in both hosts), with `IncludeSourceRevisionInInformationalVersion` off so no `+<sha>` can reach
   the parity surface (`docs/330-product-version.md`). 218 tests, 83/24/20/12, both hosts' `--version`
   and the viewer's `/info` byte-identical.
+- Step `335` done: the three class libraries multi-target `net10.0;netstandard2.0`, so the port can
+  be packaged for NuGet and consumed from .NET Framework. The net10.0 asset is untouched — the
+  compatibility layer is `src/Compat/NetStandard20.cs`, compiled into all three (PolySharp for the
+  language-level polyfills, System.Memory/Unsafe for the types, and `#if`-dispatched helpers where
+  every condition names the API's *real* minimum version). The **PDFiumCore** wrapper is gone:
+  `Indra.Ocr.Pdf` binds PDFium itself (`Native/PdfiumBindings.cs`, the 27 functions the port calls,
+  transcribed from fpdfview.h/fpdf_text.h/fpdf_edit.h with the C names kept) over the native
+  `bblanchon.PDFium.*` 156.0.8076 packages, because the wrapper has no netstandard2.0 asset and
+  .NET Framework cannot reference netstandard2.1 at all (`docs/335-multitarget-netstandard20.md`).
+  218 tests, 83/24/20/12, and the throwaway `temp/ns20-test` (the same program on net462 and
+  net10.0, over 10 cases including two error inputs) agrees line for line, down to the bit
+  patterns; `temp/ns20-probe/unicode-equiv` checks the Unicode shim over all 1 114 112 code points
+  (0 mismatches), and a cold-cache `--download` run on .NET Framework fetched the model set
+  byte-identical to `resources/models` through the ns2.0 shims.
 - 218 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
-  `stderr`.
+  `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework
+  4.6.2 with the same answers (`docs/335-multitarget-netstandard20.md`).

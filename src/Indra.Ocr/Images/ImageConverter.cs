@@ -19,7 +19,7 @@ public sealed class ImageConverter
 
     public ImageConverter(OrtOcr ocr)
     {
-        ArgumentNullException.ThrowIfNull(ocr);
+        Guard.NotNull(ocr);
         _ocr = ocr;
     }
 

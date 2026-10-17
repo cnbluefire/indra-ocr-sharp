@@ -164,11 +164,11 @@ public sealed class MathReader : IDisposable
                                     int height, int maxTokens, int layers, int heads, int channels,
                                     IReadOnlyList<string> tokens)
     {
-        ArgumentNullException.ThrowIfNull(cls);
-        ArgumentNullException.ThrowIfNull(enc);
-        ArgumentNullException.ThrowIfNull(init);
-        ArgumentNullException.ThrowIfNull(step);
-        ArgumentNullException.ThrowIfNull(tokens);
+        Guard.NotNull(cls);
+        Guard.NotNull(enc);
+        Guard.NotNull(init);
+        Guard.NotNull(step);
+        Guard.NotNull(tokens);
         if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height));
         if (maxTokens <= 0) throw new ArgumentOutOfRangeException(nameof(maxTokens));
         if (layers <= 0) throw new ArgumentOutOfRangeException(nameof(layers));
@@ -203,7 +203,7 @@ public sealed class MathReader : IDisposable
     /// </summary>
     public static string Detokenize(IReadOnlyList<string> tokens)
     {
-        ArgumentNullException.ThrowIfNull(tokens);
+        Guard.NotNull(tokens);
         var outParts = new List<string>();
         var math = new List<string>();
         bool inMath = false;
@@ -262,7 +262,7 @@ public sealed class MathReader : IDisposable
     public float[] Probabilities(IReadOnlyList<float[]> crops, int batch = 64,
                                  int height = RecPreproc.LineHeight)
     {
-        ArgumentNullException.ThrowIfNull(crops);
+        Guard.NotNull(crops);
         var probabilities = new float[crops.Count];
         if (crops.Count == 0) return probabilities;
 
@@ -335,7 +335,7 @@ public sealed class MathReader : IDisposable
             MathTensor sk = MathTensor.Float32(Array.Empty<float>(), Layers, b, Heads, 0, HeadDim);
             MathTensor sv = sk;
             var tok = new long[b];
-            Array.Fill(tok, Bos);
+            tok.AsSpan().Fill(Bos);
             var seqs = new List<int>[b];
             var probs = new List<double>[b];
             for (int i = 0; i < b; i++)
@@ -383,7 +383,7 @@ public sealed class MathReader : IDisposable
                         done[row] = true;
                     }
                     else if (probs[row].Count >= 8
-                             && Numerics.Mean64(CollectionsMarshal.AsSpan(probs[row]))
+                             && Numerics.Mean64(ListCompat.AsSpan(probs[row]))
                                 < MinConf - EarlyStopMargin)
                     {
                         done[row] = true;             // rejected: keeps a low mean probability
@@ -404,7 +404,7 @@ public sealed class MathReader : IDisposable
                 var tokens = new List<string>(seqs[k].Count);
                 foreach (int id in seqs[k]) tokens.Add(_itos[id]);
                 double confidence = probs[k].Count > 0
-                    ? Numerics.Mean64(CollectionsMarshal.AsSpan(probs[k]))
+                    ? Numerics.Mean64(ListCompat.AsSpan(probs[k]))
                     : 0.0;
                 readings[idx[k]] = new MathReading(Detokenize(tokens), confidence);
             }

@@ -41,7 +41,7 @@ public static class TextLayerReader
                 continue;
             }
 
-            UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(codePoint);
+            UnicodeCategory category = UnicodeCompat.Category(codePoint);
             if (category is UnicodeCategory.PrivateUse
                           or UnicodeCategory.Surrogate
                           or UnicodeCategory.OtherNotAssigned

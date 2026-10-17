@@ -28,7 +28,7 @@ public sealed class OnnxOrderModel : IOrderModel
         var featsTensor = new DenseTensor<float>(feats.ToArray(),
                                                  new[] { 1, n, OrderPost.FeatureCount });
         var mask = new bool[n];
-        Array.Fill(mask, true);
+        mask.AsSpan().Fill(true);
         var maskTensor = new DenseTensor<bool>(mask, new[] { 1, n });
         using var results = _session.Run(new[]
         {

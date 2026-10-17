@@ -1,4 +1,4 @@
-using PDFiumCore;
+using Indra.Ocr.Pdf.Native;
 
 namespace Indra.Ocr.Pdf;
 
@@ -8,7 +8,12 @@ namespace Indra.Ocr.Pdf;
 /// </summary>
 public static class Pdfium
 {
+    // System.Threading.Lock is .NET 9; below it a plain object gates the same way.
+#if NET9_0_OR_GREATER
     private static readonly Lock Gate = new();
+#else
+    private static readonly object Gate = new();
+#endif
     private static bool _initialized;
 
     /// <summary>Initialises PDFium once per process (<c>pypdfium2</c> does this on import).</summary>
@@ -21,7 +26,7 @@ public static class Pdfium
                 return;
             }
 
-            fpdfview.FPDF_InitLibrary();
+            PdfiumView.FPDF_InitLibrary();
             _initialized = true;
         }
     }

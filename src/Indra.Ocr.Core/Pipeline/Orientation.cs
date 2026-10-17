@@ -84,7 +84,7 @@ public static class Orientation
     /// </summary>
     public static int Turns(IOrientModel model, GrayImage gray, int side = OrientSide)
     {
-        ArgumentNullException.ThrowIfNull(model);
+        Guard.NotNull(model);
         var x = new float[side * side];
         OrientInput(gray, x, side);
         Span<float> p = stackalloc float[4];
@@ -277,10 +277,10 @@ public static class Orientation
             if (cy < cyMin) cyMin = cy;
             if (cy > cyMax) cyMax = cy;
         }
-        dst[0] = RoundTenth(Math.Clamp(cxMin, 0, width));
-        dst[1] = RoundTenth(Math.Clamp(cyMin, 0, height));
-        dst[2] = RoundTenth(Math.Clamp(cxMax, 0, width));
-        dst[3] = RoundTenth(Math.Clamp(cyMax, 0, height));
+        dst[0] = RoundTenth(MathCompat.Clamp(cxMin, 0, width));
+        dst[1] = RoundTenth(MathCompat.Clamp(cyMin, 0, height));
+        dst[2] = RoundTenth(MathCompat.Clamp(cxMax, 0, width));
+        dst[3] = RoundTenth(MathCompat.Clamp(cyMax, 0, height));
     }
 
     /// <summary>

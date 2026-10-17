@@ -58,7 +58,18 @@ public static class CvMath
     public static readonly int WarpUnroll = WarpLanes * 2;
 
     /// <summary>Whether the SIMD kernels OpenCV dispatches here use FMA (AVX2/AVX512 but not SSE).</summary>
+    /// <remarks>
+    /// <c>Fma.IsSupported</c> arrived with <c>System.Runtime.Intrinsics</c> in .NET Core 3.0, and
+    /// netstandard2.0 has no such namespace to ask -- the .NET Framework JIT never emits those
+    /// intrinsics -- so the answer there is "no" and the FFMA half of the warp kernels is simply
+    /// unreachable.  Only the dispatch differs: the kernels are the same source, and the net10.0
+    /// build still asks the JIT.
+    /// </remarks>
+#if NETCOREAPP3_0_OR_GREATER
     public static readonly bool WarpUsesFma = System.Runtime.Intrinsics.X86.Fma.IsSupported;
+#else
+    public static readonly bool WarpUsesFma = false;
+#endif
 
     /// <summary><c>cvRound</c>: round to nearest, ties to even.</summary>
     public static int Round(float v) => (int)MathF.Round(v, MidpointRounding.ToEven);

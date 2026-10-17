@@ -44,15 +44,15 @@ public static class NpyLog
     private const float Q5 = 5.875095403124574342950e-03f;
 
     /// <summary>2^100, the scale the denormal paths multiply by (raw bits <c>0x71800000</c>).</summary>
-    private static readonly float TwoPower100 = BitConverter.Int32BitsToSingle(unchecked((int)0x71800000));
+    private static readonly float TwoPower100 = Bits.Int32BitsToSingle(unchecked((int)0x71800000));
 
     /// <summary>
     /// numpy's <c>NPY_NANF</c> is the <em>positive</em> quiet NaN (0x7FC00000) and the kernel
     /// writes <c>-NPY_NANF</c> (0xFFC00000) for negative inputs; .NET's <see cref="float.NaN"/>
     /// is neither of those bit patterns.
     /// </summary>
-    private static readonly float PositiveNaN = BitConverter.Int32BitsToSingle(unchecked((int)0x7FC00000));
-    private static readonly float NegativeNaN = BitConverter.Int32BitsToSingle(unchecked((int)0xFFC00000));
+    private static readonly float PositiveNaN = Bits.Int32BitsToSingle(unchecked((int)0x7FC00000));
+    private static readonly float NegativeNaN = Bits.Int32BitsToSingle(unchecked((int)0xFFC00000));
 
     /// <summary>numpy's <c>np.log(np.float32(x))</c>.</summary>
     public static float Log(float x)
@@ -105,7 +105,7 @@ public static class NpyLog
     {
         bool denormal = x < FltMin;
         float temp = (denormal ? x : 0f) * TwoPower100;
-        int biased = (int)((uint)BitConverter.SingleToInt32Bits(denormal ? temp : x) >> 23);
+        int biased = (int)((uint)Bits.SingleToInt32Bits(denormal ? temp : x) >> 23);
         float exponent = biased - 0x7E;
         return denormal ? exponent - 100f : exponent;
     }
@@ -115,8 +115,8 @@ public static class NpyLog
     {
         bool denormal = x < FltMin;
         float temp = (denormal ? x : 0f) * TwoPower100;
-        int bits = BitConverter.SingleToInt32Bits(denormal ? temp : x);
-        return BitConverter.Int32BitsToSingle((bits & 0x7FFFFF) | (126 << 23));
+        int bits = Bits.SingleToInt32Bits(denormal ? temp : x);
+        return Bits.Int32BitsToSingle((bits & 0x7FFFFF) | (126 << 23));
     }
 
     /// <summary>Element-wise <see cref="Log(float)"/>.</summary>

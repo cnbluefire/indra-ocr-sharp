@@ -24,9 +24,10 @@ package** (`Microsoft.ML.OnnxRuntime`).
    - `Indra.Ocr` — the encoded-image decoder: image *files* (ImageSharp) to grayscale, one
      `GrayImageData` per frame (`ImageFiles.ReadImages` / `ReadImage`), plus `ImageConverter`,
      the image half of `document.convert`. It references `Indra.Ocr.Core`.
-   - `Indra.Ocr.Pdf` — the PDF decoder: page rasterisation + text layer via `PDFiumCore`. This
-     is the **only** project that references the PDFium package, and it holds `PdfConverter`,
-     the PDF half of `document.convert`. PDFium renders straight to grayscale
+   - `Indra.Ocr.Pdf` — the PDF decoder: page rasterisation + text layer over PDFium, which it
+     binds itself (`Native/PdfiumBindings.cs`) on top of the `bblanchon.PDFium.{Linux,Win32,macOS}`
+     native packages. This is the **only** project that touches PDFium, and it holds
+     `PdfConverter`, the PDF half of `document.convert`. PDFium renders straight to grayscale
      (`FPDFBitmap_Gray`), so rendered pages come back as `GrayImage` with no decoding. It
      references `Indra.Ocr.Core`.
    - `Indra.Ocr.Cli` — console app; commands must match the `indra-ocr` command 1:1.
@@ -70,24 +71,42 @@ package** (`Microsoft.ML.OnnxRuntime`).
 7. **Git**
    - Commit after every step, so work can be traced back later.
 8. **AOT.** The three class libraries (`Indra.Ocr.Core`, `Indra.Ocr`, `Indra.Ocr.Pdf`) set
-   `IsAotCompatible` and the two executables (`Indra.Ocr.Cli`, `Indra.Ocr.Viewer`) set
+   `IsAotCompatible` (on their `net10.0` target — the only AOT-capable one) and the two
+   executables (`Indra.Ocr.Cli`, `Indra.Ocr.Viewer`) set
    `PublishAot`, so the solution builds with the trim/AOT analyzers on and both hosts publish
    as native binaries. Warnings that come from a third-party assembly and cannot be fixed are
    suppressed with the reason written down next to them (`docs/290-aot.md`). The solution is
    also **globalization-invariant** (`InvariantGlobalization`), so the native binaries need no
    ICU; because that turns `string.Normalize` into a no-op, NFC is implemented in Core over
    tables generated from CPython's `unicodedata` (`docs/295-invariant-globalization.md`).
+9. **Portability.** The three class libraries multi-target `net10.0;netstandard2.0`, so they can be
+   packaged for NuGet and consumed from .NET Framework; the two executables and the test project
+   stay `net10.0`. The net10.0 asset must remain exactly what it was — the compatibility layer is
+   `#if`-dispatched per member (each `#if` naming the *real* minimum version of the API it guards),
+   never a rewrite — and the ns2.0 asset must be the same port functionally, verified by running it
+   on .NET Framework 4.6.2 (`docs/335-multitarget-netstandard20.md`).
 
 ## Parity decisions (confirmed with the user)
 
 - **Imaging**: pure managed C#. Replicate the required OpenCV operations directly (no
   OpenCvSharp). Match OpenCV's algorithms (fixed-point resize/warp, 4-connectivity CCL).
-- **PDF**: `PDFiumCore` NuGet package (which pulls in `bblanchon.PDFium`). If the wrapper
-  does not expose a needed text-layer API (`FPDFText_GetCharAngle`,
-  `FPDFTextObj_GetTextRenderMode`, `FPDF_PageToDevice`), P/Invoke the bundled `pdfium.dll`
-  directly.
+- **PDF**: PDFium itself, bound by the port's own P/Invoke
+  (`src/Indra.Ocr.Pdf/Native/PdfiumBindings.cs`) over the native
+  `bblanchon.PDFium.{Linux,Win32,macOS}` 156.0.8076 packages. The managed wrapper **PDFiumCore**
+  was dropped (user, 2026-10-17) because it has no netstandard2.0 asset — its lowest is
+  netstandard2.1, which .NET Framework cannot reference at all — so it could never serve the ns2.0
+  target, and one binding for both targets cannot drift. The members the port needs
+  (`FPDFText_GetCharAngle`, `FPDFTextObj_GetTextRenderMode`, `FPDF_PageToDevice`, …) are
+  transcribed from the headers the Win32 package ships, keeping the C names
+  (`docs/335-multitarget-netstandard20.md`).
 - **Parity level**: bit-exact for deterministic output (markdown / text / JSON-lines);
   tolerance only for timings and sub-1e-3 floats.
+
+  The `netstandard2.0` asset is a **functional**, not bit-exact, target, and only there: .NET
+  Framework has no fused multiply-add and no CRT `expf` behind `MathF.Exp`, and its
+  `CharUnicodeInfo` tables are older than .NET 10's, so that target computes the same answers on
+  ordinary inputs but not necessarily the same bits
+  (`docs/335-multitarget-netstandard20.md`). The net10.0 asset stays the reference.
 
   **Known, principled deviation — `np.argsort` tie order.** numpy's default `quicksort`
   argsort dispatches to a **CPU-specific SIMD sorting network** (AVX2/AVX512 via
@@ -118,6 +137,11 @@ package** (`Microsoft.ML.OnnxRuntime`).
 ## Environment
 
 - .NET SDK 10.0.400 (target `net10.0`).
+- .NET Framework verification for the `netstandard2.0` asset: `temp/ns20-test` (dual-target
+  `net462;net10.0`, the same program against both assets) and `temp/ns20-probe/unicode-equiv`
+  (the Unicode shim against the API it stands in for). Both are throwaway and need only
+  `Microsoft.NETFramework.ReferenceAssemblies.net462` plus the packages the libraries already
+  use (`docs/335-multitarget-netstandard20.md`).
 - NativeAOT needs a platform toolchain (Windows: the MSVC linker + Windows SDK from Visual
   Studio's *Desktop development with C++* workload; Linux: clang). It is **not** installed on
   this machine, so the AOT publish is verified where it exists; the analyzers and a trimmed

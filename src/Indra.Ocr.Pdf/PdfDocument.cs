@@ -1,5 +1,5 @@
 using System.Runtime.InteropServices;
-using PDFiumCore;
+using Indra.Ocr.Pdf.Native;
 
 namespace Indra.Ocr.Pdf;
 
@@ -15,7 +15,7 @@ namespace Indra.Ocr.Pdf;
 /// <para>
 /// The file is read here and handed to <c>FPDF_LoadMemDocument64</c> rather than opened by
 /// path with <c>FPDF_LoadDocument</c>: pypdfium2 passes the path as explicit UTF-8, while
-/// the managed wrapper marshals <c>string</c> in the process's ANSI code page, which would
+/// the binding marshals a <c>string</c> in the process's ANSI code page, which would
 /// break non-ASCII paths on Windows. The bytes stay pinned for the document's lifetime
 /// (PDFium does not copy them), exactly as pypdfium2 keeps its input buffer alive.
 /// </para>
@@ -23,7 +23,7 @@ namespace Indra.Ocr.Pdf;
 public sealed class PdfDocument : IDisposable
 {
     private readonly GCHandle _pin;
-    private FpdfDocumentT? _document;
+    private PdfiumDocument? _document;
     private bool _disposed;
 
     private PdfDocument(byte[] data, string? password)
@@ -32,12 +32,12 @@ public sealed class PdfDocument : IDisposable
         _pin = GCHandle.Alloc(data, GCHandleType.Pinned);
         try
         {
-            _document = fpdfview.FPDF_LoadMemDocument64(_pin.AddrOfPinnedObject(), (ulong)data.Length, password);
+            _document = PdfiumView.FPDF_LoadMemDocument64(_pin.AddrOfPinnedObject(), (ulong)data.Length, password);
             // pypdfium2 checks the page count, not the handle: a null handle fails the same
             // way, and FPDF_GetPageCount tolerates it.
-            if (_document is null || _document.__Instance == IntPtr.Zero || fpdfview.FPDF_GetPageCount(_document) < 1)
+            if (_document is null || _document.Handle == IntPtr.Zero || PdfiumView.FPDF_GetPageCount(_document) < 1)
             {
-                ulong code = fpdfview.FPDF_GetLastError();
+                ulong code = PdfiumView.FPDF_GetLastError();
                 throw new PdfiumError($"Failed to load document (PDFium: {Pdfium.ErrorText(code)}).", code);
             }
         }
@@ -61,7 +61,7 @@ public sealed class PdfDocument : IDisposable
         get
         {
             ThrowIfDisposed();
-            return fpdfview.FPDF_GetPageCount(_document);
+            return PdfiumView.FPDF_GetPageCount(_document);
         }
     }
 
@@ -75,8 +75,8 @@ public sealed class PdfDocument : IDisposable
     public PdfPage LoadPage(int index)
     {
         ThrowIfDisposed();
-        FpdfPageT? raw = fpdfview.FPDF_LoadPage(_document, index);
-        if (raw is null || raw.__Instance == IntPtr.Zero)
+        PdfiumPage? raw = PdfiumView.FPDF_LoadPage(_document, index);
+        if (raw is null || raw.Handle == IntPtr.Zero)
         {
             throw new PdfiumError("Failed to load page.");
         }
@@ -94,12 +94,12 @@ public sealed class PdfDocument : IDisposable
         _disposed = true;
         if (_document is not null)
         {
-            fpdfview.FPDF_CloseDocument(_document);
+            PdfiumView.FPDF_CloseDocument(_document);
             _document = null;
         }
 
         _pin.Free();
     }
 
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(_disposed, this);
+    private void ThrowIfDisposed() => Guard.NotDisposed(_disposed, this);
 }

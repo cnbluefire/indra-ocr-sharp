@@ -67,7 +67,7 @@ public sealed class OrtOcr : IDisposable
         bool furniture = false,
         bool math = false)
     {
-        ArgumentException.ThrowIfNullOrEmpty(onnxDirectory);
+        Guard.NotNullOrEmpty(onnxDirectory);
 
         // The same number the reference gives OpenCV (cv2.setNumThreads) is the deskew search's.
         _threads = threads;
@@ -167,7 +167,23 @@ public sealed class OrtOcr : IDisposable
     {
         using FileStream stream = File.OpenRead(path);
         var head = new byte[1024];
+        // Stream.ReadAtLeast is .NET 7; below it the buffer is filled with the same loop by hand
+        // (stop at the file's end, which is what throwOnEndOfStream: false means).
+#if NET7_0_OR_GREATER
         int n = stream.ReadAtLeast(head, head.Length, throwOnEndOfStream: false);
+#else
+        int n = 0;
+        while (n < head.Length)
+        {
+            int read = stream.Read(head, n, head.Length - n);
+            if (read <= 0)
+            {
+                break;
+            }
+
+            n += read;
+        }
+#endif
         return head.AsSpan(0, n).IndexOf("%PDF-"u8) >= 0;
     }
 

@@ -186,12 +186,12 @@ public static class CvResize
             var dstRow = dst.Slice(dy * dstStride, dw);
             // Rows share no source rows between groups, and the first contribution of a row is
             // `sum = beta * buf` on a zeroed accumulator, so a plain accumulating add matches.
-            Array.Clear(sum);
+            Array.Clear(sum, 0, sum.Length);
             for (int j = tabofs[dy]; j < tabofs[dy + 1]; j++)
             {
                 float beta = ytab[j].Alpha;
                 var srcRow = src.Row(ytab[j].Si);
-                Array.Clear(buf);
+                Array.Clear(buf, 0, buf.Length);
                 for (int k = 0; k < xtabSize; k++)
                     buf[xtab[k].Di] += srcRow[xtab[k].Si] * xtab[k].Alpha;
                 for (int dx = 0; dx < dw; dx++) sum[dx] += beta * buf[dx];
@@ -248,8 +248,8 @@ public static class CvResize
                 fy = (float)((dy + 1) - (sy + 1) * invScaleY);
                 fy = fy <= 0 ? 0f : fy - CvMath.Floor(fy);
             }
-            int ry0 = Math.Clamp(sy, 0, sh - 1);
-            int ry1 = Math.Clamp(sy + 1, 0, sh - 1);
+            int ry0 = MathCompat.Clamp(sy, 0, sh - 1);
+            int ry1 = MathCompat.Clamp(sy + 1, 0, sh - 1);
             short b0 = CvMath.SaturateShort((1f - fy) * CoefScale);
             short b1 = CvMath.SaturateShort(fy * CoefScale);
 
@@ -314,8 +314,8 @@ public static class CvResize
             float fy = (float)((dy + 0.5) * scaleY - 0.5);
             int sy = CvMath.Floor(fy);
             fy -= sy;
-            int ry0 = Math.Clamp(sy, 0, sh - 1);
-            int ry1 = Math.Clamp(sy + 1, 0, sh - 1);
+            int ry0 = MathCompat.Clamp(sy, 0, sh - 1);
+            int ry1 = MathCompat.Clamp(sy + 1, 0, sh - 1);
             float b0 = 1f - fy, b1 = fy;
 
             for (int dx = 0; dx < dw; dx++)

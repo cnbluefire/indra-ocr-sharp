@@ -122,7 +122,7 @@ public readonly ref struct GrayImage
 
     private static ReadOnlyMemory<byte> Memory(byte[] data)
     {
-        ArgumentNullException.ThrowIfNull(data);
+        Guard.NotNull(data);
         return data;
     }
 

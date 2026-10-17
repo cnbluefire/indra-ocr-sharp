@@ -58,3 +58,4 @@ status. Keep these in sync with `PLAN.md`.
 | [320](320-async-io.md) | The I/O boundary is asynchronous (the pipeline is not) |
 | [325](325-readme.md) | The README (the front page: upstream, port, build, CLI/viewer, library, license) |
 | [330](330-product-version.md) | The product line lives in the build, not in a C# constant |
+| [335](335-multitarget-netstandard20.md) | The three libraries multi-target (`net10.0;netstandard2.0`) |

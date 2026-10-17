@@ -36,7 +36,7 @@ does the same job with less machinery.
 ## Dependency graph
 
 ```
-                 Indra.Ocr        (ImageSharp)      Indra.Ocr.Pdf   (PDFiumCore)
+                 Indra.Ocr        (ImageSharp)      Indra.Ocr.Pdf      (pdfium)
                      │                                   │
                      └──────────────► Core ◄─────────────┘
                                   (OnnxRuntime)

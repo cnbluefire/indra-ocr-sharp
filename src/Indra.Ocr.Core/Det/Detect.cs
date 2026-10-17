@@ -53,7 +53,7 @@ public static class Detect
     /// </remarks>
     public static float[] DetectAt(IDetModel model, GrayImage gray, int longSide, out double scale)
     {
-        ArgumentNullException.ThrowIfNull(model);
+        Guard.NotNull(model);
         var x = DetPost.PageToInput(gray, longSide, out int height, out int width, out scale);
         int oh = height / DetPost.OutStride, ow = width / DetPost.OutStride;
         var logits = new float[3 * oh * ow];
@@ -122,10 +122,10 @@ public static class Detect
             boxes[i + 1] /= s;
             boxes[i + 2] /= s;
             boxes[i + 3] /= s;
-            boxes[i] = Math.Clamp(boxes[i], 0f, width);
-            boxes[i + 1] = Math.Clamp(boxes[i + 1], 0f, height);
-            boxes[i + 2] = Math.Clamp(boxes[i + 2], 0f, width);
-            boxes[i + 3] = Math.Clamp(boxes[i + 3], 0f, height);
+            boxes[i] = MathCompat.Clamp(boxes[i], 0f, width);
+            boxes[i + 1] = MathCompat.Clamp(boxes[i + 1], 0f, height);
+            boxes[i + 2] = MathCompat.Clamp(boxes[i + 2], 0f, width);
+            boxes[i + 3] = MathCompat.Clamp(boxes[i + 3], 0f, height);
         }
     }
 }

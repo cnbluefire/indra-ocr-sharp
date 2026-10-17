@@ -431,9 +431,9 @@ public static class OrderPost
         for (int i = 0; i < n; i++)
             m[i * n + i] = double.NegativeInfinity;
         var size = new double[n];
-        Array.Fill(size, 1.0);
+        size.AsSpan().Fill(1.0);
         var alive = new bool[n];
-        Array.Fill(alive, true);
+        alive.AsSpan().Fill(true);
         var members = new List<int>[n];
         for (int i = 0; i < n; i++)
             members[i] = [i];

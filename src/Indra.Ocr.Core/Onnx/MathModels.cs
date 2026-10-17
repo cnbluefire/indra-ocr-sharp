@@ -33,8 +33,8 @@ public static class MathModels
     /// </summary>
     public static MathReader? Load(string onnxDirectory, SessionOptions options)
     {
-        ArgumentException.ThrowIfNullOrEmpty(onnxDirectory);
-        ArgumentNullException.ThrowIfNull(options);
+        Guard.NotNullOrEmpty(onnxDirectory);
+        Guard.NotNull(options);
 
         foreach (string file in RequiredFiles)
             if (!File.Exists(Path.Combine(onnxDirectory, file)))

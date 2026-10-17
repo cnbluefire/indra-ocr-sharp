@@ -14,7 +14,9 @@ via NuGet, and helper scripts to run the original Python tools.
   deterministic builds.
 - `src/Directory.Packages.props` — central package versions:
   - `Microsoft.ML.OnnxRuntime` **1.31.0** (matches the Python `onnxruntime` 1.31.0).
-  - `PDFiumCore` **156.0.8076** (pulls in `bblanchon.PDFium`).
+  - `bblanchon.PDFium.Linux`/`.Win32`/`.macOS` **156.0.8076** — the native PDFium
+    `Indra.Ocr.Pdf` binds itself (`docs/335-multitarget-netstandard20.md`; `PDFiumCore`, the
+    wrapper used through step 330, has no netstandard2.0 asset).
   - `SixLabors.ImageSharp` **2.1.13** (last Apache-2.0 release).
 - `src/Indra.Ocr.Core` (classlib, assembly `Indra.Ocr.Core`).
 - `src/Indra.Ocr.Pdf` (classlib — PDFium; added with `012`).

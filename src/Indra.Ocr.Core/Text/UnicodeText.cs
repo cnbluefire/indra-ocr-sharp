@@ -90,7 +90,7 @@ public static class UnicodeText
     {
         if (codePoint < 0 || codePoint > 0x10FFFF)
             return false;
-        return CharUnicodeInfo.GetUnicodeCategory(codePoint) == UnicodeCategory.DecimalDigitNumber
+        return UnicodeCompat.Category(codePoint) == UnicodeCategory.DecimalDigitNumber
             || InRanges(OtherDigits, codePoint);
     }
 
@@ -120,7 +120,7 @@ public static class UnicodeText
     {
         if (codePoint < 0 || codePoint > 0x10FFFF)
             return false;
-        return CharUnicodeInfo.GetUnicodeCategory(codePoint) == UnicodeCategory.UppercaseLetter
+        return UnicodeCompat.Category(codePoint) == UnicodeCategory.UppercaseLetter
             || InRanges(OtherUppercase, codePoint);
     }
 
@@ -133,7 +133,7 @@ public static class UnicodeText
     {
         if (codePoint < 0 || codePoint > 0x10FFFF)
             return false;
-        return CharUnicodeInfo.GetUnicodeCategory(codePoint) == UnicodeCategory.LowercaseLetter
+        return UnicodeCompat.Category(codePoint) == UnicodeCategory.LowercaseLetter
             || InRanges(OtherLowercase, codePoint);
     }
 
@@ -142,7 +142,7 @@ public static class UnicodeText
     {
         if (codePoint < 0 || codePoint > 0x10FFFF)
             return false;
-        return CharUnicodeInfo.GetUnicodeCategory(codePoint) is
+        return UnicodeCompat.Category(codePoint) is
             UnicodeCategory.UppercaseLetter or UnicodeCategory.LowercaseLetter
             or UnicodeCategory.TitlecaseLetter or UnicodeCategory.ModifierLetter
             or UnicodeCategory.OtherLetter;
@@ -235,7 +235,7 @@ public static class UnicodeText
             return true;
         if (codePoint < 0 || codePoint > 0x10FFFF)
             return false;
-        UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(codePoint);
+        UnicodeCategory category = UnicodeCompat.Category(codePoint);
         return category is UnicodeCategory.SpaceSeparator or UnicodeCategory.LineSeparator
                 or UnicodeCategory.ParagraphSeparator
             || codePoint is 0x09 or 0x0A or 0x0B or 0x0C or 0x0D or 0x85;

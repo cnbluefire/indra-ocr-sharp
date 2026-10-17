@@ -3,19 +3,52 @@
   <PropertyGroup>
     <RootNamespace>Indra.Ocr.Pdf</RootNamespace>
     <AssemblyName>Indra.Ocr.Pdf</AssemblyName>
+    <!-- Multi-target: net10.0 for the two hosts, netstandard2.0 so the library can be consumed
+         from .NET Framework (NuGet).  The shared Directory.Build.props sets TargetFramework to
+         net10.0, and the SDK only treats a project as a cross-targeting build when TargetFramework
+         is empty (Sdk.targets), so it is cleared here. -->
+    <TargetFrameworks>net10.0;netstandard2.0</TargetFrameworks>
+    <TargetFramework></TargetFramework>
     <!-- A class library: it has to stay NativeAOT- and trim-clean, so the analyzers run on every
-         build (IL2xxx / IL3xxx). The two hosts publish with PublishAot, which is what needs it. -->
-    <IsAotCompatible>true</IsAotCompatible>
+         build (IL2xxx / IL3xxx).  Only for net10.0: netstandard2.0 is not an AOT-capable target
+         and the SDK would warn (NETSDK1210) on every build. -->
+    <IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
   </PropertyGroup>
 
   <!-- The only project that depends on PDFium. It references Core (for GrayImage) but Core
-       does not reference it, so no third-party PDF code leaks into the pipeline. -->
+       does not reference it, so no third-party PDF code leaks into the pipeline.
+       The dependency is on the native packages, not on a managed wrapper: this project binds
+       PDFium itself (Native/PdfiumBindings.cs), because the wrapper it used to use, PDFiumCore,
+       has no netstandard2.0 asset (its lowest is netstandard2.1, which .NET Framework cannot
+       reference at all) and one binding for both targets cannot drift.  These are the same native
+       PDFium builds PDFiumCore pulled in, so both targets run the same physical library. -->
   <ItemGroup>
-    <PackageReference Include="PDFiumCore" />
+    <PackageReference Include="bblanchon.PDFium.Linux" />
+    <PackageReference Include="bblanchon.PDFium.Win32" />
+    <PackageReference Include="bblanchon.PDFium.macOS" />
+  </ItemGroup>
+
+  <!-- The .NET Framework half (docs/335-multitarget-netstandard20.md): PolySharp turns the modern
+       C# the port is written in into netstandard2.0-compatible source, System.Memory brings the
+       span types, and Unsafe the bit reinterpretation the compat layer needs. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="PolySharp">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Memory" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Indra.Ocr.Core\Indra.Ocr.Core.csproj" />
+  </ItemGroup>
+
+  <!-- The compat shims are compiled into every target: the file holds the always-on,
+       #if-dispatched helpers (Guard, Bits, MathCompat, ...) as well as the polyfills and
+       extensions that only a target below netstandard2.1 needs, each inside its own #if. -->
+  <ItemGroup>
+    <Compile Include="..\Compat\NetStandard20.cs" Link="Compat\NetStandard20.cs" />
   </ItemGroup>
 
 </Project>

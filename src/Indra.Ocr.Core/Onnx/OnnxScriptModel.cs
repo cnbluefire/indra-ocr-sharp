@@ -33,6 +33,12 @@ public sealed class OnnxScriptModel : IScriptModel
         if (values.Length < batch)
             throw new InvalidOperationException(
                 $"script model returned {values.Length} probabilities, expected {batch}");
+        // An array range lowers to RuntimeHelpers.GetSubArray, which arrived in netstandard2.1;
+        // below it the span copy is what the range would do.
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         return values.Length == batch ? values : values[..batch];
+#else
+        return values.Length == batch ? values : values.AsSpan(0, batch).ToArray();
+#endif
     }
 }
