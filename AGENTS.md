@@ -121,6 +121,15 @@ package** (`Microsoft.ML.OnnxRuntime`).
   port uses a **stable** argsort (ties keep index order). Keys in the pipeline are mostly
   distinct floats (identical results); divergence is only possible when keys tie exactly.
   Python `sorted(...)` calls are stable and are matched exactly.
+- **Paths**: a path is spelled the way the *host's* `pathlib` spells it, because that is what the
+  reference does — `Path(s)` normalizes with `\`, drives and UNC anchors on Windows and with `/`,
+  a `//` root and no altsep on Linux/macOS, and `expanduser("~")` reads `%USERPROFILE%` or `$HOME`.
+  `--out`, `--model-dir`, `INDRA_OCR_MODEL_DIR` and the inputs all go through it, so the messages,
+  the output file names and the JSON's `file` field are spelled the way the reference spells them
+  on the machine the binary runs on. The port had the Windows rules unconditionally, which broke
+  every path on Linux (`docs/370-path-flavour.md`). Two corners are **not** reproduced: `~user`
+  (the port leaves the name; the reference looks the user up and raises `RuntimeError` without it)
+  and a UNC *share root*'s trailing separator (`\\server\share\`).
 - **Threads**: the deskew search's 32 angles are scored in parallel on the thread count the
   host already resolved — the reference's `cv2.setNumThreads` (`--cores` in one process, 1 in
   a pool worker, `--threads` in the viewer). Same values, same winner, bit for bit; the

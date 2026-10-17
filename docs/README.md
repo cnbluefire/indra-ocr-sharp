@@ -61,3 +61,4 @@ status. Keep these in sync with `PLAN.md`.
 | [335](335-multitarget-netstandard20.md) | The three libraries multi-target (`net10.0;netstandard2.0`) |
 | [340](340-nuget-packages.md) | The three NuGet packages, and the release that carries them |
 | 345, 350, 355, 360 | the consumer smoke, the package check, the host publish and its smoke, `release.sh` + the two workflows (all in [340](340-nuget-packages.md)) |
+| [370](370-path-flavour.md) | The path flavour is the host's (`pathlib`'s `os.name`), not the port's |

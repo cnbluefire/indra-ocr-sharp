@@ -98,7 +98,7 @@ public class ViewerArgparseTests
         Assert.Equal(1, a.Threads);
         Assert.True(a.Tesseract);
         Assert.Equal("deu", a.TesseractLang);
-        Assert.Equal("temp\\models", a.ModelDir);
+        Assert.Equal(Path.Combine("temp", "models"), a.ModelDir);
         Assert.Equal("text", a.Defaults.Mode);
         Assert.False(a.Defaults.PdfOrder);
         Assert.False(a.Defaults.ImageOcr);

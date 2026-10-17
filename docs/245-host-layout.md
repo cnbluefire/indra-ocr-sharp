@@ -46,7 +46,9 @@ The C# name rules for the move:
 
 `ArgumentNumber` sits with the parser because it *is* argparse's `type=int`/`type=float`;
 `PathHelper` sits in Core because `ModelFolder` (`models.model_dir`) needs `expanduser()` and the
-normalisation for `INDRA_OCR_MODEL_DIR`, and Core cannot reference the CLI.
+normalisation for `INDRA_OCR_MODEL_DIR`, and Core cannot reference the CLI. Since step `370` it also
+carries the *flavour* — `pathlib` is the host's on Windows and on POSIX, so `PathHelper` is too
+(`docs/370-path-flavour.md`).
 
 ## Shape
 

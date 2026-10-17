@@ -118,8 +118,9 @@ public class ArgparseTests
     public void Paths_are_normalized_and_the_double_dash_ends_the_options()
     {
         ParsedArguments a = Parse("--out", "temp/x/", "a/../b.pdf");
-        Assert.Equal("temp\\x", a.Str("out"));
-        Assert.Equal(["a\\..\\b.pdf"], a.StrList("inputs"));
+        // `type=Path`: str(Path(s)) in the host's flavour (on POSIX a backslash is a name).
+        Assert.Equal(Path.Combine("temp", "x"), a.Str("out"));
+        Assert.Equal([Path.Combine("a", "..", "b.pdf")], a.StrList("inputs"));
 
         ParsedArguments after = Parse("--", "--nope");
         Assert.Equal(["--nope"], after.StrList("inputs"));

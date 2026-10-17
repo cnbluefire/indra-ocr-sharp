@@ -524,7 +524,25 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   stand-in publish of both hosts on `linux-x64`/`win-x64`). Every release-side job refuses
   `INDRA_OCR_FAKE_AOT` before it does any work, and the work itself stays in `build/`, so a workflow
   change cannot change what a release contains (`docs/340-nuget-packages.md`).
-- 218 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
+- Step `370` done: the spelling of a path is the host's, because it is the *reference's* —
+  `pathlib` takes its flavour from `os.name`, and the port had implemented the Windows one
+  unconditionally. The first Linux run of `ci.yml`'s `pack` job found it: the package smoke handed
+  `ModelFolder.Resolve` the Hub-cache folder it had just resolved (`/home/runner/.cache/…`) and got
+  back `\home\runner\.cache\…`, which on POSIX is one long file name and no folder at all.
+  `PathHelper` now takes the flavour as an internal parameter, chosen once per process with
+  `RuntimeInformation.IsOSPlatform` (the `os.name` of the port): `\`, drives and the UNC anchor on
+  Windows; `/`, a `//` root of its own, no altsep and no drives on POSIX; `expanduser` reading
+  `%USERPROFILE%` or `$HOME`; `Path(...) / name` and `Path.name` dividing on the flavour's
+  separator; and `.stem` python 3.14's (a stem keeps one non-dot character, so `scan.` is `scan` and
+  `--out` writes `scan.md`). The Windows parse body is untouched, character for character.
+  **321 tests green**: `PathHelperTests` pins both flavours from CPython 3.14.7's own answers
+  (`str(PurePosixPath/…WindowsPath(s))`, `.stem`, `/`, `expanduser`), so the POSIX rules are
+  verified on Windows here and the Windows rules cannot drift when only Linux runs the suite. The
+  Windows host is byte-for-byte what it was — `cli_parity.py` 83/83, the sweep 24/24, the viewer's
+  command line 20/20 and its HTTP harness 12 cases plus `stderr` — and the Linux side is verified
+  where a Linux host exists: the `pack` job that failed and the release's platform smoke
+  (`docs/370-path-flavour.md`).
+- 321 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework
   4.6.2 with the same answers (`docs/335-multitarget-netstandard20.md`). The three libraries are
