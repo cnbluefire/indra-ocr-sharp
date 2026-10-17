@@ -270,9 +270,10 @@ push or on a pull request, so a branch cannot spend the repository's minutes):
 - `test`: `dotnet test src/Indra.Ocr.slnx`.
 - `pack`: `build/pack.sh` on Linux (pack, `check_nupkg.py`, the `net10.0` smoke — the `net462` half
   is skipped by design there).
-- `hosts`: the stand-in publish (`INDRA_OCR_FAKE_AOT=1`, `--skip-smoke`) on `linux-x64` and
-  `win-x64`, which keeps both host projects and `build/publish.*` covered without the model
-  download a release run pays for for real.
+- `hosts`: the stand-in publish (`INDRA_OCR_FAKE_AOT=1`, `--skip-smoke`) on all four RIDs a release
+  publishes — `linux-x64`, `linux-arm64`, `win-x64`, `win-arm64` — which keeps both host projects and
+  `build/publish.*` covered without the model download a release run pays for for real, and exercises
+  each RID's own runtime pack on the architecture it belongs to (`docs/380-test-hosts.md`).
 
 `.github/workflows/release.yml` — manual (`workflow_dispatch`) and **dry by default**: pushing a
 version to nuget.org cannot be undone, and neither can a published release.
@@ -299,6 +300,13 @@ Details that are decisions, not accidents:
   `logs-<job>` on failure — and always on the arm64 legs, the architecture nobody has locally.
 - **Nothing is cached**: the models are resolved from the Hub, which is the path a release user
   takes.
+- **The actions are the node24 majors** — `checkout@v7`, `setup-dotnet@v6`, `upload-artifact@v7`,
+  `download-artifact@v8`. Their node20 predecessors still run, but every job prints a deprecation
+  warning while they do. The inputs these workflows pass are unchanged between the majors: their
+  `action.yml` files only add inputs (`upload-artifact`'s `archive`, `download-artifact`'s
+  `skip-decompress`/`digest-mismatch`, `setup-dotnet`'s `dotnet-channel`/`workloads`/`architecture`),
+  and `checkout`'s list is identical. `setup-dotnet` v5's one breaking change is the node bump
+  itself, which wants a runner of 2.327.1 or later.
 
 The workflows only orchestrate. Choosing a runner, passing the version around and deciding what runs
 after what is what they are for; the work itself is in `build/`, so the same steps can be run (and

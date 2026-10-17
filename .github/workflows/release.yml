@@ -33,7 +33,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       published: ${{ steps.nuget.outputs.published }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: read the version
         id: version
         shell: bash
@@ -77,8 +77,8 @@ jobs:
     name: the test suite
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
       - name: dotnet test
@@ -104,8 +104,8 @@ jobs:
             os: ubuntu-24.04-arm
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
       - name: no stand-in
@@ -125,13 +125,13 @@ jobs:
         # On failure always; on the arm64 runners whether or not anything failed, because that is
         # the one architecture a developer is least likely to be able to reproduce locally.
         if: ${{ failure() || contains(matrix.rid, 'arm64') }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.rid }}
           path: temp/logs/**
           if-no-files-found: ignore
       - name: the zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: zip-${{ matrix.rid }}
           path: temp/publish/indra-ocr-sharp_${{ matrix.rid }}.zip
@@ -145,8 +145,8 @@ jobs:
     needs: preflight
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
       - name: no stand-in
@@ -161,13 +161,13 @@ jobs:
         run: bash build/pack.sh
       - name: the logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: logs-pack
           path: temp/logs/**
           if-no-files-found: ignore
       - name: the packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: packages
           path: |
@@ -181,10 +181,10 @@ jobs:
     if: ${{ !inputs.dry_run && needs.preflight.outputs.published != 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: packages
           path: dist/packages
@@ -226,15 +226,15 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The notes are the commit log, so the tags and the history have to be there.
           fetch-depth: 0
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: packages
           path: dist/packages
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: zip-*
           path: dist/zips

@@ -26,8 +26,8 @@ jobs:
     name: the test suite
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
       - name: dotnet test
@@ -37,8 +37,8 @@ jobs:
     name: the packages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
       # pack, check_nupkg.py, and the consumer smoke on net10.0.  The net462 half is skipped here by
@@ -47,7 +47,7 @@ jobs:
         run: bash build/pack.sh
       - name: the logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: logs-pack
           path: temp/logs/**
@@ -77,8 +77,8 @@ jobs:
       # build/publish.*, still produces the zip, and still has to be rejected by every release gate.
       INDRA_OCR_FAKE_AOT: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
       - name: the stand-in publish (Windows)
@@ -89,13 +89,13 @@ jobs:
         run: bash build/publish.sh --rid ${{ matrix.rid }} --skip-smoke
       - name: the logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: logs-standin-${{ matrix.rid }}
           path: temp/logs/**
           if-no-files-found: ignore
       - name: the stand-in zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: standin-${{ matrix.rid }}
           path: temp/publish/indra-ocr-sharp_${{ matrix.rid }}_notaot.zip
