@@ -141,8 +141,25 @@ known to differ, and all three are properties of .NET Framework, not of the port
    *algorithm* is exact (below), so this only affects text that contains characters newer than the
    framework's tables; if it ever matters, `UnicodeCompat` can be generated from CPython's
    `unicodedata` the way `Text/NfcTables.cs` and `Text/BidiClasses.cs` are (`docs/145`,`docs/295`).
-3. **`CollectionsMarshal.AsSpan` does not exist below .NET 5**, so `ListCompat.AsSpan` copies the
-   list into an array on that target. Read-only use only, on paths that are not measured.
+3. **`CollectionsMarshal.AsSpan` does not exist below .NET 5**, so `ListCompat.AsSpan` reads the
+   list's *own* storage — its first field, `_items`, which is what the BCL's `AsSpan` reads — rather
+   than copying it. That field's own declaration says why it can be relied on:
+
+   ```csharp
+   internal T[] _items; // Do not rename (binary serialization) [cDAC] [ComWrappers] : Contract depends on this exact name
+   internal int _size;  // Do not rename (binary serialization) [cDAC] [ComWrappers] : Contract depends on this exact name
+   ```
+
+   The name is part of every serialized `List<T>` (`[Serializable]`, no `[OptionalField]`), and the
+   debugger's cDAC contracts and the ComWrappers data contract resolve the field *by name* (the
+   `[cDAC]`/`[ComWrappers]` markers were added on `main` after 10.0; `release/10.0` carries the
+   serialization half alone). So both the name and, because it is declared first and holds the only
+   reference field, its position are as fixed as anything in corelib. C# cannot name the field
+   (`List<T>`'s indexer returns by value, so `ref list[0]` does not compile), so the list is
+   reinterpreted as a class whose first field is the array, the way
+   `Microsoft.Toolkit.HighPerformance` does it; the contract on the span is `CollectionsMarshal`'s —
+   read-only, and the list must not be added to while the span is live. `temp/ns20-test` asserts the
+   alias on both runtimes (an element written through the list is visible through the span).
 
 ## Verification
 
@@ -159,7 +176,10 @@ known to differ, and all three are properties of .NET Framework, not of the port
   4.6.2 and .NET 10, down to the bit patterns of confidence values, the per-character digest of
   PDFium's output, the device affine and the render's SHA-256; the two error cases produce the same
   `InputError` text. So the ns2.0 asset does not merely load on .NET Framework — it computes the
-  same answers on these inputs.
+  same answers on these inputs. The program is named `Indra.Ocr.Tests` so that Core's
+  `InternalsVisibleTo` lets it call `ListCompat.AsSpan` directly and assert that the span *aliases*
+  the list (an element written through the list is read back through the span): `1` on both
+  runtimes, i.e. the layout read above is real on .NET Framework, not a copy that happens to agree.
 - `temp/ns20-test --download` on .NET Framework, with a cold `HUGGINGFACE_HUB_CACHE` and no
   `--model-dir`: the first run of a real consumer (the Hub tree request, the downloads with their
   progress lines, the atomic move — all through the ns2.0 shims) fetched 8 files that are

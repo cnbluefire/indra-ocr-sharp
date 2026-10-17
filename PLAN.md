@@ -449,6 +449,13 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   (`ConvertPage(doc, index)`, which the worker pool and the viewer need); the body that places a
   trusted text layer, the reference's `_text_page`, is `ConvertPageCore` and **private**, because
   nothing outside the class calls it (`docs/160-document.md`).
+- Step `335` follow-up: `ListCompat.AsSpan` no longer copies on the ns2.0 target. C# cannot name a
+  list's storage (`List<T>`'s indexer returns by value, so there is no `ref list[0]`) and
+  `MemoryMarshal.CreateSpan` is not in System.Memory's netstandard2.0 asset, so the shim reads the
+  list's first field -- its backing array, `_items`, which is what `CollectionsMarshal.AsSpan`
+  reads -- by reinterpreting the list as a class laid out the same way, with the same contract
+  (read-only; no growth while the span is live). The net10.0 asset is untouched, and
+  `temp/ns20-test` now asserts the alias on both runtimes (`docs/335-multitarget-netstandard20.md`).
 - 218 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework

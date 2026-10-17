@@ -168,8 +168,10 @@ namespace Indra.Ocr
 
     /// <summary>
     /// <c>CollectionsMarshal.AsSpan</c> (.NET 5), which the port uses read-only to hand a
-    /// <see cref="List{T}"/> to the span-taking numeric helpers.  Below .NET 5 there is no way to
-    /// alias a list's backing array, so the shim copies; the call sites stay identical.
+    /// <see cref="List{T}"/> to the span-taking numeric helpers.  Below .NET 5 the BCL exposes no
+    /// such alias, so the shim takes the same shortcut the BCL's own <c>AsSpan</c> takes: it reads
+    /// the list's own storage.  The call sites -- and the contract that the list must not be added
+    /// to while the span is live -- are the same on every target.
     /// </summary>
     internal static class ListCompat
     {
@@ -178,9 +180,34 @@ namespace Indra.Ocr
 #if NET5_0_OR_GREATER
             return System.Runtime.InteropServices.CollectionsMarshal.AsSpan(list);
 #else
-            return list.ToArray();
+            return list is null ? default : new ReadOnlySpan<T>(Items(list), 0, list.Count);
 #endif
         }
+
+#if !NET5_0_OR_GREATER
+        /// <summary>
+        /// A list's elements are one contiguous array, and that array is the list's *first* field
+        /// (<c>List&lt;T&gt;._items</c> on .NET Framework, on Mono and on .NET).  Its own source says
+        /// why it stays there: <c>// Do not rename (binary serialization) [cDAC] [ComWrappers] :
+        /// Contract depends on this exact name</c> — the name is in every serialized list, and the
+        /// debugger's cDAC contracts and the ComWrappers data contract resolve it by name.  C#
+        /// cannot name the field (the indexer returns by value, so there is no <c>ref list[0]</c>),
+        /// so the list is read as a class whose first field is that array:
+        /// <see cref="ListLayout{T}.Items"/> then reads the object's own first field.
+        /// (<c>MemoryMarshal.CreateSpan</c> would turn a ref into a span, but System.Memory's
+        /// netstandard2.0 asset does not have it; the array constructor does the same job.)
+        /// </summary>
+        private static T[] Items<T>(List<T> list) => Unsafe.As<List<T>, ListLayout<T>>(ref list).Items;
+
+        /// <summary>
+        /// The layout of the only <see cref="List{T}"/> field this file reads.  Nothing may be
+        /// declared before it.
+        /// </summary>
+        private sealed class ListLayout<T>
+        {
+            public T[] Items = null!;
+        }
+#endif
     }
 
     /// <summary>
