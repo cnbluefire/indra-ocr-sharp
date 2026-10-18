@@ -3,14 +3,14 @@
 # per-RID host zips, and the notes.  See docs/340-nuget-packages.md.
 #
 # Usage:
-#   build/release.sh [--version 0.3.2-alpha.1] [--packages temp/packages] [--zips temp/publish]
+#   build/release.sh [--version 0.3.2-alpha.2] [--packages temp/packages] [--zips temp/publish]
 #                    [--dry-run]
 #
 # This is the last step of the release workflow and the only one that talks to GitHub; `gh` takes
 # the token from GH_TOKEN (the workflow passes github.token) and the repository from the checkout.
 # The version is not an argument by default: it comes from src/Directory.Build.props, the one place
 # it is written down (Version and PackageFlavor composed the way the packages compose them, so the
-# tag and the asset names carry the package version, 0.3.2-alpha.1).
+# tag and the asset names carry the package version, 0.3.2-alpha.2).
 #
 # Layer 2 of the three release gates (docs/340-nuget-packages.md): a stand-in artifact -- the
 # _notaot.zip build/publish.* writes when INDRA_OCR_FAKE_AOT is set -- must never reach a release,
@@ -61,7 +61,7 @@ case "$packages" in /*) ;; *) packages="$root/$packages" ;; esac
 case "$zips" in /*) ;; *) zips="$root/$zips" ;; esac
 
 case "$version" in
-    *-*) prerelease=1 ;;   # 0.3.2-alpha.1: a prerelease on GitHub too
+    *-*) prerelease=1 ;;   # 0.3.2-alpha.2: a prerelease on GitHub too
     *) prerelease=0 ;;
 esac
 

@@ -70,7 +70,12 @@ ModelDownload.Download(folder, math, revision)
   quietly if the folder already holds the model set (`HasModels`: `det.onnx`, `rec.onnx`,
   `order.onnx`, `meta.json`), exactly like the reference's "offline or the Hub is down: keep the
   cached models"; otherwise it raises `ModelError` with the reference's message (the first line
-  of the cause, truncated to 200 characters).
+  of the cause, truncated to 200 characters). `HF_HUB_OFFLINE`/`TRANSFORMERS_OFFLINE` is the same
+  outcome without asking at all: no request leaves the process, and the failure without a cached
+  set is the reference's own `LocalEntryNotFoundError` line (step `385`,
+  `docs/385-model-fetch.md`). The two request budgets are the reference's
+  `HF_HUB_ETAG_TIMEOUT`/`HF_HUB_DOWNLOAD_TIMEOUT` — one request, one read, never a cap on the
+  transfer.
 - **`HF_TOKEN` is honoured.** The repo is public, so no token is needed; when the environment
   has one it is sent as `Authorization: Bearer`, as `huggingface_hub` does.
 - **`Files`/`MathFiles` are the reference's tuples.** `Files` is `models.FILES` (used for the

@@ -589,7 +589,26 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   time: the `push` job asks for `id-token: write`, `NuGet/login@v1` trades that OIDC token for a
   short-lived API key, and the old `NUGET_API_KEY` secret is gone — the policy to create on nuget.org
   and the one repository variable it needs are written down in `docs/340-nuget-packages.md`.
-- 380 tests green, build clean (0 warnings); the CLI alignment harness 83/83, the end-to-end
+- Step `385` done: the model fetch got the three things the reference has and the port did not.
+  **`HF_HUB_OFFLINE`** (and the legacy `TRANSFORMERS_OFFLINE`, `_is_true` semantics included — `1`,
+  `on`, `yes`, `true`, untrimmed) now means what it means for `huggingface_hub`: no request leaves
+  the process, the cached set is what a run uses, and without one the failure is the reference's own
+  `LocalEntryNotFoundError` line, character for character (it is cut at 200 characters, mid-quote,
+  by `models.py`). **The timeouts are the reference's two numbers, as it really has them**:
+  `HF_HUB_ETAG_TIMEOUT` for the tree listing and `HF_HUB_DOWNLOAD_TIMEOUT` for a body's headers
+  *and* for each read of it, both handed to httpx as per-operation timeouts — so the 30-minute
+  `HttpClient.Timeout` total that used to cut off a slow model is gone (`InfiniteTimeSpan`), while a
+  stalled Hub is given up on in ten seconds. The probe that settled it also found a **bug**: the
+  reference's `snapshot_download` *returns* the cached folder when it cannot reach the Hub (its own
+  internal fallback), so `_touch(stamp)` runs and an offline run goes quiet for a day; the port kept
+  the models but re-checked on every start — `ModelFolder` now stamps whenever the download returns
+  and still does not when the failure travels out. `config.json` is downloaded (the Hub counts a
+  repo's downloads by it) and **not** checked: inference never reads it. Five new tests, including
+  a stalled Hub, a stalled body and a 400 KB body sent over 3.6 s under a 2-second timeout (the
+  user's "a download over ten seconds is normal" as an assertion), plus two `cli_parity.py` cases
+  that run both sides offline and compare stderr byte for byte. 385 tests, 85/85
+  (`docs/385-model-fetch.md`). The packages also move on to `0.3.2-alpha.2`.
+- 385 tests green, build clean (0 warnings); the CLI alignment harness 85/85, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework
   4.6.2 with the same answers (`docs/335-multitarget-netstandard20.md`). The three libraries are

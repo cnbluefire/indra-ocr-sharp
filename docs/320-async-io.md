@@ -61,6 +61,12 @@ cached model set is not returned in its place. Everything else is unchanged: off
 complete folder returns `false` and keeps the models; offline with an incomplete folder throws
 `ModelError`.
 
+The pattern is `OperationCanceledException` since step `385` (which `TaskCanceledException` derives
+from): the download's own request budgets — a body read over its idle window, say — ride the same
+exception family as a caller's token, and it is the token, not the type, that must decide. A
+cancelled token is still `IsCancellationRequested`, so it still travels out untouched
+(`docs/385-model-fetch.md`).
+
 A file that was interrupted is left as `<name>.part`; the next call overwrites it. Resuming would
 mean trusting that the partial bytes are from the same revision the Hub now lists, and the Hub's
 snapshot can move.

@@ -46,7 +46,7 @@
        never typed twice.  Failing loudly beats restoring some other version of the packages. -->
   <Target Name="_RequireSmokePackageVersion" BeforeTargets="CollectPackageReferences">
     <Error Condition="'$(SmokePackageVersion)' == ''"
-           Text="SmokePackageVersion is not set. Run the smoke through build/pack.ps1 (or build/pack.sh), or pass -p:SmokePackageVersion=&lt;version of the packages in the feed&gt; (e.g. 0.3.2-alpha.1)." />
+           Text="SmokePackageVersion is not set. Run the smoke through build/pack.ps1 (or build/pack.sh), or pass -p:SmokePackageVersion=&lt;version of the packages in the feed&gt; (e.g. 0.3.2-alpha.2)." />
   </Target>
 
 </Project>

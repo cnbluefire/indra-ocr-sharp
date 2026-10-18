@@ -15,7 +15,10 @@ namespace Indra.Ocr.Onnx;
 /// (<c>HF_HUB_CACHE</c>/<c>HUGGINGFACE_HUB_CACHE</c>, else <c>HF_HOME/hub</c>, else
 /// <c>~/.cache/huggingface/hub</c>) under the repo's folder, so a model set the reference already
 /// downloaded is found and used as it is — and the daily-check stamp is the same file the
-/// reference touches, so the two do not check the Hub twice.
+/// reference touches, so the two do not check the Hub twice. <c>HF_HUB_OFFLINE</c> (or the legacy
+/// <c>TRANSFORMERS_OFFLINE</c>) keeps the run off the network altogether: the cached set is what it
+/// uses, and without one the reference's "cannot find an appropriate cached snapshot folder"
+/// failure is raised.
 /// </para>
 /// </remarks>
 public static class ModelFolder
@@ -88,18 +91,18 @@ public static class ModelFolder
 
         try
         {
-            // The stamp is only touched when the Hub was really reached (the reference's `_touch`
-            // sits on the online branch alone): an offline run keeps the cached models and keeps
-            // checking, rather than going quiet for a day.
-            bool reached = await ModelDownload
+            // The stamp is touched whenever the call comes back, exactly like the reference's
+            // `_touch`, which sits right after `snapshot_download`. That call *returns* the cached
+            // folder when it cannot reach the Hub (its own internal fallback) — so a run with no
+            // network keeps the cached models *and* goes quiet for a day, rather than paying the
+            // connect delay again on every start. What does not touch it is the failure that
+            // travels out of the download (the catch below), which is where the reference's
+            // `_touch` is skipped too.
+            await ModelDownload
                 .DownloadAsync(snapshot, math, downloadProgress: downloadProgress,
                                cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-            if (reached)
-            {
-                Touch(stamp);
-            }
-
+            Touch(stamp);
             return snapshot;
         }
         catch (ModelError)
@@ -118,6 +121,8 @@ public static class ModelFolder
     /// The files the reference checks for: <c>FILES[:2] + FILES[3:]</c> — <c>det.onnx</c>,
     /// <c>rec.onnx</c> and <c>meta.json</c>, but not <c>order.onnx</c> (the reference's own quirk:
     /// a folder without the order model is accepted, and the pipeline then has no order model).
+    /// <c>config.json</c> is not checked: the reference fetches it because the Hub counts a repo's
+    /// downloads by it, not because inference reads it.
     /// </summary>
     private static List<string> Missing(string folder, bool math)
     {

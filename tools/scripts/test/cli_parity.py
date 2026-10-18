@@ -235,6 +235,13 @@ RUN_CASES = [
                                    "--model-dir", "resources/models")),
     parity.Case("notpdf", ("temp/cli_inputs/notpdf.pdf", "--model-dir", "resources/models")),
     parity.Case("cache", ("temp/inputs/latin.png",)),
+    # Offline mode (step 385): `HF_HUB_OFFLINE` keeps both sides off the network, so a machine with
+    # the cached snapshot converts exactly as it does online and a machine without one fails with
+    # the reference's own "cannot find an appropriate cached snapshot folder" line.
+    parity.Case("offline-cache", ("temp/inputs/latin.png",), env={"HF_HUB_OFFLINE": "1"}),
+    parity.Case("offline-missing", ("temp/inputs/latin.png",),
+                env={"HF_HUB_OFFLINE": "1",
+                     "HF_HUB_CACHE": "temp/cli_parity_cache_empty"}),
     # The worker pool (MIN_POOL_PAGES = 4 pages): several inputs, a six-page PDF, and the
     # serial fallbacks (few pages, one worker).
     parity.Case("pool-images", ("temp/inputs/latin.png", "temp/inputs/latin_rot90.png",

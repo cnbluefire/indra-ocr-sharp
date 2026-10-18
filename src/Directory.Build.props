@@ -19,7 +19,7 @@
          between our own pushes; bump it every time, because a version once pushed can never be
          replaced.  `Version` itself is untouched on purpose: the hosts read it back from their
          assembly for the version flag and the viewer's /info, and those are the parity surface. -->
-    <PackageFlavor>alpha.1</PackageFlavor>
+    <PackageFlavor>alpha.2</PackageFlavor>
     <PackageVersion>$(Version)-$(PackageFlavor)</PackageVersion>
     <!-- The informational version is part of the parity surface (the version flag, /info): the
          `+<commit sha>` SourceLink/CI appends to it would break the byte-for-byte match. -->

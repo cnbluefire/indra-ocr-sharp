@@ -96,12 +96,12 @@ One place, `src/Directory.Build.props`:
 
 ```xml
 <Version>0.3.2</Version>              <!-- the reference's parity version -->
-<PackageFlavor>alpha.1</PackageFlavor>
+<PackageFlavor>alpha.2</PackageFlavor>
 <PackageVersion>$(Version)-$(PackageFlavor)</PackageVersion>
 ```
 
-`PackageVersion` (`0.3.2-alpha.1`) is what the package files are named after, what the consumer
-restores, and what the release tag carries (`v0.3.2-alpha.1`, a `--prerelease` because of the `-`).
+`PackageVersion` (`0.3.2-alpha.2`) is what the package files are named after, what the consumer
+restores, and what the release tag carries (`v0.3.2-alpha.2`, a `--prerelease` because of the `-`).
 `Version` stays the Python package's `__version__`, because both hosts
 print it and the viewer reports it in `/info` — it is part of the parity surface
 (`docs/330-product-version.md`). The major/minor track the reference, so a port of a newer upstream
@@ -225,7 +225,7 @@ repository from the checkout.
 
 1. `INDRA_OCR_FAKE_AOT` is refused outright, whatever the assets look like.
 2. The version comes from `src/Directory.Build.props` unless `--version` says otherwise, and `-` in
-   it makes the release a `--prerelease` (`0.3.2-alpha.1`).
+   it makes the release a `--prerelease` (`0.3.2-alpha.2`).
 3. The ten assets are checked by name (`--packages`, default `temp/packages`; `--zips`, default
    `temp/publish`): three `.nupkg`, three `.snupkg`, four `indra-ocr-sharp_<rid>.zip`. A missing one
    is a failure, and so is an `indra-ocr-sharp_<rid>_notaot.zip`: the stand-in must never be

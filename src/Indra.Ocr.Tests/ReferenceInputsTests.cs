@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using Indra.Ocr.Cli;
 using Indra.Ocr.Cli.Worker;
@@ -257,49 +259,214 @@ public class ReferenceInputsTests
     /// The reference monkeypatches <c>snapshot_download</c> and counts calls; the port is counted
     /// from the other side — <c>HF_ENDPOINT</c> points at a socket that accepts connections and
     /// closes them at once, so the connection count is exactly "was the Hub checked?". Every
-    /// download here fails, which is the point: the cached set is what a run keeps.
+    /// download here fails, which is the point: the cached set is what a run keeps. The stamp is
+    /// touched by such a check too, because the reference's <c>snapshot_download</c> *returns* the
+    /// cached folder when it cannot reach the Hub — its own internal fallback — and <c>_touch</c>
+    /// follows the call (verified against the reference, step 385).
     /// </remarks>
     [Fact]
     public void Cached_models_are_checked_once_a_day()
     {
-        string cache = TempDir();
-        string snapshot = Path.Combine(cache, "models--datalab-to--indra-ocr", "snapshots",
-                                       ModelDownload.HfRevision);
-        Directory.CreateDirectory(snapshot);
-        foreach (string file in ModelDownload.Files)
-        {
-            File.WriteAllBytes(Path.Combine(snapshot, file), [1]);
-        }
+        (string cache, string snapshot, string stamp) = CachedModels();
 
-        string stamp = Path.Combine(
-            cache, $".indra_ocr_checked--datalab-to--indra-ocr--{ModelDownload.HfRevision}");
+        using var env = new Env();
+        using var hub = new CountingPort();
+        env.Clear("INDRA_OCR_MODEL_DIR");
+        env.Clear("HF_HUB_OFFLINE");
+        env.Clear("TRANSFORMERS_OFFLINE");
+        env.Set("HF_HUB_CACHE", cache);
+        env.Set("HF_ENDPOINT", hub.Endpoint);
+
+        // No stamp yet: the Hub is checked -- and offline, the cached set is what comes back, with
+        // the fallback standing in for a completed check.
+        Assert.Equal(snapshot, ModelFolder.Resolve(null, math: false));
+        Assert.True(hub.Connections >= 1, "the Hub was never checked");
+        Assert.True(File.Exists(stamp), "the fallback must stamp the cache, as the reference does");
+
+        // A check under a day ago: the Hub is not touched at all.
+        int checkedOnce = hub.Connections;
+        Assert.Equal(snapshot, ModelFolder.Resolve(null, math: false));
+        Assert.Equal(checkedOnce, hub.Connections);
+
+        // A day later it checks again -- and offline it still keeps the cached set, and stamps it,
+        // so the start after that is quiet again.
+        File.SetLastWriteTimeUtc(stamp, DateTime.UtcNow - TimeSpan.FromHours(25));
+        Assert.Equal(snapshot, ModelFolder.Resolve(null, math: false));
+        Assert.True(hub.Connections > checkedOnce, "the day-old stamp did not trigger a check");
+        int checkedTwice = hub.Connections;
+        Assert.Equal(snapshot, ModelFolder.Resolve(null, math: false));
+        Assert.Equal(checkedTwice, hub.Connections);
+
+        // Nothing cached and no Hub: the download fails with the one clear message.
+        env.Set("HF_HUB_CACHE", TempDir("empty-cache"));
+        var ex = Assert.Throws<ModelError>(() => ModelFolder.Resolve(null, math: false));
+        Assert.Contains("could not download the models", ex.Message);
+    }
+
+    /// <summary>
+    /// <c>HF_HUB_OFFLINE</c>: the reference's session raises before a request leaves the process, so
+    /// the cache is what a run uses — and it goes quiet for a day like any other comeback. Without a
+    /// cached set there is nothing to fall back to, and the failure is the reference's own
+    /// <c>LocalEntryNotFoundError</c> text. The Hub is a live socket that counts connections, so
+    /// "offline" is measured: the count stays at zero.
+    /// </summary>
+    [Fact]
+    public void Offline_mode_uses_the_cache_and_never_calls_the_hub()
+    {
+        (string cache, string snapshot, string stamp) = CachedModels();
 
         using var env = new Env();
         using var hub = new CountingPort();
         env.Clear("INDRA_OCR_MODEL_DIR");
         env.Set("HF_HUB_CACHE", cache);
         env.Set("HF_ENDPOINT", hub.Endpoint);
+        env.Set("HF_HUB_OFFLINE", "1");
 
-        // No stamp yet: the Hub is checked -- and offline, the cached set is what comes back.
         Assert.Equal(snapshot, ModelFolder.Resolve(null, math: false));
-        Assert.True(hub.Connections >= 1, "the Hub was never checked");
-        Assert.False(File.Exists(stamp), "a failed check must not stamp the cache");
+        Assert.Equal(0, hub.Connections);
+        Assert.True(File.Exists(stamp), "offline mode still stamps the cache, as the reference does");
 
-        // A download under a day ago left the stamp: the Hub is not touched at all.
-        File.WriteAllText(stamp, string.Empty);
-        int checkedOnce = hub.Connections;
-        Assert.Equal(snapshot, ModelFolder.Resolve(null, math: false));
-        Assert.Equal(checkedOnce, hub.Connections);
-
-        // A day later it checks again -- and offline it still keeps the cached set.
-        File.SetLastWriteTimeUtc(stamp, DateTime.UtcNow - TimeSpan.FromHours(25));
-        Assert.Equal(snapshot, ModelFolder.Resolve(null, math: false));
-        Assert.True(hub.Connections > checkedOnce, "the day-old stamp did not trigger a check");
-
-        // Nothing cached and no Hub: the download fails with the one clear message.
-        env.Set("HF_HUB_CACHE", TempDir("empty-cache"));
+        // A snapshot that is no longer complete: the reference's message, and still no request.
+        File.Delete(Path.Combine(snapshot, "det.onnx"));
         var ex = Assert.Throws<ModelError>(() => ModelFolder.Resolve(null, math: false));
-        Assert.Contains("could not download the models", ex.Message);
+        Assert.Equal(0, hub.Connections);
+        const string reason =
+            "Cannot find an appropriate cached snapshot folder for the specified revision on the " +
+            "local disk and outgoing traffic has been disabled. To enable repo look-ups and " +
+            "downloads online, set 'HF_HUB_OFFLINE=0' as environment variable.";
+        Assert.Equal(
+            "could not download the models from Hugging Face (datalab-to/indra-ocr, v3.1.1): " +
+            $"LocalEntryNotFoundError: {reason[..200]}. Check the network connection, or point at " +
+            "a local model folder with --model-dir or INDRA_OCR_MODEL_DIR.",
+            ex.Message);
+    }
+
+    /// <summary>
+    /// The reference's <c>_is_true</c> over <c>HF_HUB_OFFLINE or TRANSFORMERS_OFFLINE</c>: only
+    /// "1", "on", "yes" and "true" (any case, not trimmed) are true, "0" is not, and the legacy
+    /// variable is read when the new one is not set.
+    /// </summary>
+    [Fact]
+    public void Offline_mode_is_the_references_environment_check()
+    {
+        using var env = new Env();
+        using var hub = new CountingPort();
+        env.Clear("INDRA_OCR_MODEL_DIR");
+        env.Set("HF_HUB_CACHE", TempDir("offline-truth"));
+        env.Set("HF_ENDPOINT", hub.Endpoint);
+        env.Clear("TRANSFORMERS_OFFLINE");
+
+        foreach (string value in new[] { "1", "on", "TRUE", "Yes" })
+        {
+            env.Set("HF_HUB_OFFLINE", value);
+            Assert.Throws<ModelError>(() => ModelFolder.Resolve(null, math: false));
+            Assert.Equal(0, hub.Connections);
+        }
+
+        // "0" is not offline, so the Hub really is asked -- and here it is a dead one.
+        env.Set("HF_HUB_OFFLINE", "0");
+        Assert.Throws<ModelError>(() => ModelFolder.Resolve(null, math: false));
+        Assert.True(hub.Connections >= 1, "HF_HUB_OFFLINE=0 must still check the Hub");
+
+        // The legacy name, with no HF_HUB_OFFLINE in the way.
+        env.Clear("HF_HUB_OFFLINE");
+        env.Set("TRANSFORMERS_OFFLINE", "1");
+        int before = hub.Connections;
+        Assert.Throws<ModelError>(() => ModelFolder.Resolve(null, math: false));
+        Assert.Equal(before, hub.Connections);
+    }
+
+    /// <summary>
+    /// A Hub that accepts the connection and then says nothing: the reference leaves its tree
+    /// listing untimed, the port gives it <c>HF_HUB_ETAG_TIMEOUT</c>, so the run stops waiting and
+    /// keeps the cached set. The token is only a guard against the test hanging if that budget ever
+    /// stops being applied — a run that hits it fails here instead of after half an hour.
+    /// </summary>
+    [Fact]
+    public async Task A_stalled_hub_is_given_up_on_after_the_etag_timeout()
+    {
+        (string cache, string snapshot, string stamp) = CachedModels();
+
+        using var env = new Env();
+        using var hub = new CountingPort(hold: true);
+        env.Clear("INDRA_OCR_MODEL_DIR");
+        env.Clear("HF_HUB_OFFLINE");
+        env.Clear("TRANSFORMERS_OFFLINE");
+        env.Set("HF_HUB_CACHE", cache);
+        env.Set("HF_ENDPOINT", hub.Endpoint);
+        env.Set("HF_HUB_ETAG_TIMEOUT", "1");
+
+        var watch = Stopwatch.StartNew();
+        using (var limit = new CancellationTokenSource(TimeSpan.FromSeconds(20)))
+        {
+            Assert.Equal(snapshot, await ModelFolder.ResolveAsync(null, math: false,
+                                                                  cancellationToken: limit.Token));
+        }
+
+        watch.Stop();
+        Assert.True(hub.Connections >= 1, "the Hub was never contacted");
+        Assert.True(File.Exists(stamp), "the fallback stamps the cache");
+        Assert.True(watch.Elapsed < TimeSpan.FromSeconds(15),
+                    $"the 1-second budget waited {watch.Elapsed.TotalSeconds:0.0}s");
+    }
+
+    /// <summary>
+    /// The reference's download timeout is httpx's read timeout — one read, not the transfer — so a
+    /// body that arrives slowly but keeps arriving is fetched in full. This Hub sends 400 KB in ten
+    /// pieces 400 ms apart: 3.6 seconds of transfer under a 2-second timeout.
+    /// </summary>
+    [Fact]
+    public async Task A_slow_download_is_not_capped_by_the_download_timeout()
+    {
+        byte[] body = new byte[400 * 1024];
+        Random.Shared.NextBytes(body);
+        string folder = TempDir();
+
+        using var env = new Env();
+        using var hub = new MiniHub("det.onnx", body, pieces: 10,
+                                    pace: TimeSpan.FromMilliseconds(400));
+        env.Clear("HF_HUB_OFFLINE");
+        env.Clear("TRANSFORMERS_OFFLINE");
+        env.Set("HF_ENDPOINT", hub.Endpoint);
+        env.Set("HF_HUB_DOWNLOAD_TIMEOUT", "2");
+
+        Assert.True(await ModelDownload.DownloadAsync(folder));
+        Assert.Equal(body, File.ReadAllBytes(Path.Combine(folder, "det.onnx")));
+        Assert.Equal(1, hub.FileRequests);
+    }
+
+    /// <summary>
+    /// The other half of the download timeout: a body that stops arriving ends the download. The
+    /// file stays a <c>.part</c>, a complete cache is what the run keeps (the reference's "an
+    /// exception out of the download keeps the cached models"), and the stamp is <i>not</i> touched,
+    /// because this failure really did travel out of <c>snapshot_download</c>.
+    /// </summary>
+    [Fact]
+    public async Task A_stalled_body_ends_the_download_and_keeps_the_cache()
+    {
+        byte[] body = new byte[200 * 1024];
+        Random.Shared.NextBytes(body);
+        (string cache, string snapshot, string stamp) = CachedModels();
+
+        using var env = new Env();
+        using var hub = new MiniHub("det.onnx", body, pieces: 1, pace: TimeSpan.Zero,
+                                    stalledBytes: 100 * 1024);
+        env.Clear("INDRA_OCR_MODEL_DIR");
+        env.Clear("HF_HUB_OFFLINE");
+        env.Clear("TRANSFORMERS_OFFLINE");
+        env.Set("HF_HUB_CACHE", cache);
+        env.Set("HF_ENDPOINT", hub.Endpoint);
+        env.Set("HF_HUB_DOWNLOAD_TIMEOUT", "1");
+
+        using (var limit = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        {
+            Assert.Equal(snapshot, await ModelFolder.ResolveAsync(null, math: false,
+                                                                  cancellationToken: limit.Token));
+        }
+
+        Assert.False(File.Exists(stamp), "a download that failed must not stamp the cache");
+        Assert.True(File.Exists(Path.Combine(snapshot, "det.onnx.part")),
+                    "the partial file stays where the read stopped");
     }
 
     // ---------------------------------------------------------------- the port's own seams
@@ -339,6 +506,26 @@ public class ReferenceInputsTests
 
         Directory.CreateDirectory(dir);
         return dir;
+    }
+
+    /// <summary>
+    /// A Hub cache whose snapshot folder already holds the model set, plus that folder's path and
+    /// its daily-check stamp: the state a machine that ran the reference once is in.
+    /// </summary>
+    private static (string Cache, string Snapshot, string Stamp) CachedModels(
+        [CallerMemberName] string name = "")
+    {
+        string cache = TempDir(name);
+        string snapshot = Path.Combine(cache, "models--datalab-to--indra-ocr", "snapshots",
+                                       ModelDownload.HfRevision);
+        Directory.CreateDirectory(snapshot);
+        foreach (string file in ModelDownload.Files)
+        {
+            File.WriteAllBytes(Path.Combine(snapshot, file), [1]);
+        }
+
+        return (cache, snapshot,
+                Path.Combine(cache, $".indra_ocr_checked--datalab-to--indra-ocr--{ModelDownload.HfRevision}"));
     }
 
     /// <summary>Writes one of the fixture's sample PDFs out and returns its path.</summary>
@@ -420,14 +607,18 @@ public class ReferenceInputsTests
     /// <summary>
     /// A dead Hub that still counts: it listens on a loopback port, accepts a connection and closes
     /// it at once, so a request fails (as it would with no network) and the attempt is visible.
+    /// With <paramref name="hold"/> it accepts and keeps the connection open without ever answering
+    /// — a Hub that stalls, which only a request budget ends.
     /// </summary>
     private sealed class CountingPort : IDisposable
     {
         private readonly TcpListener _listener = new(IPAddress.Loopback, 0);
+        private readonly bool _hold;
         private int _connections;
 
-        public CountingPort()
+        public CountingPort(bool hold = false)
         {
+            _hold = hold;
             _listener.Start();
             _ = Task.Run(Accept);
         }
@@ -435,6 +626,74 @@ public class ReferenceInputsTests
         public string Endpoint => $"http://127.0.0.1:{((IPEndPoint)_listener.LocalEndpoint).Port}";
 
         public int Connections => Volatile.Read(ref _connections);
+
+        public void Dispose() => _listener.Stop();
+
+        private async Task Accept()
+        {
+            var held = new List<TcpClient>();
+            while (true)
+            {
+                TcpClient client;
+                try
+                {
+                    client = await _listener.AcceptTcpClientAsync();
+                }
+                catch (Exception)
+                {
+                    break;   // the listener was stopped
+                }
+
+                Interlocked.Increment(ref _connections);
+                if (_hold)
+                {
+                    held.Add(client);
+                }
+                else
+                {
+                    client.Dispose();
+                }
+            }
+
+            foreach (TcpClient client in held)
+            {
+                client.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// A tiny Hub over loopback HTTP: the tree listing for one file, and that file's body sent in
+    /// <paramref name="pieces"/> pieces with <paramref name="pace"/> between them. With
+    /// <paramref name="stalledBytes"/> the body stops there and the connection is held open — a
+    /// transfer that stops arriving. Enough for the port's two requests (the listing and one
+    /// resolve), and no more.
+    /// </summary>
+    private sealed class MiniHub : IDisposable
+    {
+        private readonly TcpListener _listener = new(IPAddress.Loopback, 0);
+        private readonly string _name;
+        private readonly byte[] _body;
+        private readonly int _pieces;
+        private readonly TimeSpan _pace;
+        private readonly int? _stalledBytes;
+        private int _files;
+
+        public MiniHub(string name, byte[] body, int pieces, TimeSpan pace, int? stalledBytes = null)
+        {
+            _name = name;
+            _body = body;
+            _pieces = pieces;
+            _pace = pace;
+            _stalledBytes = stalledBytes;
+            _listener.Start();
+            _ = Task.Run(Accept);
+        }
+
+        public string Endpoint => $"http://127.0.0.1:{((IPEndPoint)_listener.LocalEndpoint).Port}";
+
+        /// <summary>How many file bodies were asked for (the listing is not counted).</summary>
+        public int FileRequests => Volatile.Read(ref _files);
 
         public void Dispose() => _listener.Stop();
 
@@ -452,8 +711,95 @@ public class ReferenceInputsTests
                     return;   // the listener was stopped
                 }
 
-                Interlocked.Increment(ref _connections);
-                client.Dispose();
+                client.NoDelay = true;
+                _ = Serve(client);
+            }
+        }
+
+        private async Task Serve(TcpClient client)
+        {
+            using (client)
+            {
+                NetworkStream stream = client.GetStream();
+                string request = await ReadRequestAsync(stream);
+                if (request.StartsWith("GET /api/", StringComparison.Ordinal))
+                {
+                    string json =
+                        $"[{{\"type\":\"file\",\"path\":\"{_name}\",\"size\":{_body.Length}}}]";
+                    await RespondAsync(stream, Encoding.UTF8.GetBytes(json), pieces: 1,
+                                       TimeSpan.Zero, stalledBytes: null);
+                    return;
+                }
+
+                Interlocked.Increment(ref _files);
+                await RespondAsync(stream, _body, _pieces, _pace, _stalledBytes);
+            }
+        }
+
+        /// <summary>The request head (a GET has no body), up to the blank line.</summary>
+        private static async Task<string> ReadRequestAsync(NetworkStream stream)
+        {
+            var buffer = new byte[1024];
+            var text = new StringBuilder();
+            while (true)
+            {
+                int read = await stream.ReadAsync(buffer.AsMemory());
+                if (read == 0)
+                {
+                    return text.ToString();
+                }
+
+                text.Append(Encoding.ASCII.GetString(buffer, 0, read));
+                if (text.ToString().Contains("\r\n\r\n", StringComparison.Ordinal))
+                {
+                    return text.ToString();
+                }
+            }
+        }
+
+        private async Task RespondAsync(NetworkStream stream, byte[] body, int pieces, TimeSpan pace,
+                                        int? stalledBytes)
+        {
+            byte[] head = Encoding.ASCII.GetBytes(
+                $"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\n" +
+                $"Content-Length: {body.Length}\r\nConnection: close\r\n\r\n");
+            await stream.WriteAsync(head);
+            int piece = Math.Max(1, body.Length / pieces);
+            int sent = 0;
+            while (sent < body.Length && (stalledBytes is null || sent < stalledBytes))
+            {
+                int take = Math.Min(piece, body.Length - sent);
+                if (stalledBytes is { } stop)
+                {
+                    take = Math.Min(take, stop - sent);
+                }
+
+                await stream.WriteAsync(body.AsMemory(sent, take));
+                await stream.FlushAsync();
+                sent += take;
+                if (pace > TimeSpan.Zero && sent < body.Length)
+                {
+                    await Task.Delay(pace);
+                }
+            }
+
+            if (stalledBytes is null)
+            {
+                return;   // the socket closes with the response
+            }
+
+            // A body that stops: hold the connection until the client gives up on it (and never
+            // outlive the test, whatever happens). What arrives back does not matter — the close is
+            // the answer.
+            using var wait = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            try
+            {
+                int closed = await stream.ReadAsync(new byte[16], wait.Token);
+                _ = closed;   // the close is the answer; the bytes do not matter
+            }
+            catch (Exception)
+            {
+                // The client went away, which is the whole point.
             }
         }
     }

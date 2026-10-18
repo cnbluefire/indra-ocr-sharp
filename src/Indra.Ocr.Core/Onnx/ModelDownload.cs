@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http;
 
 namespace Indra.Ocr.Onnx;
@@ -18,6 +19,14 @@ namespace Indra.Ocr.Onnx;
 /// reference filters it: <c>*.onnx</c>, <c>meta.json</c> and <c>config.json</c>, with the math
 /// models only when <c>math</c> is asked for. A file that is already there at the right size is
 /// left alone, so a second call is cheap and a partially-filled folder is completed.
+/// </para>
+/// <para>
+/// <c>HF_HUB_OFFLINE</c> (or the legacy <c>TRANSFORMERS_OFFLINE</c>) turns the call offline
+/// outright: no request leaves the process, whatever the Hub holds. The two request budgets are
+/// the reference's own numbers — <c>HF_HUB_ETAG_TIMEOUT</c> for the Hub's file listing and
+/// <c>HF_HUB_DOWNLOAD_TIMEOUT</c> for a body's headers and for each read of it — and neither is a
+/// cap on a transfer as a whole: a model that takes a minute to arrive is fine as long as it keeps
+/// arriving.
 /// </para>
 /// </remarks>
 public static class ModelDownload
@@ -55,6 +64,68 @@ public static class ModelDownload
         }
     }
 
+    /// <summary>
+    /// <c>huggingface_hub.constants.HF_HUB_OFFLINE</c> — its <c>_is_true</c> over
+    /// <c>HF_HUB_OFFLINE or TRANSFORMERS_OFFLINE</c>, the legacy name. Offline, the reference's
+    /// session raises before a request leaves the process, so the port makes none at all.
+    /// </summary>
+    private static bool OfflineMode
+    {
+        get
+        {
+            // An empty value falls through to the legacy variable, and only "1"/"on"/"yes"/"true"
+            // (any case, and not trimmed) are true: `_is_true`'s ENV_VARS_TRUE_VALUES.
+            string? value = Environment.GetEnvironmentVariable("HF_HUB_OFFLINE");
+            if (string.IsNullOrEmpty(value))
+            {
+                value = Environment.GetEnvironmentVariable("TRANSFORMERS_OFFLINE");
+            }
+
+            return value is not null
+                   && value.ToUpperInvariant() is "1" or "ON" or "YES" or "TRUE";
+        }
+    }
+
+    /// <summary>
+    /// The budget for one request to the Hub: <c>HF_HUB_ETAG_TIMEOUT</c>, or the reference's
+    /// <c>DEFAULT_ETAG_TIMEOUT</c>. The reference leaves its own tree listing untimed
+    /// (<c>repo_info</c> and <c>paginate</c> pass no timeout); the port gives it this number so a
+    /// Hub that accepts the connection and then says nothing is given up on rather than waited on
+    /// forever.
+    /// </summary>
+    private static double EtagSeconds => Seconds("HF_HUB_ETAG_TIMEOUT");
+
+    /// <summary>
+    /// The budget for a file's headers and for each read of its body:
+    /// <c>HF_HUB_DOWNLOAD_TIMEOUT</c>, or <c>DEFAULT_DOWNLOAD_TIMEOUT</c>. httpx applies its
+    /// download timeout to the request and to every read, so a slow transfer is not cut short.
+    /// </summary>
+    private static double DownloadSeconds => Seconds("HF_HUB_DOWNLOAD_TIMEOUT");
+
+    /// <summary>
+    /// One of the two timeouts the way the reference reads it:
+    /// <c>_as_int(os.environ.get(name)) or DEFAULT_…_TIMEOUT</c>, so an unset, empty, zero or
+    /// unparsable value is the default. (Python's <c>int()</c> would raise on the unparsable one,
+    /// and httpx on a negative one; the port takes the default instead.)
+    /// </summary>
+    private static double Seconds(string name)
+        => int.TryParse(Environment.GetEnvironmentVariable(name), NumberStyles.Integer,
+                        CultureInfo.InvariantCulture, out int seconds) && seconds > 0
+            ? seconds
+            : DefaultTimeoutSeconds;
+
+    /// <summary>The reference's <c>DEFAULT_ETAG_TIMEOUT</c>/<c>DEFAULT_DOWNLOAD_TIMEOUT</c>.</summary>
+    private const double DefaultTimeoutSeconds = 10;
+
+    /// <summary>
+    /// The reference's <c>LocalEntryNotFoundError</c> text for an offline process with no complete
+    /// snapshot in the cache, verbatim.
+    /// </summary>
+    private const string OfflineReason =
+        "Cannot find an appropriate cached snapshot folder for the specified revision on the local " +
+        "disk and outgoing traffic has been disabled. To enable repo look-ups and downloads " +
+        "online, set 'HF_HUB_OFFLINE=0' as environment variable.";
+
     /// <summary>The patterns the reference keeps, whatever the model folder.</summary>
     private static readonly string[] Always = ["*.onnx", "meta.json", "config.json"];
 
@@ -74,9 +145,9 @@ public static class ModelDownload
     /// </param>
     /// <returns>
     /// <c>true</c> when the Hub was reached (the folder now holds what the Hub has); <c>false</c>
-    /// when it was not and the folder's own model set was kept as it is. The distinction is the
-    /// caller's: the reference's <c>model_dir</c> only touches its daily stamp after the online
-    /// call, so an offline run keeps the models <i>and</i> keeps checking every time.
+    /// when it was not and the folder's own model set was kept as it is. The reference's
+    /// <c>snapshot_download</c> *returns* the cached folder when it cannot reach the Hub, so both
+    /// outcomes are "the call came back" as far as the daily stamp is concerned.
     /// </returns>
     /// <exception cref="ModelError">
     /// The Hub could not be reached or a file could not be fetched, and the folder does not
@@ -112,6 +183,20 @@ public static class ModelDownload
     {
         Guard.NotNullOrEmpty(folder);
         string rev = revision ?? HfRevision;
+
+        if (OfflineMode)
+        {
+            // No request leaves the process (the reference's session raises OfflineModeIsEnabled
+            // first): a folder that holds the model set is used as it is, exactly as an
+            // unreachable Hub would leave it, and anything else gets the reference's message.
+            if (HasModels(folder, math))
+            {
+                return false;
+            }
+
+            throw new ModelError(DownloadFailed("LocalEntryNotFoundError", OfflineReason));
+        }
+
         Directory.CreateDirectory(folder);
 
         List<(string Path, long Size)> wanted;
@@ -157,11 +242,13 @@ public static class ModelDownload
     /// <summary>
     /// Whether an exception means "the Hub could not be reached" — as opposed to a cancellation the
     /// caller asked for, which is left to travel out of the download. The two are told apart by the
-    /// token: <c>HttpClient</c> reports both as <see cref="TaskCanceledException"/>.
+    /// token, not by the exception: <c>HttpClient</c> reports its own request budgets as
+    /// <see cref="TaskCanceledException"/>, and a body read over its idle budget as whatever the
+    /// stream throws, so the whole family counts here and the caller's token decides.
     /// </summary>
     private static bool Offline(Exception e, CancellationToken cancellationToken)
         => !cancellationToken.IsCancellationRequested
-           && e is HttpRequestException or TaskCanceledException or IOException;
+           && e is HttpRequestException or OperationCanceledException or IOException;
 
     /// <summary>
     /// Whether <paramref name="folder"/> holds the model set (and, with <paramref name="math"/>,
@@ -209,16 +296,17 @@ public static class ModelDownload
     private static async Task<List<(string Path, long Size)>> HubFilesAsync(
         string rev, bool math, CancellationToken cancellationToken)
     {
+        using var budget = Budget(cancellationToken, EtagSeconds);
         // HttpClient.GetStringAsync(string, CancellationToken) is .NET 5; below it the request is
-        // made by hand, still under the caller's token.
+        // made by hand, still under the request's budget.
 #if NET5_0_OR_GREATER
         string json = await Http
-            .GetStringAsync($"{Host}/api/models/{HfRepo}/tree/{rev}?recursive=true", cancellationToken)
+            .GetStringAsync($"{Host}/api/models/{HfRepo}/tree/{rev}?recursive=true", budget.Token)
             .ConfigureAwait(false);
 #else
         string json;
         using (HttpResponseMessage listing = await Http.GetAsync(
-            $"{Host}/api/models/{HfRepo}/tree/{rev}?recursive=true", cancellationToken).ConfigureAwait(false))
+            $"{Host}/api/models/{HfRepo}/tree/{rev}?recursive=true", budget.Token).ConfigureAwait(false))
         {
             listing.EnsureSuccessStatusCode();
             json = await listing.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -257,40 +345,51 @@ public static class ModelDownload
                                          Action<ModelDownloadProgress>? downloadProgress,
                                          CancellationToken cancellationToken)
     {
-        using HttpResponseMessage res = await Http
-            .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        res.EnsureSuccessStatusCode();
-        string part = dest + ".part";
-        downloadProgress?.Invoke(new ModelDownloadProgress(name, dest, url, 0, size));
-        // HttpContent.ReadAsStreamAsync(CancellationToken) is .NET 5.
+        double seconds = DownloadSeconds;
+        HttpResponseMessage res;
+        // The headers (and the connect behind them) get the download timeout as their budget; the
+        // budget is given up again before the body is read, so the *transfer* is never capped.
+        using (var budget = Budget(cancellationToken, seconds))
+        {
+            res = await Http
+                .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, budget.Token)
+                .ConfigureAwait(false);
+        }
+
+        using (res)
+        {
+            res.EnsureSuccessStatusCode();
+            string part = dest + ".part";
+            downloadProgress?.Invoke(new ModelDownloadProgress(name, dest, url, 0, size));
+            // HttpContent.ReadAsStreamAsync(CancellationToken) is .NET 5.
 #if NET5_0_OR_GREATER
-        using (Stream src = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
+            using (Stream src = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
 #else
-        using (Stream src = await res.Content.ReadAsStreamAsync().ConfigureAwait(false))
+            using (Stream src = await res.Content.ReadAsStreamAsync().ConfigureAwait(false))
 #endif
-        using (FileStream dst = new FileStream(part, FileMode.Create, FileAccess.Write,
-                                               FileShare.None, Chunk, FileOptions.Asynchronous))
-        {
-            await CopyAsync(src, dst, size,
-                            done => downloadProgress?.Invoke(
-                                new ModelDownloadProgress(name, dest, url, done, size)),
-                            cancellationToken).ConfigureAwait(false);
-        }
+            using (FileStream dst = new FileStream(part, FileMode.Create, FileAccess.Write,
+                                                   FileShare.None, Chunk, FileOptions.Asynchronous))
+            {
+                await CopyAsync(src, dst, size,
+                                done => downloadProgress?.Invoke(
+                                    new ModelDownloadProgress(name, dest, url, done, size)),
+                                cancellationToken, seconds).ConfigureAwait(false);
+            }
 
-        // File.Move(string, string, bool) arrived with .NET Core 3.0 / netstandard2.1; below it
-        // File.Move refuses an existing destination, and the reference replaces the file
-        // (os.replace), so the replace is spelled out there.
+            // File.Move(string, string, bool) arrived with .NET Core 3.0 / netstandard2.1; below it
+            // File.Move refuses an existing destination, and the reference replaces the file
+            // (os.replace), so the replace is spelled out there.
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-        File.Move(part, dest, overwrite: true);
+            File.Move(part, dest, overwrite: true);
 #else
-        if (File.Exists(dest))
-        {
-            File.Delete(dest);
-        }
+            if (File.Exists(dest))
+            {
+                File.Delete(dest);
+            }
 
-        File.Move(part, dest);
+            File.Move(part, dest);
 #endif
+        }
     }
 
     /// <summary>
@@ -299,15 +398,22 @@ public static class ModelDownload
     /// the body does not end on a report (a short file, or a body that is not the size the Hub
     /// listed). A size of 0 (the Hub did not say) is reported at the end alone.
     /// </summary>
+    /// <param name="idleSeconds">
+    /// The reference's download timeout, applied to each read on its own (httpx's read timeout is
+    /// an idle window, not a transfer limit), or <c>null</c> for the bare copy the tests use.
+    /// </param>
     internal static async Task CopyAsync(Stream src, Stream dst, long size, Action<long> report,
-                                         CancellationToken cancellationToken = default)
+                                         CancellationToken cancellationToken = default,
+                                         double? idleSeconds = null)
     {
         byte[] buffer = new byte[Chunk];
         long done = 0;
         long reported = 0;
         while (true)
         {
-            int read = await src.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+            int read = idleSeconds is { } seconds
+                ? await ReadAsync(src, buffer, seconds, cancellationToken).ConfigureAwait(false)
+                : await src.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 break;
@@ -326,6 +432,33 @@ public static class ModelDownload
         {
             report(done);
         }
+    }
+
+    /// <summary>
+    /// A budget for one request: the caller's token plus <paramref name="seconds"/> — the
+    /// reference's per-request timeout, which is what its two variables are. Disposing the source
+    /// stops the timer without cancelling anything, which is how a body's headers are bounded
+    /// without the body itself being capped.
+    /// </summary>
+    private static CancellationTokenSource Budget(CancellationToken cancellationToken,
+                                                  double seconds)
+    {
+        var budget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        budget.CancelAfter((int)Math.Min(seconds * 1000, int.MaxValue));
+        return budget;
+    }
+
+    /// <summary>
+    /// One read of a body under its own idle budget. A read that never returns ends the download
+    /// with the reference's failure (httpx would raise <c>ReadTimeout</c>, which
+    /// <c>_snapshot_download</c> treats like an unreachable Hub), and the next one starts the
+    /// window over: only a body that stops arriving is given up on.
+    /// </summary>
+    private static async Task<int> ReadAsync(Stream src, byte[] buffer, double seconds,
+                                             CancellationToken cancellationToken)
+    {
+        using var budget = Budget(cancellationToken, seconds);
+        return await src.ReadAsync(buffer.AsMemory(), budget.Token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -367,14 +500,26 @@ public static class ModelDownload
     }
 
     /// <summary>The reference's one-line, 200-character summary of a download failure.</summary>
-    private static string DownloadFailed(Exception e)
+    private static string DownloadFailed(Exception e) => DownloadFailed(e.GetType().Name, e.Message);
+
+    /// <summary>
+    /// <see cref="DownloadFailed(Exception)"/> for a failure that has no exception behind it,
+    /// where <paramref name="cause"/> is the name of the type the reference would have raised
+    /// (<c>LocalEntryNotFoundError</c> for a process that is offline). The summary is the
+    /// reference's: the cause, then the first line of the message cut to 200 characters.
+    /// </summary>
+    private static string DownloadFailed(string cause, string message)
     {
-        string message = e.Message.Trim();
-        int nl = message.IndexOfAny(['\n', '\r']);
-        string reason = nl >= 0 ? message[..nl] : message;
+        string reason = message.Trim();
+        int nl = reason.IndexOfAny(['\n', '\r']);
+        if (nl >= 0)
+        {
+            reason = reason[..nl];
+        }
+
         if (reason.Length == 0)
         {
-            reason = e.GetType().Name;
+            reason = cause;
         }
 
         if (reason.Length > 200)
@@ -383,13 +528,16 @@ public static class ModelDownload
         }
 
         return $"could not download the models from Hugging Face ({HfRepo}, {HfRevision}): " +
-               $"{e.GetType().Name}: {reason}. Check the network connection, or point at a local " +
+               $"{cause}: {reason}. Check the network connection, or point at a local " +
                "model folder with --model-dir or INDRA_OCR_MODEL_DIR.";
     }
 
     private static HttpClient CreateClient()
     {
-        var http = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
+        // No total timeout: huggingface_hub caps one request and one read at a time, never the
+        // transfer, and a model that takes a minute to arrive must not be cut off. The per-request
+        // budgets are the caller's (HubFilesAsync, FetchAsync).
+        var http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
         http.DefaultRequestHeaders.UserAgent.ParseAdd("indra-ocr-cs/0.3.2");
         string? token = Environment.GetEnvironmentVariable("HF_TOKEN");
         if (!string.IsNullOrEmpty(token))

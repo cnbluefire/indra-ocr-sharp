@@ -122,6 +122,16 @@ and the port reaches for the seams it has.
    is touched only then. (Not observable in the CLI's output, which is why no earlier step caught
    it; `Cached_models_are_checked_once_a_day` asserts the stamp is not created by a failed check.)
 
+   > **Superseded by step 385** (`docs/385-model-fetch.md`). Measured against the installed
+   > `huggingface_hub` 2.2.0, the reading above is not what happens: when the Hub cannot be reached,
+   > `snapshot_download` *returns* the cached folder through its own internal fallback, `_touch`
+   > runs, and the reference **does** go quiet for a day — the port's behaviour *before* this step
+   > was the right one. `ModelFolder.Resolve` stamps whenever the download returns again (the case
+   > that does not stamp is a failure that travels out, i.e. a file fetch after a successful
+   > listing), and `Cached_models_are_checked_once_a_day` asserts that instead. What this step's
+   > `Download`-returns-whether-the-Hub-was-reached distinction is still good for is the caller's
+   > information, and the smoke test's `served=` line.
+
 ## Verification
 
 - `dotnet build src\Indra.Ocr.slnx` — 0 warnings, 0 errors.
