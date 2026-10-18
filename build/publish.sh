@@ -10,7 +10,9 @@
 # The RID has to be the machine's: Native AOT compiles with the platform's own linker, so it does
 # not cross-compile.  The release workflow gives each of the four RIDs its own runner (win-x64 on
 # windows-latest, win-arm64 on windows-11-arm, linux-x64 on ubuntu-24.04, linux-arm64 on
-# ubuntu-24.04-arm) and calls this script once on each.
+# ubuntu-24.04-arm) and calls this script on the two Linux ones; the zips it writes are not release
+# assets, because a Linux NativeAOT binary links the glibc it was built against (docs/290-aot.md) --
+# but they are built and smoked there, which is the Linux check.
 #
 # Layer 1 of the three release gates (docs/340-nuget-packages.md): INDRA_OCR_FAKE_AOT republishes
 # with `-p:PublishAot=false -p:IndraOcrFakeAot=true -p:PublishSingleFile=true` for machines that have no
@@ -53,7 +55,7 @@ die() { echo "[publish] FAIL $1" >&2; exit 1; }
 case "$rid" in
     win-x64|win-arm64|linux-x64|linux-arm64) ;;
     "") die "no RID; pass --rid (win-x64, win-arm64, linux-x64, linux-arm64)" ;;
-    *) die "unknown RID '$rid'; the release has win-x64, win-arm64, linux-x64, linux-arm64" ;;
+    *) die "unknown RID '$rid'; the RIDs are win-x64, win-arm64, linux-x64, linux-arm64" ;;
 esac
 
 fake="${INDRA_OCR_FAKE_AOT:-}"

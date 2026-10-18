@@ -6,9 +6,11 @@ The port is packaged, not just buildable: three NuGet packages that a consumer c
 `net10.0` **or** from .NET Framework (`netstandard2.0`, `docs/335-multitarget-netstandard20.md`),
 and a release process that produces them together with the two hosts as native AOT binaries for the
 four RIDs — locally through the scripts in `build/`, and on a runner through
-`.github/workflows/release.yml`. `build/pack.sh`/`build/pack.ps1`, the package checks, the publish
-and platform smoke (`355`) and `build/release.sh` are all steps of the same story, which is why
-they share this file.
+`.github/workflows/release.yml`. A release attaches the two Windows zips: the Linux legs are built and
+smoked like any other and stop at their artifacts, because of the glibc a Linux NativeAOT binary
+links (`docs/290-aot.md`). `build/pack.sh`/`build/pack.ps1`, the package checks, the publish and
+platform smoke (`355`) and `build/release.sh` are all steps of the same story, which is why they share
+this file.
 
 Everything below runs from a plain checkout with the .NET SDK: no MSBuild task, no `nuget.exe`, no
 token, and no network except NuGet (for the packages' own dependencies) and, on a first run, Hugging
@@ -197,7 +199,8 @@ verified.
   a separate executable, not a second copy of the pipeline.
 - **The RID has to be the machine's**: Native AOT links with the platform's own toolchain and does
   not cross-compile. `win-x64`, `win-arm64`, `linux-x64`, `linux-arm64`; anything else is refused by
-  name.
+  name. The release workflow builds and smokes all four; only the two Windows zips are attached to a
+  release, and `build/release.sh` refuses a Linux zip by name (`docs/290-aot.md`).
 
 ### `build/smoke-win.ps1`, `build/smoke-linux.sh`
 
@@ -221,25 +224,28 @@ Versions are compared by prefix (`indra-ocr <version>`), and the value is read f
 ### `build/release.sh`
 
 The last step, and the only one that talks to GitHub: `gh` takes the token from `GH_TOKEN` and the
-repository from the checkout. It attaches the three `.nupkg`, the four per-RID zips and the notes;
+repository from the checkout. It attaches the three `.nupkg`, the two Windows zips and the notes;
 the three `.snupkg` are **not** release assets — they are the `push` job's, and a debugger finds
 them on nuget.org by the package's own id and version.
 
 1. `INDRA_OCR_FAKE_AOT` is refused outright, whatever the assets look like.
 2. The version comes from `src/Directory.Build.props` unless `--version` says otherwise, and `-` in
    it makes the release a `--prerelease` (`0.3.2-alpha.2`).
-3. The seven assets are checked by name (`--packages`, default `temp/packages`; `--zips`, default
-   `temp/publish`): three `.nupkg` and four `indra-ocr-sharp_<rid>.zip`. A missing one
-   is a failure, and so is an `indra-ocr-sharp_<rid>_notaot.zip`: the stand-in must never be
-   released.
+3. The five assets are checked by name (`--packages`, default `temp/packages`; `--zips`, default
+   `temp/publish`): three `.nupkg` and two `indra-ocr-sharp_<rid>.zip` (`win-x64`, `win-arm64`). A
+   missing one is a failure, and so is an `indra-ocr-sharp_<rid>_notaot.zip`: the stand-in must
+   never be released. An `indra-ocr-sharp_linux-*.zip` is a failure too, by name — a release asset
+   cannot be taken back, and a Linux zip in the folder means the wrong one was passed (the `release`
+   job downloads `zip-win-*` alone).
 4. The notes are the commit log — `git log --oneline` since the previous tag when there is one
    (`git describe --tags --abbrev=0`), the whole log when there is not, with
    `--notes-start-tag <previous>` so GitHub's own generated notes follow on.
 5. `gh release create v<version> <assets> --title v<version> --generate-notes --notes-file <notes>
    [--prerelease]`, or `gh release upload --clobber` when the release already exists — which is what
-   a run that died after the push needs. That path also removes any `*.snupkg` a release an earlier
-   run created still has attached (`gh release delete-asset`), which is how the first
-   `v0.3.2-alpha.1` release gets theirs off.
+   a run that died after the push needs. That path also removes the assets a release an earlier run
+   of this script should not have put there (`gh release delete-asset`): any `*.snupkg`, which belong
+   to nuget.org, and any `indra-ocr-sharp_linux-*.zip`. That is how the first `v0.3.2-alpha.1`
+   release loses the three symbol packages and the two Linux zips it carries.
 
 `--dry-run` prints the whole plan (the assets, the notes' length, the exact `gh release create`
 line) and creates nothing.
@@ -274,10 +280,12 @@ push or on a pull request, so a branch cannot spend the repository's minutes):
 - `test`: `dotnet test src/Indra.Ocr.slnx`.
 - `pack`: `build/pack.sh` on Linux (pack, `check_nupkg.py`, the `net10.0` smoke — the `net462` half
   is skipped by design there).
-- `hosts`: the stand-in publish (`INDRA_OCR_FAKE_AOT=1`, `--skip-smoke`) on all four RIDs a release
-  publishes — `linux-x64`, `linux-arm64`, `win-x64`, `win-arm64` — which keeps both host projects and
-  `build/publish.*` covered without the model download a release run pays for for real, and exercises
-  each RID's own runtime pack on the architecture it belongs to (`docs/380-test-hosts.md`).
+- `hosts`: the stand-in publish (`INDRA_OCR_FAKE_AOT=1`, `--skip-smoke`) on all four RIDs
+  `build/publish.*` knows — `linux-x64`, `linux-arm64`, `win-x64`, `win-arm64` — which keeps both
+  host projects and `build/publish.*` covered without the model download a release run pays for for
+  real, and exercises each RID's own runtime pack on the architecture it belongs to
+  (`docs/380-test-hosts.md`). The two Linux legs repeat what the release workflow's real AOT legs
+  cover, without the download — and neither pair is a release asset (`docs/290-aot.md`).
 
 `.github/workflows/release.yml` — manual (`workflow_dispatch`) and **dry by default**: pushing a
 version to nuget.org cannot be undone, and neither can a published release.
@@ -286,7 +294,7 @@ version to nuget.org cannot be undone, and neither can a published release.
 |---|---|---|
 | `preflight` | ubuntu | reads the version; asks nuget.org's flat-container index whether all three packages already have it |
 | `test` | ubuntu | `dotnet test` |
-| `publish` | one runner per RID | `build/publish.ps1` / `build/publish.sh`: real AOT plus the platform smoke |
+| `publish` | one runner per RID (four) | `build/publish.ps1` / `build/publish.sh`: real AOT plus the platform smoke; only the Windows zips go on to the release |
 | `pack` | windows | `build/pack.sh` (both smoke targets), then uploads the six files |
 | `push` | ubuntu | nuget.org Trusted Publishing (OIDC → a short-lived API key), then `dotnet nuget push` per file with `--skip-duplicate` |
 | `auth` | ubuntu | the same login, on a **dry run only**: proves the policy and `NUGET_USER` without publishing anything |
@@ -295,14 +303,19 @@ version to nuget.org cannot be undone, and neither can a published release.
 Details that are decisions, not accidents:
 
 - **One runner per RID**, because Native AOT does not cross-compile: `windows-latest`,
-  `windows-11-arm`, `ubuntu-24.04`, `ubuntu-24.04-arm`.
+  `windows-11-arm`, `ubuntu-24.04`, `ubuntu-24.04-arm`. The two Linux legs are built and smoked like
+  the others and then stop: the `release` job downloads `zip-win-*` alone, so their zips stay job
+  artifacts, which is what keeps the real Linux check without handing out a binary that fails on
+  older distributions (`docs/290-aot.md`).
 - **The order is "everything passes, then push"**: `push` needs `test`, `publish` and `pack`; the
   `publish` and `pack` halves run in parallel and neither happens before the other. A version already
   on nuget.org skips the push, and the release job then still runs (`!cancelled()` plus the results
   of every job before it) so a resumed run can finish the job.
 - **`--skip-duplicate`** is what makes a re-run after a half-finished push possible.
-- **The artifacts**: `zip-<rid>` per publish leg, `packages` (six files) from the pack job,
-  `logs-<job>` on failure — and always on the arm64 legs, the architecture nobody has locally.
+- **The artifacts**: `zip-<rid>` per publish leg — all four, and only the two Windows ones reach the
+  release — `packages` (six files) from
+  the pack job, `logs-<job>` on failure — and always on the arm64 legs, the architecture nobody has
+  locally.
 - **Nothing is cached**: the models are resolved from the Hub, which is the path a release user
   takes.
 - **The actions are the node24 majors** — `checkout@v7`, `setup-dotnet@v6`, `upload-artifact@v7`,
@@ -381,8 +394,8 @@ build/publish.ps1 -Rid win-x64       # the zip plus 23 platform checks
 
 ```shell
 bash build/pack.sh
-INDRA_OCR_FAKE_AOT=1 bash build/publish.sh --rid linux-x64
-bash build/release.sh --dry-run      # the seven assets, the notes, the gh command
+INDRA_OCR_FAKE_AOT=1 bash build/publish.sh --rid linux-x64   # the leg the release workflow smokes
+bash build/release.sh --dry-run      # the five assets, the notes, the gh command
 ```
 
 On a machine with the toolchain, leave `INDRA_OCR_FAKE_AOT` unset and the same commands produce the
@@ -435,9 +448,10 @@ Two things a consumer should know before choosing this:
 - `build/publish.ps1 -Rid win-x64` with `INDRA_OCR_FAKE_AOT=1`: exit 0, the zip built, and
   `build/smoke-win.ps1` `OK (23 checks)` against both published binaries (a real AOT publish needs
   the platform toolchain, which this machine does not have, `docs/290-aot.md`).
-- `build/release.sh --dry-run`: the seven assets, the notes (the whole log with no tag; the commits
+- `build/release.sh --dry-run`: the five assets, the notes (the whole log with no tag; the commits
   since the tag when there is one, with `--prerelease` and `--notes-start-tag`), and exit 0 — plus
-  its three refusals (the environment variable, a `_notaot.zip`, a missing asset) each exiting 1.
+  its four refusals (the environment variable, a `_notaot.zip`, a missing asset, a Linux zip) each
+  exiting 1.
 - Both workflows parsed with PyYAML and checked for the shape Actions needs; `git ls-files -s` shows
   `100755` on the four `build/*.sh` (and `.gitattributes` keeps `*.sh` LF, which matters on a
   Windows checkout).

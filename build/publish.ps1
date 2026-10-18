@@ -8,7 +8,9 @@
 # The RID has to be the machine's: Native AOT compiles with the platform's own linker, so it does
 # not cross-compile.  The release workflow gives each of the four RIDs its own runner (win-x64 on
 # windows-latest, win-arm64 on windows-11-arm, linux-x64 on ubuntu-24.04, linux-arm64 on
-# ubuntu-24.04-arm) and calls this script once on each.
+# ubuntu-24.04-arm) and calls this script once on each.  The Linux zips it writes are not release
+# assets -- a Linux NativeAOT binary links the glibc it was built against (docs/290-aot.md) -- but
+# they are built and smoked there, which is the Linux check.
 #
 # Layer 1 of the three release gates (docs/340-nuget-packages.md): $env:INDRA_OCR_FAKE_AOT
 # republishes with `-p:PublishAot=false -p:IndraOcrFakeAot=true -p:PublishSingleFile=true` for machines that
@@ -41,7 +43,7 @@ $ErrorActionPreference = "Stop"
 $root = (Resolve-Path "$PSScriptRoot/..").Path
 $rids = @("win-x64", "win-arm64", "linux-x64", "linux-arm64")
 if ($rids -notcontains $Rid) {
-    Write-Host "[publish] FAIL unknown RID '$Rid'; the release has $(($rids -join ', '))"
+    Write-Host "[publish] FAIL unknown RID '$Rid'; the RIDs are $(($rids -join ', '))"
     exit 1
 }
 

@@ -4,16 +4,19 @@
 #
 # Usage: build/smoke-linux.sh [--dir temp/publish/linux-x64] [--model-dir <dir>] [--port 8799]
 #
-# The checks are deliberately coarse.  Both hosts are the port end to end (native AOT in a release,
-# the trimmed stand-in with INDRA_OCR_FAKE_AOT), so this answers "does the published binary start,
-# read a PDF and an image, write its output, and serve the viewer's API" -- the byte-for-byte
+# The checks are deliberately coarse.  Both hosts are the port end to end (native AOT for a real
+# publish, the trimmed stand-in with INDRA_OCR_FAKE_AOT), so this answers "does the published binary
+# start, read a PDF and an image, write its output, and serve the viewer's API" -- the byte-for-byte
 # comparison against the reference lives in tools/scripts/test/cli_parity.py and the test suite, and
-# needs the Python reference environment, which a release machine does not have.
+# needs the Python reference environment, which a bare machine does not have.
+#
+# build/publish.sh calls this -- on a developer's machine and on the release workflow's two Linux
+# legs, where it is the Linux check.  The zip it just built is not a release asset (docs/290-aot.md).
 #
 # The model folder is resources/models when it is there (a developer's clone); otherwise the
 # argument is left out and both hosts resolve the models themselves -- they download them from the
-# Hub, which is what a release user does and what the CI runners exercise (TLS, JSON and the
-# download path included).
+# Hub, which is what a user of a published binary does and what the CI runners exercise (TLS, JSON
+# and the download path included).
 #
 # Versions are compared by prefix only: the CLI prints `indra-ocr <version>` and the viewer reports
 # the assembly's version, and the exact value belongs to src/Directory.Build.props, which is read

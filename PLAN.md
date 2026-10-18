@@ -578,7 +578,9 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   invisible layer is *moved* out of the page's stream rather than hand-written, the broken font map is
   built from the subset's own map, whole run included), and `pdf_samples.build_all()` now refuses a
   sample whose font is not embedded. `ci.yml`'s stand-in publish covers `linux-arm64`/`win-arm64`
-  too, so all four RIDs a release publishes are exercised (`docs/380-test-hosts.md`). The next run
+  too, so all four RIDs a release publishes are exercised (`docs/380-test-hosts.md`) — all four as of
+  that step: since step `390` below, a release still builds and smokes all four and attaches the two
+  Windows ones. The next run
   left one failure, of the same class: `RotationMatrix2D`'s `cos π/4` is one ulp apart between the
   Windows CRT and glibc (the reference's own C++ calls the same host library, so both sides move
   together); that one comparison now allows the ulps its last bit is worth, 1e-12 relative, and every
@@ -618,13 +620,40 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   artifact step say the same — the symbols still ride in that artifact, which is how the `push` job
   gets them to nuget.org — and `docs/340-nuget-packages.md` records the seven assets, the removal
   and the reason.
+- Step `390`: a release attaches **Windows binaries only**, while all four RIDs are still built and
+  smoked — its assets are five, not the seven above. A Linux NativeAOT binary is linked against the C
+  library of the machine that built it: the two `ubuntu-24.04*` legs produce zips that only run on
+  Ubuntu 24.04+/Debian 13+/RHEL 10+ and newer, which is the opposite of what a portable zip is for.
+  The floor could not have gone below **glibc 2.28** in any case, because ONNX Runtime — the OCR
+  engine — ships no Linux asset built against anything older; and **musl would not have fixed it**,
+  since ONNX Runtime ships no musl asset at all (PDFium, which does — static, with no `GLIBC_` symbol —
+  is not what runs the OCR): the result would be a static musl host loading glibc `.so` files, with
+  `gcompat` and the libraries needed on Alpine, two C libraries in one process elsewhere, and the 2.28
+  floor unmoved. So the Linux legs **stay**: real AOT plus the full platform smoke with the models
+  resolved from the Hub is the only real Linux health check there is, and the trimmed stand-in alone
+  would have been the whole of Linux's coverage. What stops is what is handed out: `release.yml`'s
+  `release` job downloads `zip-win-*` alone — the Linux zips end at their job artifacts — and
+  `build/release.sh` refuses an `indra-ocr-sharp_linux-*.zip` by name, the same rule at the other end,
+  so a `dist/` holding one can never become a release; a re-run of it also takes a Linux zip off a
+  release an earlier run attached, beside the `*.snupkg`. `ci.yml`'s stand-in matrix still covers both
+  Linux RIDs (the trim/AOT analyzers on every architecture, no model download), and
+  `build/publish.sh`/`build/smoke-linux.sh` are what the legs and a developer both run. The
+  measurements, the floor's one recovery route (an old-glibc container plus a `readelf --version-info`
+  assertion) and the decision are recorded in `docs/290-aot.md`. Verified: `bash -n`; a dry run
+  printing five assets, the tag `v0.3.2-alpha.2` and `--prerelease`; the four refusals
+  (`INDRA_OCR_FAKE_AOT`, a `_notaot.zip`, a missing package, a Linux zip) each exiting 1; a stub `gh`
+  driving both real paths (an existing release: both stale assets removed by name — the `*.snupkg` and
+  an `indra-ocr-sharp_linux-x64.zip` — then `upload --clobber` with exactly the five; a fresh one: a
+  single `release create`); and `yaml.safe_load` on both workflows (four publish rows, and the
+  release job's download pattern `zip-win-*`).
 - 385 tests green, build clean (0 warnings); the CLI alignment harness 85/85, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework
   4.6.2 with the same answers (`docs/335-multitarget-netstandard20.md`). The three libraries are
   packaged as three NuGet packages — 89 checks on what each one holds, and 85 + 85 on a real
   consumer, on `net10.0` and on .NET Framework — and a release carries them together with the two
-  hosts as native AOT zips for the four RIDs (`docs/340-nuget-packages.md`). The suite answers the
+  hosts as native AOT zips for the four RIDs, of which a release attaches the two Windows ones
+  (`docs/290-aot.md`; `docs/340-nuget-packages.md`). The suite answers the
   same on a runner that is not the machine the fixtures were captured on — the sample PDFs embed
   their own font, and every sample is checked to — so `ci.yml`'s test job can be dispatched from
   anywhere (`docs/380-test-hosts.md`).

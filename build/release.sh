@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
-# Create the GitHub release for one version: the three NuGet packages, the four per-RID host zips
+# Create the GitHub release for one version: the three NuGet packages, the two Windows host zips
 # and the notes.  See docs/340-nuget-packages.md.
+#
+# There are no Linux zips attached here.  The release workflow builds and smokes them like any other
+# leg, but a Linux NativeAOT binary links the glibc of the machine that built it, so handing one out
+# would fail on older distributions -- and a release asset cannot be taken back (docs/290-aot.md).
+# The zips the workflow does pass in are the Windows ones; a Linux zip is refused by name below, so
+# a whole dist/ directory cannot slip one through.
 #
 # The symbol packages are deliberately not attached here: they are pushed to nuget.org (the release
 # workflow's `push` job) and that is where a debugger looks them up -- by the package's own id and
 # version, not from a release page.  An earlier run of this script did attach them, so they are
-# taken back off an existing release on the way in (below).
+# taken back off an existing release on the way in (below) -- and so is a Linux zip, for the reason
+# above.
 #
 # Usage:
 #   build/release.sh [--version 0.3.2-alpha.2] [--packages temp/packages] [--zips temp/publish]
@@ -31,7 +38,10 @@ version=""
 packages="temp/packages"
 zips="temp/publish"
 dry_run=0
-rids=(win-x64 win-arm64 linux-x64 linux-arm64)
+# The RIDs this attaches.  The release workflow builds and smokes all four, and build/publish.*
+# builds the Linux ones for a developer too -- they are simply never release assets, because a Linux
+# NativeAOT binary links the glibc it was built against (docs/290-aot.md).
+rids=(win-x64 win-arm64)
 # The package ids, which are not the assembly names (see docs/340-nuget-packages.md).
 ids=(Bluefire.Indra.Ocr.Sharp.Core Bluefire.Indra.Ocr.Sharp.Pdf Bluefire.Indra.Ocr.Sharp)
 
@@ -91,6 +101,14 @@ for rid in "${rids[@]}"; do
     assets+=("$zip")
     echo "[release]   $(basename "$zip")"
 done
+# A Linux zip in here means the wrong folder was passed -- the release job downloads `zip-win-*`
+# alone -- or a local zips folder still holds one from before.  Refused by name, because a release
+# asset cannot be taken back and a binary that fails on older distributions is the one outcome
+# nobody wants.
+for linux_zip in "$zips"/indra-ocr-sharp_linux-*.zip; do
+    [ -e "$linux_zip" ] || continue
+    die "$(basename "$linux_zip") is a Linux zip; a release attaches Windows zips only (docs/290-aot.md)"
+done
 echo "[release]   ${#assets[@]} assets"
 
 step "the notes"
@@ -140,18 +158,23 @@ command -v gh >/dev/null 2>&1 || die "gh is not installed (it is what creates th
 step "the release"
 if gh release view "v$version" >/dev/null 2>&1; then
     echo "[release] v$version exists: replacing its assets"
-    # Symbol packages belong to nuget.org now, so a release an earlier run created has them taken
-    # off on the way in.  Best effort: a release that could not be tidied is still a release.
+    # Neither symbol packages nor Linux zips belong on a release (see the header), so a release an
+    # earlier run created has both taken off on the way in.  Best effort: a release that could not
+    # be tidied is still a release.
     attached="$(gh release view "v$version" --json assets \
         --template '{{range .assets}}{{.name}}{{"\n"}}{{end}}' 2>/dev/null || true)"
     while read -r name; do
         case "$name" in
             *.snupkg)
                 echo "[release]   removing $name (symbols live on nuget.org)"
-                gh release delete-asset "v$version" "$name" --yes ||
-                    echo "[release]   WARN could not remove $name"
                 ;;
+            indra-ocr-sharp_linux-*.zip)
+                echo "[release]   removing $name (a release attaches no Linux zip)"
+                ;;
+            *) continue ;;
         esac
+        gh release delete-asset "v$version" "$name" --yes ||
+            echo "[release]   WARN could not remove $name"
     done <<<"$attached"
     gh release upload "v$version" "${assets[@]}" --clobber
 else

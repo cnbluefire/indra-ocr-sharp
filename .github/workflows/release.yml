@@ -1,8 +1,11 @@
-# The release: build and publish the two hosts for the four RIDs, pack the three NuGet packages,
-# and -- only after everything passed -- push the packages and their symbol packages to nuget.org
-# and create the GitHub release with the three packages and the four zips attached.  The symbol
-# packages are nuget.org's alone: a debugger finds them there, by package id and version, so the
-# release does not carry a second copy of them.  See docs/340-nuget-packages.md.
+# The release: build and publish the two hosts for the four RIDs, pack the three NuGet packages, and
+# -- only after everything passed -- push the packages and their symbol packages to nuget.org and
+# create the GitHub release with the three packages and the two Windows zips attached.  The two Linux
+# legs are built and smoked exactly like the Windows ones and then stop at the job's artifact: a Linux
+# NativeAOT binary links the C library of the machine that built it, so it would run on a current
+# generation of distributions only (docs/290-aot.md), and a release asset cannot be taken back.  The
+# symbol packages are nuget.org's alone: a debugger finds them there, by package id and version, so
+# the release does not carry a second copy of them.  See docs/340-nuget-packages.md.
 #
 # Manual only (`workflow_dispatch`), and dry by default: pushing a version to nuget.org cannot be
 # undone, and neither can a published GitHub release.  The dry run does the whole pipeline except
@@ -91,6 +94,11 @@ jobs:
   # Native AOT, one runner per RID, no cross-compilation.  The platform smoke then runs the
   # published binaries -- the CLI on the committed samples and the viewer's API over HTTP -- and
   # resolves the models from the Hub, exactly as a release user does.
+  #
+  # All four RIDs are built and smoked, which is the only real Linux check there is; only the Windows
+  # zips become release assets.  The `release` job downloads those alone and build/release.sh refuses
+  # a Linux zip by name, because a Linux NativeAOT binary links the glibc of the machine that built
+  # it: handing one out would fail on older distributions (docs/290-aot.md).
   publish:
     name: publish ${{ matrix.rid }}
     needs: preflight
@@ -311,7 +319,10 @@ jobs:
           path: dist/packages
       - uses: actions/download-artifact@v8
         with:
-          pattern: zip-*
+          # The Windows zips only.  The Linux legs are built and smoked and then stop: their zips
+          # stay job artifacts (build/release.sh would refuse one by name, which is the same rule at
+          # the other end -- docs/290-aot.md).
+          pattern: zip-win-*
           path: dist/zips
           merge-multiple: true
       - name: gh release create

@@ -101,11 +101,17 @@ For the release itself — one zip per RID, holding both hosts, the native libra
 `LICENSE` and `NOTICE`, and smoked afterwards — use the scripts in `build/`:
 
 ```powershell
-build/publish.ps1 -Rid win-x64      # win-x64, win-arm64, linux-x64, linux-arm64
+build/publish.ps1 -Rid win-x64      # the release ships win-x64 and win-arm64
 ```
 
+On Linux the same scripts run in the release workflow — the real native AOT build and the platform
+smoke — but the zips they produce stay job artifacts and are not attached to the release. A native
+AOT binary links the glibc of the machine that built it, so one built on a current runner fails on
+older distributions, and the OCR engine's own native library sets a floor no older anyway
+(`docs/290-aot.md`). On Linux, build it here, or reference the three NuGet packages:
+
 ```shell
-bash build/publish.sh --rid linux-x64
+bash build/publish.sh --rid linux-x64     # what the Linux CI leg runs
 ```
 
 On a machine without the platform toolchain (the MSVC linker + Windows SDK, or clang),
