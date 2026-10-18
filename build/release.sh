@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
-# Create the GitHub release for one version: the three packages, their symbol packages, the four
-# per-RID host zips, and the notes.  See docs/340-nuget-packages.md.
+# Create the GitHub release for one version: the three NuGet packages, the four per-RID host zips
+# and the notes.  See docs/340-nuget-packages.md.
+#
+# The symbol packages are deliberately not attached here: they are pushed to nuget.org (the release
+# workflow's `push` job) and that is where a debugger looks them up -- by the package's own id and
+# version, not from a release page.  An earlier run of this script did attach them, so they are
+# taken back off an existing release on the way in (below).
 #
 # Usage:
 #   build/release.sh [--version 0.3.2-alpha.2] [--packages temp/packages] [--zips temp/publish]
@@ -17,7 +22,8 @@
 # both by the environment variable and by the file names, whichever is the one that got through.
 #
 # Re-running is safe: an existing release gets the assets replaced (`gh release upload --clobber`),
-# which is what a run that died after the push needs.
+# which is what a run that died after the push needs -- and symbol packages a previous run attached
+# are removed, since a release carries none.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -69,12 +75,11 @@ step "the assets of v$version"
 assets=()
 for id in "${ids[@]}"; do
     nupkg="$packages/$id.$version.nupkg"
-    snupkg="$packages/$id.$version.snupkg"
     [ -f "$nupkg" ] || die "$nupkg is missing (build/pack.* writes the packages)"
-    [ -f "$snupkg" ] || die "$snupkg is missing (dotnet pack writes the symbols beside the package)"
-    assets+=("$nupkg" "$snupkg")
+    # The `.snupkg` beside it is not a release asset (see the header): the `push` job sends it to
+    # nuget.org, so nothing here requires it.
+    assets+=("$nupkg")
     echo "[release]   $(basename "$nupkg")"
-    echo "[release]   $(basename "$snupkg")"
 done
 for rid in "${rids[@]}"; do
     zip="$zips/indra-ocr-sharp_$rid.zip"
@@ -121,7 +126,8 @@ if [ "${#start_tag_args[@]}" -gt 0 ]; then create_args+=("${start_tag_args[@]}")
 
 if [ "$dry_run" -eq 1 ]; then
     step "the release (dry run: nothing is created)"
-    echo "[release]   gh release view v$version  # existing? then upload --clobber"
+    echo "[release]   (${#assets[@]} assets: the symbol packages go to nuget.org with the push, not here)"
+    echo "[release]   gh release view v$version  # existing? then upload --clobber, dropping *.snupkg"
     echo "[release]   gh release create v$version <${#assets[@]} assets> ${create_args[*]}"
     rm -f "$notes"
     echo
@@ -134,6 +140,19 @@ command -v gh >/dev/null 2>&1 || die "gh is not installed (it is what creates th
 step "the release"
 if gh release view "v$version" >/dev/null 2>&1; then
     echo "[release] v$version exists: replacing its assets"
+    # Symbol packages belong to nuget.org now, so a release an earlier run created has them taken
+    # off on the way in.  Best effort: a release that could not be tidied is still a release.
+    attached="$(gh release view "v$version" --json assets \
+        --template '{{range .assets}}{{.name}}{{"\n"}}{{end}}' 2>/dev/null || true)"
+    while read -r name; do
+        case "$name" in
+            *.snupkg)
+                echo "[release]   removing $name (symbols live on nuget.org)"
+                gh release delete-asset "v$version" "$name" --yes ||
+                    echo "[release]   WARN could not remove $name"
+                ;;
+        esac
+    done <<<"$attached"
     gh release upload "v$version" "${assets[@]}" --clobber
 else
     gh release create "v$version" "${assets[@]}" "${create_args[@]}"

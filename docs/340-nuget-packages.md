@@ -221,13 +221,15 @@ Versions are compared by prefix (`indra-ocr <version>`), and the value is read f
 ### `build/release.sh`
 
 The last step, and the only one that talks to GitHub: `gh` takes the token from `GH_TOKEN` and the
-repository from the checkout.
+repository from the checkout. It attaches the three `.nupkg`, the four per-RID zips and the notes;
+the three `.snupkg` are **not** release assets — they are the `push` job's, and a debugger finds
+them on nuget.org by the package's own id and version.
 
 1. `INDRA_OCR_FAKE_AOT` is refused outright, whatever the assets look like.
 2. The version comes from `src/Directory.Build.props` unless `--version` says otherwise, and `-` in
    it makes the release a `--prerelease` (`0.3.2-alpha.2`).
-3. The ten assets are checked by name (`--packages`, default `temp/packages`; `--zips`, default
-   `temp/publish`): three `.nupkg`, three `.snupkg`, four `indra-ocr-sharp_<rid>.zip`. A missing one
+3. The seven assets are checked by name (`--packages`, default `temp/packages`; `--zips`, default
+   `temp/publish`): three `.nupkg` and four `indra-ocr-sharp_<rid>.zip`. A missing one
    is a failure, and so is an `indra-ocr-sharp_<rid>_notaot.zip`: the stand-in must never be
    released.
 4. The notes are the commit log — `git log --oneline` since the previous tag when there is one
@@ -235,7 +237,9 @@ repository from the checkout.
    `--notes-start-tag <previous>` so GitHub's own generated notes follow on.
 5. `gh release create v<version> <assets> --title v<version> --generate-notes --notes-file <notes>
    [--prerelease]`, or `gh release upload --clobber` when the release already exists — which is what
-   a run that died after the push needs.
+   a run that died after the push needs. That path also removes any `*.snupkg` a release an earlier
+   run created still has attached (`gh release delete-asset`), which is how the first
+   `v0.3.2-alpha.1` release gets theirs off.
 
 `--dry-run` prints the whole plan (the assets, the notes' length, the exact `gh release create`
 line) and creates nothing.
@@ -378,7 +382,7 @@ build/publish.ps1 -Rid win-x64       # the zip plus 23 platform checks
 ```shell
 bash build/pack.sh
 INDRA_OCR_FAKE_AOT=1 bash build/publish.sh --rid linux-x64
-bash build/release.sh --dry-run      # the ten assets, the notes, the gh command
+bash build/release.sh --dry-run      # the seven assets, the notes, the gh command
 ```
 
 On a machine with the toolchain, leave `INDRA_OCR_FAKE_AOT` unset and the same commands produce the
@@ -431,7 +435,7 @@ Two things a consumer should know before choosing this:
 - `build/publish.ps1 -Rid win-x64` with `INDRA_OCR_FAKE_AOT=1`: exit 0, the zip built, and
   `build/smoke-win.ps1` `OK (23 checks)` against both published binaries (a real AOT publish needs
   the platform toolchain, which this machine does not have, `docs/290-aot.md`).
-- `build/release.sh --dry-run`: the ten assets, the notes (the whole log with no tag; the commits
+- `build/release.sh --dry-run`: the seven assets, the notes (the whole log with no tag; the commits
   since the tag when there is one, with `--prerelease` and `--notes-start-tag`), and exit 0 — plus
   its three refusals (the environment variable, a `_notaot.zip`, a missing asset) each exiting 1.
 - Both workflows parsed with PyYAML and checked for the shape Actions needs; `git ls-files -s` shows

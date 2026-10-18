@@ -608,6 +608,16 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   user's "a download over ten seconds is normal" as an assertion), plus two `cli_parity.py` cases
   that run both sides offline and compare stderr byte for byte. 385 tests, 85/85
   (`docs/385-model-fetch.md`). The packages also move on to `0.3.2-alpha.2`.
+- Step `385` follow-up: the GitHub release carries no symbol packages. The tag was already the
+  package version — nothing pinned it — so the next release is `v0.3.2-alpha.2`, but the three
+  `.snupkg` were going up as release assets too, and they belong to nuget.org, where a debugger
+  looks them up by package id and version. `build/release.sh` now checks and attaches **seven**
+  assets (three `.nupkg` and the four RIDs' zips, step 360's ten minus the symbols) and, when the
+  release already exists, takes any `*.snupkg` an earlier run attached back off
+  (`gh release delete-asset`) before `upload --clobber`. `release.yml`'s header and its `packages`
+  artifact step say the same — the symbols still ride in that artifact, which is how the `push` job
+  gets them to nuget.org — and `docs/340-nuget-packages.md` records the seven assets, the removal
+  and the reason.
 - 385 tests green, build clean (0 warnings); the CLI alignment harness 85/85, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework

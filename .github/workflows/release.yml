@@ -1,6 +1,8 @@
 # The release: build and publish the two hosts for the four RIDs, pack the three NuGet packages,
-# and -- only after everything passed -- push the packages to nuget.org and create the GitHub
-# release with every artifact attached.  See docs/340-nuget-packages.md.
+# and -- only after everything passed -- push the packages and their symbol packages to nuget.org
+# and create the GitHub release with the three packages and the four zips attached.  The symbol
+# packages are nuget.org's alone: a debugger finds them there, by package id and version, so the
+# release does not carry a second copy of them.  See docs/340-nuget-packages.md.
 #
 # Manual only (`workflow_dispatch`), and dry by default: pushing a version to nuget.org cannot be
 # undone, and neither can a published GitHub release.  The dry run does the whole pipeline except
@@ -169,6 +171,8 @@ jobs:
           path: temp/logs/**
           if-no-files-found: ignore
       - name: the packages
+        # The symbol packages ride along for the `push` job -- that is how they reach nuget.org --
+        # but build/release.sh takes the `.nupkg` only, so they are never release assets.
         uses: actions/upload-artifact@v7
         with:
           name: packages
