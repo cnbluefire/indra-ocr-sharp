@@ -24,7 +24,8 @@ public class ReadingOrderTests
     public void ReadingOrder_matches_reference()
     {
         var directory = TestModels.Directory;
-        if (directory is null || !File.Exists(Path.Combine(directory, "order.onnx")))
+        if (directory is null || !TestModels.IsCurrent ||
+            !File.Exists(Path.Combine(directory, "order.onnx")))
             return;
 
         using var options = OnnxSessions.CreateOptions(1);

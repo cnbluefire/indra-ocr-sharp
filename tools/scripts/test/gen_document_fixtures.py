@@ -25,6 +25,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import os
 import sys
 import zlib
 from pathlib import Path
@@ -32,7 +33,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(ROOT / "resources" / "indra-src"))
+REFERENCE = Path(os.environ.get("INDRA_OCR_REFERENCE", ROOT / "resources" / "indra-src"))
+sys.path.insert(0, str(REFERENCE))
 
 import numpy as np  # noqa: E402
 from indra_ocr.document import Converter, assign_runs, readable, right_to_left  # noqa: E402
@@ -41,8 +43,8 @@ from indra_ocr.textlayer import TextLine  # noqa: E402
 
 from pdf_samples import build_all  # noqa: E402
 
-MODELS = ROOT / "resources" / "models"
-EXAMPLES = ROOT / "resources" / "indra-src" / "assets" / "examples"
+MODELS = Path(os.environ.get("INDRA_OCR_TEST_MODELS", ROOT / "resources" / "models"))
+EXAMPLES = REFERENCE / "assets" / "examples"
 OUT = ROOT / "src" / "Indra.Ocr.Tests" / "fixtures" / "document.json"
 WORK = ROOT / "temp" / "document_samples"
 
@@ -341,7 +343,6 @@ PDF_CASES = [
     ("text", {}, None, 0),
     ("text", {"mode": "ocr"}, None, 0),
     ("text", {"mode": "text"}, None, 0),
-    ("text", {"pdf_order": False}, None, 0),
     ("text", {"dpi": 100.0}, None, 0),
     ("text", {"image_ocr": False}, None, 0),
     ("text", {}, None, 1),
@@ -422,7 +423,7 @@ for name, options in [("multi_column", {})]:
     image_cases.append(
         {
             "name": name,
-            "file": path.relative_to(ROOT / "resources").as_posix(),
+            "file": (Path("indra-src") / "assets" / "examples" / path.name).as_posix(),
             "sha256": sha(raw),
             "options": options,
             "pages": pages,

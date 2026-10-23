@@ -137,6 +137,7 @@ public sealed class PdfPage : IDisposable
         var quarters = new List<int>();
         var rawBoxes = new List<double[]>();
         var breaks = new List<int>(); // run ends after these positions
+        var quarterCounts = new int[4];
         int nChars = 0, nRotated = 0, nBad = 0;
 
         for (int i = 0; i < source.Count; i++)
@@ -189,9 +190,13 @@ public sealed class PdfPage : IDisposable
                     upright[a] = q;
                 }
 
+                if (q is int absoluteQuarter) quarterCounts[absoluteQuarter]++;
+
                 if (q != turn)
                 {
                     nRotated++; // not upright on the rendered page
+                    breaks.Add(chars.Count);
+                    continue;
                 }
                 if (q is null)
                 {
@@ -211,8 +216,6 @@ public sealed class PdfPage : IDisposable
             rawBoxes.Add([pc.Left, pc.Bottom, pc.Right, pc.Top]); // l, b, r, t
         }
 
-        var quarterCounts = new int[4];
-        foreach (int q in quarters) quarterCounts[q]++;
         TextLayerStats stats = new() { Chars = nChars, Rotated = nRotated, Bad = nBad,
             Quarters = quarterCounts, Turn = turn, Frame = outputFrame };
         if (chars.Count == 0)

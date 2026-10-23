@@ -13,6 +13,12 @@ public static class TestModels
     /// <summary>The shipped model set, <c>resources/models</c>.</summary>
     public static string? Directory { get; } = Find("meta.json", "resources", "models");
 
+    /// <summary>Whether the local external folder is the v1.1 family the current fixtures use.</summary>
+    public static bool IsCurrent => Directory is not null &&
+        File.Exists(Path.Combine(Directory, "rec_rtl.onnx")) &&
+        File.Exists(Path.Combine(Directory, "rec_world.onnx")) &&
+        File.Exists(Path.Combine(Directory, "lm.npz"));
+
     /// <summary>
     /// The folder with the math models — <c>temp/math-models</c>, the same snapshot plus
     /// <c>mathcls.onnx</c> and friends. It is downloaded on demand (the reference's

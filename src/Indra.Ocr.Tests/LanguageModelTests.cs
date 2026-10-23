@@ -8,7 +8,7 @@ public class LanguageModelTests
     [Fact]
     public void Wide_token_keys_and_backoff_values_are_read_from_npz()
     {
-        string path = Path.Combine(Path.GetTempPath(), "indra-tiny-lm.npz");
+        string path = Path.Combine(Path.GetTempPath(), $"indra-tiny-lm-{Guid.NewGuid():N}.npz");
         using (var zip = ZipFile.Open(path, ZipArchiveMode.Create))
         {
             Add(zip, "order", "<i8", BitConverter.GetBytes(2L), "()");

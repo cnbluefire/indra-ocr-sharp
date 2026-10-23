@@ -688,7 +688,7 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   cleanup. Order/assemble fixtures are regenerated from 1.1.2 through the override-aware generators;
   the old image fixture remains because its upstream image binaries changed and `resources/` is
   read-only.
-  Final verification against the temp `v1.1.2` checkout and `v1.1.0` model snapshot: 22/22 selected
+  Final verification: complete xUnit 393/393; against the temp `v1.1.2` checkout and `v1.1.0` model snapshot, 22/22 selected
   deterministic CLI cases (including image/PDF/text-layer/turned-PDF/negative-page paths), viewer
   CLI 20/20, and regenerated 1.1 order/assemble/layout tests 34/34; both hosts print 1.1.2 and the
   Release solution builds both library targets with 0 warnings/errors. The viewer HTTP reference

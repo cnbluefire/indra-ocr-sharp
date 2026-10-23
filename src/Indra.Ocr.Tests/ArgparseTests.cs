@@ -84,7 +84,7 @@ public class ArgparseTests
                         Fail("--dpi", "x", "a.pdf").Stderr);
         Assert.EndsWith("indra-ocr: error: argument --dpi: expected one argument\n",
                         Fail("--dpi").Stderr);
-        Assert.EndsWith("indra-ocr: error: argument --max-pages: invalid int value: 'x'\n",
+        Assert.EndsWith("indra-ocr: error: argument --max-pages: invalid _page_count value: 'x'\n",
                         Fail("--max-pages", "x", "a.pdf").Stderr);
         Assert.EndsWith("indra-ocr: error: argument --mode: invalid choice: 'nope' " +
                         "(choose from 'auto', 'ocr', 'text')\n", Fail("--mode", "nope", "a.pdf").Stderr);

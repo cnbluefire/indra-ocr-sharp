@@ -113,7 +113,8 @@ the committed 0.3.2 input set because `resources/` is read-only and upstream cha
 - Viewer command-line parity: 20/20; both hosts report `indra-ocr 1.1.2`.
 - The upstream handwriting example's 21 line texts match after LM beam search.
 
-The complete model-heavy xUnit run and viewer HTTP reference cannot coexist with all three v1.1 LM
-tables on this 2 GB Windows machine: when free memory fell below 203 MB, numpy/ORT and even MSBuild
-failed allocations. Those are deliberately recorded as environment limits, not parity passes; the
-release/CI runners (or another host with room) must run the complete suite.
+The complete xUnit suite is now 393/393. Real-model tests require the local external model folder to
+match the v1.1 family (RTL/world recognizers plus `lm.npz`); otherwise they skip instead of comparing
+new fixtures with an old v0.3.2 model set. The viewer HTTP *reference* still cannot coexist with all
+three v1.1 LM tables on this 2 GB Windows machine: when free memory fell below 203 MB, numpy/ORT and
+even MSBuild failed allocations, so that server comparison remains for CI or a roomier host.

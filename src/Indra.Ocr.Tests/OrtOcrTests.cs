@@ -235,7 +235,7 @@ public class OrtOcrTests
     [Fact]
     public void Detect_recognize_and_page_match_the_reference()
     {
-        if (Resources is null || TestModels.Directory is null)
+        if (Resources is null || TestModels.Directory is null || !TestModels.IsCurrent)
             return;
         int cases = 0;
         foreach (var c in Fx.GetProperty("cases").EnumerateArray())

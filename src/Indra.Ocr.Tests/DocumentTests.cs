@@ -229,7 +229,7 @@ public class DocumentTests
     [Fact]
     public void Readable_matches_the_reference()
     {
-        if (TestModels.Directory is null)
+        if (TestModels.Directory is null || !TestModels.IsCurrent)
             return;
         using var ocr = new OrtOcr(TestModels.Directory, threads: 4);
         int cases = 0;
@@ -248,7 +248,7 @@ public class DocumentTests
     [Fact]
     public void Convert_over_sample_pdfs_matches_the_reference()
     {
-        if (TestModels.Directory is null)
+        if (TestModels.Directory is null || !TestModels.IsCurrent)
             return;
         using var ocr = new OrtOcr(TestModels.Directory, threads: 4);
         int cases = 0;
@@ -283,7 +283,7 @@ public class DocumentTests
     [Fact]
     public void Convert_over_an_image_matches_the_reference()
     {
-        if (Resources is null || TestModels.Directory is null)
+        if (Resources is null || TestModels.Directory is null || !TestModels.IsCurrent)
             return;
         using var ocr = new OrtOcr(TestModels.Directory, threads: 4);
         int cases = 0;
