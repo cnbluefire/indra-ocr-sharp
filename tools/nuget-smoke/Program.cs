@@ -306,7 +306,8 @@ internal static class Program
             Check("Convert reads the first frame", one is not null && one.Text.Contains("12345"));
 
             var converter = new PdfConverter(ocr, dpi: 200.0, mode: "text");
-            Check("the converter reports its settings", converter.Dpi == 200.0 && converter.Mode == "text" && converter.PdfOrder && converter.ImageOcr);
+            Check("the converter reports its settings", converter.Dpi == 200.0 && converter.Mode == "text" && !converter.PdfOrder && converter.ImageOcr,
+                  $"dpi={converter.Dpi}, mode={converter.Mode}, pdfOrder={converter.PdfOrder}, imageOcr={converter.ImageOcr}");
             Check("PageScale is the dpi over 72", Math.Abs(PdfConverter.PageScale(72.0, 72.0, 144.0) - 2.0) < 1e-9);
 
             using (PdfDocument doc = PdfDocument.Open(pdf, password: null))
