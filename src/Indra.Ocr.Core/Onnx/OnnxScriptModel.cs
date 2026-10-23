@@ -36,9 +36,9 @@ public sealed class OnnxScriptModel : IScriptModel
         // An array range lowers to RuntimeHelpers.GetSubArray, which arrived in netstandard2.1;
         // below it the span copy is what the range would do.
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        return values.Length == batch ? values : values[..batch];
+        return values;
 #else
-        return values.Length == batch ? values : values.AsSpan(0, batch).ToArray();
+        return values;
 #endif
     }
 }

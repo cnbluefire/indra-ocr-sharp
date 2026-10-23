@@ -78,7 +78,6 @@ public class ViewerArgparseTests
         Assert.False(a.Tesseract);
         Assert.Equal("eng", a.TesseractLang);
         Assert.Equal("auto", a.Defaults.Mode);
-        Assert.True(a.Defaults.PdfOrder);
         Assert.True(a.Defaults.ImageOcr);
         Assert.False(a.Defaults.Math);
         Assert.False(a.Defaults.Furniture);
@@ -92,7 +91,7 @@ public class ViewerArgparseTests
         ViewerArgs a = ViewerParser.Read(
             Parse("--port", "9000", "--threads", "1", "--dpi", "72.5", "--max-pages", "3",
                   "--keep-furniture", "--tesseract", "--tesseract-lang", "deu", "--math",
-                  "--mode", "text", "--model-order", "--no-image-ocr",
+                  "--mode", "text", "--no-image-ocr",
                   "--model-dir", "temp/models"));
         Assert.Equal(9000, a.Port);
         Assert.Equal(1, a.Threads);
@@ -100,7 +99,6 @@ public class ViewerArgparseTests
         Assert.Equal("deu", a.TesseractLang);
         Assert.Equal(Path.Combine("temp", "models"), a.ModelDir);
         Assert.Equal("text", a.Defaults.Mode);
-        Assert.False(a.Defaults.PdfOrder);
         Assert.False(a.Defaults.ImageOcr);
         Assert.True(a.Defaults.Math);
         Assert.True(a.Defaults.Furniture);

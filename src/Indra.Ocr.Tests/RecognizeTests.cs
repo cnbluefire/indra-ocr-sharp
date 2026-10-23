@@ -81,6 +81,22 @@ public class RecognizeTests
         }
     }
 
+    private sealed class MultiScript : IScriptModel
+    {
+        public float[] Run(ReadOnlySpan<float> x, ReadOnlySpan<long> widths, int batch, int height,
+                           int width)
+        {
+            var p = new float[batch * 3];
+            for (int b = 0; b < batch; b++)
+            {
+                p[b * 3] = 0.3f;
+                p[b * 3 + 1] = 0.1f;
+                p[b * 3 + 2] = 0.6f;
+            }
+            return p;
+        }
+    }
+
     /// <summary>The shipped model set, opened once for the real cases (null when absent).</summary>
     private sealed class Models : IDisposable
     {
@@ -117,6 +133,28 @@ public class RecognizeTests
         var p = Fx.GetProperty("pages").GetProperty(name);
         return (B64.ZBytes(p.GetProperty("gray").GetString()!),
                 p.GetProperty("w").GetInt32(), p.GetProperty("h").GetInt32());
+    }
+
+    [Fact]
+    public void Unsure_multiclass_line_keeps_the_more_confident_reading()
+    {
+        var baseVocab = new Vocab(["a"]);
+        var worldVocab = new Vocab(["न"]);
+        var groups = new Dictionary<string, RecognizerGroup>
+        {
+            ["world"] = new("world", new StandInRec(1, 0.6f, 0.6f, "normal", 0), worldVocab),
+        };
+        var recognizer = new Recognizer(
+            new StandInRec(1, 0.9f, 0.9f, "normal", 0), baseVocab,
+            script: new MultiScript(), groups: groups,
+            scriptGroups: ["base", "cjk", "world"]);
+        var pixels = Enumerable.Repeat((byte)255, 200 * 800).ToArray();
+        float[] boxes = [10, 10, 300, 42, 1];
+
+        RecognizedLine line = Assert.Single(recognizer.Run(new GrayImage(800, 200, pixels), boxes));
+        Assert.NotEmpty(line.Text);
+        Assert.All(line.Text, c => Assert.Equal('a', c));
+        Assert.True(line.Confidence > 0.85);
     }
 
     private static float[] Boxes(JsonElement c) => B64.ZFloats(c.GetProperty("boxes").GetString()!);

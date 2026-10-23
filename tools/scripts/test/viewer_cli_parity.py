@@ -35,7 +35,9 @@ EXE = Path(os.environ.get(
     ROOT / "src" / "Indra.Ocr.Viewer" / "bin" / "Debug" / "net10.0" / "indra-ocr-viewer.exe"))
 
 ENV = dict(os.environ)
-ENV["PYTHONPATH"] = str(ROOT / "resources" / "indra-src")
+ENV["PYTHONPATH"] = os.environ.get("INDRA_OCR_REFERENCE", str(ROOT / "resources" / "indra-src"))
+ENV["OPENBLAS_NUM_THREADS"] = "1"
+ENV["OMP_NUM_THREADS"] = "1"
 ENV["PYTHONIOENCODING"] = "utf-8"
 ENV["COLUMNS"] = "80"
 
@@ -93,7 +95,7 @@ CASES = [
     parity.Case("nofolder", NOFOLDER),
     # --math asks model_dir for the math models too, so the missing list grows by five.
     parity.Case("nofolder-math", ("--math", *NOFOLDER)),
-    parity.Case("source-args", ("--mode", "text", "--model-order", "--no-image-ocr",
+    parity.Case("source-args", ("--mode", "text", "--no-image-ocr",
                                 "--keep-furniture", *NOFOLDER)),
     parity.Case("tesseract-lang", ("--tesseract-lang", "deu", *NOFOLDER)),
     # The reference cannot start with --tesseract at all (it imports pytesseract), so the case

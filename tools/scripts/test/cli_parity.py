@@ -39,14 +39,16 @@ EXE = Path(os.environ.get(
     "INDRA_OCR_EXE",
     ROOT / "src" / "Indra.Ocr.Cli" / "bin" / "Debug" / "net10.0" / "indra-ocr.exe"))
 TEMP = ROOT / "temp"
-MODELS = ROOT / "resources" / "models"
+MODELS = Path(os.environ.get("INDRA_OCR_TEST_MODELS", ROOT / "resources" / "models"))
 SCRIPTS = ROOT / "tools" / "scripts"
 TEST = ROOT / "tools" / "scripts" / "test"
 
 ENV = dict(os.environ)
-ENV["PYTHONPATH"] = str(ROOT / "resources" / "indra-src")
+ENV["PYTHONPATH"] = os.environ.get("INDRA_OCR_REFERENCE", str(ROOT / "resources" / "indra-src"))
 ENV["PYTHONIOENCODING"] = "utf-8"
 ENV["COLUMNS"] = "80"
+ENV["OPENBLAS_NUM_THREADS"] = "1"
+ENV["OMP_NUM_THREADS"] = "1"
 
 #: The JSON's timings object: keys and values are wall clock.
 _TIMINGS = re.compile(rb'"timings": \{[^}]*\}')
@@ -64,11 +66,20 @@ def reference_command(argv: list[str]) -> list[str]:
     """The reference as its console script runs it (its ``main()`` return value is the
     exit code; ``python -m indra_ocr`` would swallow it)."""
     return [str(PY), "-c",
-            "import sys; from indra_ocr.cli import main; sys.exit(main())", *argv]
+            "import sys; from indra_ocr.cli import main; sys.exit(main())", *model_argv(argv)]
 
 
 def port_command(argv: list[str]) -> list[str]:
-    return [str(EXE), *argv]
+    return [str(EXE), *model_argv(argv)]
+
+
+def model_argv(argv: list[str]) -> list[str]:
+    """Let a refresh point old cases at a new external model snapshot."""
+    out = list(argv)
+    for i in range(len(out) - 1):
+        if out[i] == "--model-dir" and out[i + 1] == "resources/models":
+            out[i + 1] = str(MODELS)
+    return out
 
 
 def ensure_inputs() -> None:
@@ -194,8 +205,6 @@ RUN_CASES = [
                             "--model-dir", "resources/models")),
     parity.Case("furniture", ("temp/pdf_samples/text.pdf", "--keep-furniture",
                               "--model-dir", "resources/models")),
-    parity.Case("order", ("temp/pdf_samples/text.pdf", "--model-order",
-                          "--model-dir", "resources/models")),
     parity.Case("no-image-ocr", ("temp/pdf_samples/image.pdf", "--no-image-ocr",
                                  "--model-dir", "resources/models")),
     parity.Case("math", ("temp/inputs/latin.png", "--math", "--model-dir", "resources/models")),

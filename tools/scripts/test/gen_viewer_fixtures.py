@@ -135,7 +135,6 @@ CASES = [
     ("text-dpi100", "text", 0, {"dpi": 100}),
     ("text-mode-text", "text", 0, {"mode": "text"}),
     ("text-mode-ocr", "text", 0, {"mode": "ocr"}),
-    ("text-model-order", "text", 0, {"model_order": True}),
     ("text-no-image-ocr", "text", 0, {"image_ocr": False}),
     ("text-page-2", "text", 1, {}),
     ("rotated-default", "rotated", 0, {}),

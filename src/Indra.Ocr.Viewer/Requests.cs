@@ -14,7 +14,6 @@ namespace Indra.Ocr.Viewer;
 /// </remarks>
 public sealed record ViewerDefaults(
     string Mode,
-    [property: JsonPropertyName("pdf_order")] bool PdfOrder,
     [property: JsonPropertyName("image_ocr")] bool ImageOcr,
     bool Math,
     bool Furniture,
@@ -31,7 +30,6 @@ public sealed record PageOptions(
     bool Math = false,
     bool Furniture = false,
     double? Dpi = null,
-    [property: JsonPropertyName("model_order")] bool ModelOrder = false,
     [property: JsonPropertyName("image_ocr")] bool? ImageOcr = null,
     bool Tesseract = false);
 

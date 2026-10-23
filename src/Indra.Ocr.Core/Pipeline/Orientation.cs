@@ -27,6 +27,7 @@ public interface IOrientModel
 /// </summary>
 public static class Orientation
 {
+    public const int Vertical = 4;
     /// <summary>ORIENT_SIDE: <c>orient.onnx</c> input side, the page's long side padded into a square.</summary>
     public const int OrientSide = 768;
 
@@ -42,7 +43,7 @@ public static class Orientation
     public const float OrientMin = 0.95f;
 
     /// <summary>DESKEW_MAX: degrees of tilt searched, in 0.5 degree steps and then 0.1 degree steps.</summary>
-    public const double DeskewMax = 5.0;
+    public const double DeskewMax = 45.0;
 
     /// <summary>DESKEW_MIN: smaller tilts are left alone (the search step is 0.1).</summary>
     public const double DeskewMin = 0.3;
@@ -87,8 +88,17 @@ public static class Orientation
         Guard.NotNull(model);
         var x = new float[side * side];
         OrientInput(gray, x, side);
-        Span<float> p = stackalloc float[4];
-        model.Run(x, p);
+        Span<float> p5 = stackalloc float[5];
+        Span<float> p = p5;
+        try
+        {
+            model.Run(x, p5);
+        }
+        catch (InvalidOperationException e) when (e.Message.Contains("returned 4 values"))
+        {
+            p = p5[..4];
+            model.Run(x, p);
+        }
         int k = Numerics.ArgMax(p);
         return p[k] > OrientMin ? k : 0;
     }
@@ -105,12 +115,28 @@ public static class Orientation
     /// where this scores independent angles in parallel. <c>1</c> is the worker-pool case.</param>
     public static double EstimateSkew(GrayImage gray, int side = DeskewSide, int threads = 1)
     {
-        float[] ink = SkewThumbnail(gray, side, out int w, out int h);
-        if (Numerics.Mean32(ink) < BlankInk) return 0.0;  // a blank page has no rows to straighten
-        var coarse = NpyArange.Range(-DeskewMax, DeskewMax + 1e-6, 0.5);
-        int best = BestAngle(ink, w, h, coarse, threads);
-        var fine = NpyArange.Range(coarse[best] - 0.5, coarse[best] + 0.5 + 1e-6, 0.1);
-        return fine[BestAngle(ink, w, h, fine, threads)];
+        float[] fineInk = SkewThumbnail(gray, side, out int w, out int h);
+        if (Numerics.Mean32(fineInk) < BlankInk) return 0.0;
+        float[] coarseInk = SkewThumbnail(gray, side / 2, out int cw, out int ch);
+        double[] grid = NpyArange.Range(-DeskewMax, DeskewMax + 1e-6, 2.0);
+        float[] scores = Scores(coarseInk, cw, ch, grid, threads);
+        int[] ranked = Numerics.ArgSort(scores);
+        var starts = new HashSet<double> { 0.0 };
+        starts.Add(grid[ranked[^1]]);
+        starts.Add(grid[ranked[^2]]);
+        var near = new List<double>();
+        foreach (double start in starts)
+            near.AddRange(NpyArange.Range(start - 2.0, start + 2.0 + 1e-6, 0.5));
+        double[] unique = near.Distinct().ToArray();
+        float[] values = Scores(fineInk, w, h, unique, threads);
+        var byAngle = new Dictionary<double, float>();
+        for (int i = 0; i < unique.Length; i++) byAngle[unique[i]] = values[i];
+        double first = near[0];
+        float best = byAngle[first];
+        foreach (double angle in near)
+            if (byAngle[angle] > best) { first = angle; best = byAngle[angle]; }
+        double[] last = NpyArange.Range(first - 0.5, first + 0.5 + 1e-6, 0.1);
+        return last[BestAngle(fineInk, w, h, last, threads)];
     }
 
     /// <summary>Python's <c>max(angles, key=sharpness)</c>: the first angle with the largest
@@ -123,6 +149,22 @@ public static class Orientation
     /// pipeline's slowest step by far, and the reference has OpenCV's own threads on it.
     /// </remarks>
     private static int BestAngle(float[] ink, int width, int height, double[] angles, int threads)
+    {
+        float[] values = Scores(ink, width, height, angles, threads);
+        int best = 0;
+        float bestValue = float.NegativeInfinity;
+        for (int i = 0; i < values.Length; i++)
+        {
+            if (i == 0 || values[i] > bestValue)
+            {
+                bestValue = values[i];
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    private static float[] Scores(float[] ink, int width, int height, double[] angles, int threads)
     {
         var values = new float[angles.Length];
         if (threads > 1 && angles.Length > 1)
@@ -137,17 +179,7 @@ public static class Orientation
                 values[i] = Sharpness(ink, width, height, angles[i]);
         }
 
-        int best = 0;
-        float bestValue = float.NegativeInfinity;
-        for (int i = 0; i < values.Length; i++)
-        {
-            if (i == 0 || values[i] > bestValue)
-            {
-                bestValue = values[i];
-                best = i;
-            }
-        }
-        return best;
+        return values;
     }
 
     /// <summary>
@@ -327,9 +359,9 @@ public static class Orientation
         if (turns != 0)
         {
             var turned = new byte[gray.PixelCount];
-            Rotate90(gray, turned, -turns);
+            Rotate90(gray, turned, turns == Vertical ? 1 : -turns);
             page = turned;
-            if (turns % 2 == 1) (width, height) = (height, width);   // only odd turns swap
+            if (turns is 1 or 3 or Vertical) (width, height) = (height, width);
         }
 
         var view = page is null ? gray : new GrayImage(width, height, page);

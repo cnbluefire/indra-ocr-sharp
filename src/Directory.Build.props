@@ -12,7 +12,7 @@
          `indra-ocr` — and not the assembly name, which for the viewer is `indra-ocr-viewer`;
          the version is the Python package's (pyproject.toml, `__init__.py`). -->
     <Product>indra-ocr</Product>
-    <Version>0.3.2</Version>
+    <Version>1.1.2</Version>
     <!-- The NuGet line (docs/340-nuget-packages.md).  `PackageVersion` is what the three packages
          carry: the parity version above plus the flavor we are publishing.  The major/minor track
          the reference, so a port of a newer upstream release moves them, and only the flavor moves

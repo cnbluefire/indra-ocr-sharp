@@ -19,6 +19,13 @@ public interface IDetModel
     void Run(ReadOnlySpan<float> x, int height, int width, Span<float> logits);
 }
 
+public interface IPictureDetModel : IDetModel
+{
+    float[]? TakePictureLogits(out int height, out int width);
+}
+
+public readonly record struct DetectionResult(float[] Boxes, float[] Pictures);
+
 /// <summary>
 /// Port of <c>pipeline.OrtOCR.detect</c>: one detection pass over the page, a second one at a
 /// larger long side when the lines come back too short to read, and the boxes scaled back to page
@@ -106,6 +113,47 @@ public static class Detect
         }
         if (boxes.Length != 0) ScaleAndClip(boxes, scale, gray.Width, gray.Height);
         return boxes;
+    }
+
+    public static DetectionResult RunAll(IDetModel model, GrayImage gray, int longSide,
+                                         bool adaptive = true)
+    {
+        float[] boxes = DetectAt(model, gray, longSide, out double scale);
+        if (adaptive)
+        {
+            int second = AdaptiveLongSide(boxes, longSide, out _);
+            if (second != longSide) boxes = DetectAt(model, gray, second, out scale);
+        }
+        if (boxes.Length != 0) ScaleAndClip(boxes, scale, gray.Width, gray.Height);
+        if (model is not IPictureDetModel picture ||
+            picture.TakePictureLogits(out int h, out int w) is not float[] logits)
+            return new DetectionResult(boxes, Array.Empty<float>());
+        return new DetectionResult(boxes, PictureBoxes(logits, w, h, gray.Width, gray.Height, scale));
+    }
+
+    private static float[] PictureBoxes(float[] logits, int width, int height, int pageW, int pageH,
+                                        double scale)
+    {
+        var mask = new byte[width * height];
+        for (int i = 0; i < mask.Length; i++) mask[i] = logits[i] > 0 ? (byte)1 : (byte)0;
+        var labels = new int[mask.Length];
+        int count = CvConnectedComponents.LabelComponents8(new GrayImage(width, height, mask), labels);
+        var stats = new int[count * 5];
+        CvConnectedComponents.ComputeStats(labels, width, height, count, stats);
+        var result = new List<float>();
+        double factor = DetPost.OutStride / scale;
+        double minArea = 0.004 * pageW * pageH;
+        for (int k = 1; k < count; k++)
+        {
+            int o = k * 5;
+            double x0 = stats[o] * factor, y0 = stats[o + 1] * factor;
+            double x1 = (stats[o] + stats[o + 2]) * factor;
+            double y1 = (stats[o + 1] + stats[o + 3]) * factor;
+            if ((x1 - x0) * (y1 - y0) < minArea) continue;
+            result.Add((float)x0); result.Add((float)y0); result.Add((float)Math.Min(x1, pageW));
+            result.Add((float)Math.Min(y1, pageH));
+        }
+        return result.ToArray();
     }
 
     /// <summary>

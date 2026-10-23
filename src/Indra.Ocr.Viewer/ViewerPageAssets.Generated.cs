@@ -128,7 +128,6 @@ footer{padding:18px 24px;border-top:var(--hairline) solid var(--rule);display:fl
  <div class="group"><div class="label">Pipeline</div>
   <label class="sw">Math as LaTeX<input type="checkbox" id="math"></label>
   <label class="sw">Keep headers and footers<input type="checkbox" id="furniture"></label>
-  <label class="sw">PDF reading order<input type="checkbox" id="pdforder" checked></label>
   <label class="sw">OCR text inside images<input type="checkbox" id="imageocr" checked></label>
   <label class="sw" id="tesslab" hidden>Compare with Tesseract<input type="checkbox" id="tess"></label>
   <div class="row2"><div class="field"><span class="label">DPI</span><select id="dpi"><option>150</option><option selected>200</option><option>300</option></select></div>
@@ -141,7 +140,7 @@ footer{padding:18px 24px;border-top:var(--hairline) solid var(--rule);display:fl
   <label class="sw">Reading order<input type="checkbox" class="disp" data-c="order"></label>
   <div id="legend" class="hint"></div></div>
  <div class="group"><div class="label">Run</div><div id="status"></div><div id="stats"></div></div>
- <div class="callout">Need handwriting, math and tables at the highest accuracy? <a href="https://www.datalab.to/?utm_source=indra-viewer" target="_blank" rel="noopener">Chandra on Datalab</a> reads them, with $5 in free credits to start.</div>
+ <div class="callout">Need handwriting, math and tables at the highest accuracy? <a href="https://www.datalab.to/?utm_source=indra-viewer" target="_blank" rel="noopener">Chandra on Datalab</a> reads them, with about 5,000 free convert pages every month (work email).</div>
 </aside>
 <main id="out"><div class="empty"><h2>Read a document</h2>Drop a PDF or an image on the left. Pages appear as they finish, with lines, layout blocks and reading order drawn over each page.</div></main>
 </div>
@@ -164,13 +163,13 @@ drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};drop.ondragle
 drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');e.dataTransfer.files[0]&&start(e.dataTransfer.files[0])};
 $('#rerun').onclick=()=>doc&&run();
 fetch('/info').then(r=>r.json()).then(i=>{$('#ver').textContent='v'+i.version;if(i.tesseract)$('#tesslab').hidden=false;const d=i.defaults||{};
- setMode(d.mode||'auto');$('#math').checked=!!d.math;$('#furniture').checked=!!d.furniture;$('#pdforder').checked=d.pdf_order!==false;$('#imageocr').checked=d.image_ocr!==false;
+ setMode(d.mode||'auto');$('#math').checked=!!d.math;$('#furniture').checked=!!d.furniture;$('#imageocr').checked=d.image_ocr!==false;
  if(d.dpi)$('#dpi').value=String(Math.round(d.dpi));if(d.max_pages)$('#maxp').value=d.max_pages});
 setMode('auto');
 async function start(f){$('#fname').textContent=f.name+' · '+(f.size/1024).toFixed(0)+' KB';$('#status').textContent='Uploading ...';
  const u=await (await fetch('/upload',{method:'POST',body:await f.arrayBuffer()})).json();
  if(u.error){$('#status').textContent='Error: '+u.error;return}doc={...u,name:f.name};$('#rerun').disabled=false;run()}
-function opts(){return{mode,math:$('#math').checked,furniture:$('#furniture').checked,model_order:!$('#pdforder').checked,image_ocr:$('#imageocr').checked,dpi:+$('#dpi').value,tesseract:$('#tess').checked}}
+function opts(){return{mode,math:$('#math').checked,furniture:$('#furniture').checked,image_ocr:$('#imageocr').checked,dpi:+$('#dpi').value,tesseract:$('#tess').checked}}
 async function run(){const id=++runId,o=opts(),N=Math.min(doc.pages,Math.max(1,+$('#maxp').value||1));
  $('#out').innerHTML='';stats=[];summary();const t0=performance.now();
  for(let n=0;n<N;n++){if(id!==runId)return;$('#status').textContent=`Reading page ${n+1} of ${N}`+(doc.pages>N?` (first ${N} of ${doc.pages})`:'')+(o.math&&n===0?' · math models load on first use':'')+' ...';

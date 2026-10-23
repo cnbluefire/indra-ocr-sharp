@@ -335,7 +335,7 @@ public class ReferenceInputsTests
             "local disk and outgoing traffic has been disabled. To enable repo look-ups and " +
             "downloads online, set 'HF_HUB_OFFLINE=0' as environment variable.";
         Assert.Equal(
-            "could not download the models from Hugging Face (datalab-to/indra-ocr, v3.1.1): " +
+            "could not download the models from Hugging Face (datalab-to/indra-ocr, v1.1.0): " +
             $"LocalEntryNotFoundError: {reason[..200]}. Check the network connection, or point at " +
             "a local model folder with --model-dir or INDRA_OCR_MODEL_DIR.",
             ex.Message);

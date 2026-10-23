@@ -57,7 +57,7 @@ internal static class ViewerParser
     /// <summary>The parsed command line, as <c>viewer._main</c> reads it off the namespace.</summary>
     internal static ViewerArgs Read(ParsedArguments a)
     {
-        (string mode, bool pdfOrder, bool imageOcr) = SourceArguments.Options(a);
+        (string mode, _, bool imageOcr) = SourceArguments.Options(a);
         return new ViewerArgs(
             ModelDir: a.Str("model_dir"),
             Port: a.Int("port"),
@@ -66,7 +66,6 @@ internal static class ViewerParser
             TesseractLang: a.Str("tesseract_lang") ?? "eng",
             Defaults: new ViewerDefaults(
                 Mode: mode,
-                PdfOrder: pdfOrder,
                 ImageOcr: imageOcr,
                 Math: a.Flag("math"),
                 Furniture: a.Flag("keep_furniture"),

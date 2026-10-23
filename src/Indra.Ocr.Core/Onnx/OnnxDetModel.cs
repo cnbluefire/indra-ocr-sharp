@@ -12,9 +12,11 @@ namespace Indra.Ocr.Onnx;
 /// <c>pipeline.OrtOCR._detect_at</c>'s <c>self.det.run(None, {"x": ...})</c>.
 /// </summary>
 /// <remarks>The object borrows the session: it does not dispose it (the model set owns it).</remarks>
-public sealed class OnnxDetModel : IDetModel
+public sealed class OnnxDetModel : IPictureDetModel
 {
     private readonly InferenceSession _session;
+    private float[]? _pictures;
+    private int _pictureHeight, _pictureWidth;
 
     public OnnxDetModel(InferenceSession session) =>
         _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -27,7 +29,7 @@ public sealed class OnnxDetModel : IDetModel
 
         int oh = height / DetPost.OutStride, ow = width / DetPost.OutStride;
         var dims = output.Dimensions;
-        if (dims.Length != 4 || dims[1] != 3 || dims[2] != oh || dims[3] != ow)
+        if (dims.Length != 4 || dims[1] < 3 || dims[2] != oh || dims[3] != ow)
             throw new InvalidOperationException(
                 $"det model returned [{string.Join(",", dims.ToArray())}], expected [1,3,{oh},{ow}]");
 
@@ -36,5 +38,17 @@ public sealed class OnnxDetModel : IDetModel
             throw new InvalidOperationException(
                 $"det model returned {values.Length} values, expected {logits.Length}");
         values.AsSpan(0, logits.Length).CopyTo(logits);
+        if (dims[1] > 3)
+        {
+            _pictures = values.AsSpan(3 * oh * ow, oh * ow).ToArray();
+            _pictureHeight = oh; _pictureWidth = ow;
+        }
+        else _pictures = null;
+    }
+
+    public float[]? TakePictureLogits(out int height, out int width)
+    {
+        height = _pictureHeight; width = _pictureWidth;
+        float[]? value = _pictures; _pictures = null; return value;
     }
 }

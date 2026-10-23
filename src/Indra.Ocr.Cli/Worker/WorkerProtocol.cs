@@ -180,6 +180,7 @@ internal static class WorkerProtocol
         writer.Write(page.Markdown ?? "");
         writer.Write(page.Rotation);
         writer.Write(page.Skew);
+        writer.Write(page.Vertical);
 
         writer.Write(page.Lines.Count);
         foreach (OcrLine line in page.Lines)
@@ -224,6 +225,7 @@ internal static class WorkerProtocol
         string markdownText = reader.ReadString();
         int rotation = reader.ReadInt32();
         double skew = reader.ReadDouble();
+        bool vertical = reader.ReadBoolean();
 
         int lineCount = reader.ReadInt32();
         var lines = new List<OcrLine>(lineCount);
@@ -263,7 +265,7 @@ internal static class WorkerProtocol
         }
 
         var page = new OcrPage(lines, timings, hasMarkdown ? markdownText : null, source, note,
-                               blocks, rotation, skew);
+                               blocks, rotation, skew, vertical);
         return (index, page);
     }
 }

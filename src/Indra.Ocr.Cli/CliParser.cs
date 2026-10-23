@@ -40,7 +40,8 @@ internal static class CliParser
                        help: "cores to use (default: all this process may run on, here " +
                              $"{UsableCores()})");
         ap.AddArgument(["--dpi"], type: ArgumentType.Float, @default: 200.0);
-        ap.AddArgument(["--max-pages"], type: ArgumentType.Int, @default: 0L);
+        ap.AddArgument(["--max-pages"], type: ArgumentType.PageCount, @default: 0L,
+                       help: "read at most this many pages of each file (0, the default: all)");
         ap.AddArgument(["--password"], @default: null, help: "password of encrypted PDFs");
         ap.AddArgument(["--math"], action: ArgumentAction.StoreTrue,
                        help: "write math as LaTeX ($...$); slower on pages with math " +

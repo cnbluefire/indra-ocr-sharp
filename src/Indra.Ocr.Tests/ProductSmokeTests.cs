@@ -13,9 +13,9 @@ public class ProductSmokeTests
         // (cli.py:72, viewer.py:609) and what the viewer's /info reports (viewer.py:262).  It
         // lives in the assembly now: Directory.Build.props stamps `Product` and `Version` on
         // every project, and the hosts read them back (ProductAttributes).
-        Assert.Equal("indra-ocr 0.3.2", ProductAttributes.VersionLine(typeof(CliParser).Assembly));
-        Assert.Equal("indra-ocr 0.3.2",
+        Assert.Equal("indra-ocr 1.1.2", ProductAttributes.VersionLine(typeof(CliParser).Assembly));
+        Assert.Equal("indra-ocr 1.1.2",
                      ProductAttributes.VersionLine(typeof(ViewerParser).Assembly));
-        Assert.Equal("0.3.2", ProductAttributes.Version(typeof(ViewerParser).Assembly));
+        Assert.Equal("1.1.2", ProductAttributes.Version(typeof(ViewerParser).Assembly));
     }
 }

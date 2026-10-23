@@ -40,11 +40,11 @@ public static class RecPreproc
     /// (aspect ratio, 8-multiple, <paramref name="maxWidth"/> clamp), not the box width.</param>
     public static float[] CropLine(GrayImage gray, ReadOnlySpan<float> box, out int outWidth,
                                    int height = LineHeight, double padY = PadY, double padX = PadX,
-                                   int maxWidth = 4096)
+                                   int maxWidth = 4096, int window = 1, bool? dark = null)
     {
         Span<double> widened = stackalloc double[4];
         for (int i = 0; i < 4; i++) widened[i] = box[i];
-        return CropLine(gray, widened, out outWidth, height, padY, padX, maxWidth);
+        return CropLine(gray, widened, out outWidth, height, padY, padX, maxWidth, window, dark);
     }
 
     /// <summary>
@@ -54,8 +54,10 @@ public static class RecPreproc
     /// </summary>
     public static float[] CropLine(GrayImage gray, ReadOnlySpan<double> box, out int outWidth,
                                    int height = LineHeight, double padY = PadY, double padX = PadX,
-                                   int maxWidth = 4096)
+                                   int maxWidth = 4096, int window = 1, bool? dark = null)
     {
+        padY = (window * (1 + 2 * padY) - 1) / 2;
+        height *= window;
         double x0 = box[0], y0 = box[1], x1 = box[2], y1 = box[3];
         double h = Math.Max(1.0, y1 - y0);
         double xLo = x0 - padX * h, xHi = x1 + padX * h;
@@ -67,7 +69,11 @@ public static class RecPreproc
         int cw = Math.Max(1, ix1 - ix0), ch = Math.Max(1, iy1 - iy0);
 
         var crop = new byte[ch * cw];
-        crop.AsSpan().Fill((byte)255);                   // white outside the page
+        // The pipeline decides this once per line and passes it to both the normal and tall crop.
+        // Keeping the low-level default light preserves callers that deliberately crop without the
+        // new darkness pass (the reference's line_mask.crop_lines owns that decision too).
+        bool darkLine = dark ?? false;
+        crop.AsSpan().Fill(darkLine ? (byte)0 : (byte)255);
         int sx0 = Math.Max(0, ix0), sy0 = Math.Max(0, iy0);
         int sx1 = Math.Min(pageW, ix1), sy1 = Math.Min(pageH, iy1);
         if (sx1 > sx0 && sy1 > sy0)
@@ -86,8 +92,62 @@ public static class RecPreproc
         CvResize.Resize8u(new GrayImage(cw, ch, crop), resized, outWidth, height, interpolation);
 
         var ink = new float[outWidth * height];
-        for (int i = 0; i < ink.Length; i++) ink[i] = 1f - resized[i] / 255f;
+        for (int i = 0; i < ink.Length; i++)
+            ink[i] = darkLine ? resized[i] / 255f : 1f - resized[i] / 255f;
         return ink;
+    }
+
+    /// <summary>Whether a line is light text on a dark ground.</summary>
+    public static bool IsDarkLine(GrayImage gray, ReadOnlySpan<float> box)
+    {
+        Span<double> widened = stackalloc double[4];
+        for (int i = 0; i < 4; i++) widened[i] = box[i];
+        return IsDarkLine(gray, widened);
+    }
+
+    public static bool IsDarkLine(GrayImage gray, ReadOnlySpan<double> box)
+    {
+        int x0 = Math.Max(0, (int)box[0]);
+        int y0 = Math.Max(0, (int)box[1]);
+        int x1 = Math.Min(gray.Width, (int)box[2] + 1);
+        int y1 = Math.Min(gray.Height, (int)box[3] + 1);
+        if (x1 <= x0 || y1 <= y0) return false;
+
+        var hist = new int[256];
+        int n = 0;
+        for (int y = y0; y < y1; y++)
+        {
+            ReadOnlySpan<byte> row = gray.Row(y).Slice(x0, x1 - x0);
+            foreach (byte v in row) hist[v]++;
+            n += row.Length;
+        }
+
+        double lo = Percentile(hist, n, 0.02);
+        double med = Percentile(hist, n, 0.5);
+        double hi = Percentile(hist, n, 0.98);
+        return hi - med > 2 * (med - lo) + 8;
+    }
+
+    private static double Percentile(ReadOnlySpan<int> hist, int n, double q)
+    {
+        double x = q * (n - 1);
+        int i = (int)Math.Floor(x);
+        double g = x - i;
+        int lo = ValueAt(hist, i);
+        int hi = ValueAt(hist, Math.Min(i + 1, n - 1));
+        double d = hi - lo;
+        return g >= 0.5 ? hi - d * (1 - g) : lo + d * g;
+    }
+
+    private static int ValueAt(ReadOnlySpan<int> hist, int index)
+    {
+        int cumulative = 0;
+        for (int i = 0; i < hist.Length; i++)
+        {
+            cumulative += hist[i];
+            if (cumulative > index) return i;
+        }
+        return 255;
     }
 
     /// <summary>

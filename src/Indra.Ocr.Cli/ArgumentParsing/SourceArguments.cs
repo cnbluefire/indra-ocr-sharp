@@ -23,10 +23,6 @@ public static class SourceArguments
                   "ocr: never read the text layer; text: use the text layer even when the " +
                   "checks fail");
         group.AddArgument(
-            ["--model-order"],
-            action: ArgumentAction.StoreTrue,
-            help: "order text-layer lines with the order model, not the PDF content order");
-        group.AddArgument(
             ["--no-image-ocr"],
             action: ArgumentAction.StoreTrue,
             help: "on text-layer pages, do not OCR text inside images");
@@ -34,5 +30,5 @@ public static class SourceArguments
 
     /// <summary><c>cli.source_options</c>: the mode, and the two flags the options invert.</summary>
     public static (string Mode, bool PdfOrder, bool ImageOcr) Options(ParsedArguments a)
-        => (a.Str("mode") ?? "auto", !a.Flag("model_order"), !a.Flag("no_image_ocr"));
+        => (a.Str("mode") ?? "auto", true, !a.Flag("no_image_ocr"));
 }

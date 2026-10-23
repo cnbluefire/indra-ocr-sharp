@@ -270,4 +270,23 @@ public class OrderPostTests
                 return true;
         return false;
     }
+    [Fact]
+    public void Cjk_display_width_and_sentence_end_match_1_1()
+    {
+        float[] boxes = [0, 0, 100, 20];
+        float[] latin = OrderPost.LineFeatures(boxes, 1, 100, 100, ["ab."]);
+        float[] cjk = OrderPost.LineFeatures(boxes, 1, 100, 100, ["中文。"]);
+        Assert.True(cjk[OrderPost.GeomCount] > latin[OrderPost.GeomCount]);
+        Assert.Equal(1f, cjk[OrderPost.GeomCount + 4]);
+    }
+
+    [Fact]
+    public void Xycut_blocks_separate_whitespace_regions()
+    {
+        float[] boxes = [0, 0, 40, 10, 0, 12, 40, 22, 100, 0, 140, 10];
+        List<List<int>> blocks = OrderPost.XyCutBlocks(boxes, 3);
+        Assert.Equal(2, blocks.Count);
+        Assert.Equal([0, 1], blocks[0]);
+        Assert.Equal([2], blocks[1]);
+    }
 }

@@ -25,6 +25,7 @@ import base64
 import ctypes
 import json
 import math
+import os
 import sys
 import unicodedata
 import zlib
@@ -37,7 +38,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from refutil import fixtures_dir  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / "resources" / "indra-src"))
+REFERENCE = Path(os.environ.get("INDRA_OCR_REFERENCE", ROOT / "resources" / "indra-src"))
+sys.path.insert(0, str(REFERENCE))
 from indra_ocr.order_post import (  # noqa: E402
     N_FEATS,
     _cluster,
@@ -48,7 +50,7 @@ from indra_ocr.order_post import (  # noqa: E402
     order_xycut,
 )
 
-MODELS = ROOT / "resources" / "models"
+MODELS = Path(os.environ.get("INDRA_OCR_TEST_MODELS", ROOT / "resources" / "models"))
 FIX = fixtures_dir()
 f32_ = np.float32
 
@@ -651,7 +653,9 @@ def ranges(cps) -> list:
 
 
 uni = {"note": "Python 3.14 / unicodedata " + unicodedata.unidata_version,
-       "digit": ranges(digit), "upper": ranges(upper), "space": ranges(space)}
+       "digit": ranges(digit), "upper": ranges(upper), "space": ranges(space),
+       "lower": ranges(cp for cp in range(0x110000) if chr(cp).islower()),
+       "alpha": ranges(cp for cp in range(0x110000) if chr(cp).isalpha())}
 uni_path = FIX / "unicode_predicates.json"
 uni_path.write_text(json.dumps(uni, indent=1) + "\n", encoding="utf-8")
 print(f"wrote {uni_path.name}: digit {len(digit)} cps / upper {len(upper)} / space {len(space)}")

@@ -1,6 +1,6 @@
 usage: indra-ocr-viewer [-h] [--model-dir MODEL_DIR] [--mode {auto,ocr,text}]
-                        [--model-order] [--no-image-ocr] [--version]
-                        [--port PORT] [--threads THREADS] [--dpi DPI]
+                        [--no-image-ocr] [--version] [--port PORT]
+                        [--threads THREADS] [--dpi DPI]
                         [--max-pages MAX_PAGES] [--keep-furniture]
                         [--tesseract] [--tesseract-lang TESSERACT_LANG]
                         [--math]
@@ -41,6 +41,4 @@ text layer or OCR (PDFs):
                         auto: text layer where it passes the checks, OCR
                         elsewhere (default); ocr: never read the text layer;
                         text: use the text layer even when the checks fail
-  --model-order         order text-layer lines with the order model, not the
-                        PDF content order
   --no-image-ocr        on text-layer pages, do not OCR text inside images

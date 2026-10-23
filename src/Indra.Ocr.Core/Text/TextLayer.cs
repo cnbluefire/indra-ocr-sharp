@@ -6,11 +6,14 @@ public readonly record struct TextChar(string Character, double[] Bbox);
 /// <summary>One text-layer run: its box, its text, and its characters with boxes.</summary>
 public sealed class TextLine
 {
-    public TextLine(double[] bbox, string text, IReadOnlyList<TextChar> chars)
+    public TextLine(double[] bbox, string text, IReadOnlyList<TextChar> chars, int quarter = 0,
+                    int? sequence = null)
     {
         Bbox = bbox;
         Text = text;
         Chars = chars;
+        Quarter = quarter;
+        Sequence = sequence;
     }
 
     /// <summary>The box (left, top, right, bottom) in the rendered frame, from the ink characters.</summary>
@@ -20,6 +23,8 @@ public sealed class TextLine
 
     /// <summary>The characters in PDF order (whitespace included).</summary>
     public IReadOnlyList<TextChar> Chars { get; }
+    public int Quarter { get; }
+    public int? Sequence { get; }
 }
 
 /// <summary>
@@ -43,6 +48,12 @@ public sealed record TextLayerStats
 
     /// <summary>Share of runs with no ink under them, rounded to 4 decimals (Python's <c>round</c>).</summary>
     public double? NoInk { get; init; }
+    public IReadOnlyList<int>? Quarters { get; init; }
+    public IReadOnlyList<int>? Steps { get; init; }
+    public int Turn { get; init; }
+    public int Frame { get; init; }
+    public bool Vertical { get; init; }
+    public double? VisualRtl { get; init; }
 }
 
 /// <summary>The text layer of one page and the verdict on it.</summary>
@@ -53,13 +64,15 @@ public sealed class TextLayer
         (double Width, double Height) size,
         bool trusted,
         string reason,
-        TextLayerStats stats)
+        TextLayerStats stats,
+        IReadOnlyList<TextLine>? rotated = null)
     {
         Lines = lines;
         Size = size;
         Trusted = trusted;
         Reason = reason;
         Stats = stats;
+        Rotated = rotated ?? Array.Empty<TextLine>();
     }
 
     /// <summary>The runs in PDF content order.</summary>
@@ -74,4 +87,5 @@ public sealed class TextLayer
     public string Reason { get; }
 
     public TextLayerStats Stats { get; }
+    public IReadOnlyList<TextLine> Rotated { get; }
 }

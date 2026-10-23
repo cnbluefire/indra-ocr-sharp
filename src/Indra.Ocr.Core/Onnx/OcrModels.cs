@@ -14,6 +14,20 @@ namespace Indra.Ocr.Onnx;
 /// shipped model set has no <c>mask.onnx</c>); <c>script</c> and <c>rec_cjk</c> come as a pair
 /// and switch on the CJK recognizer.
 /// </remarks>
+public sealed class OcrModelGroup
+{
+    internal OcrModelGroup(string name, InferenceSession session, Vocab vocab)
+    {
+        Name = name;
+        Session = session;
+        Vocab = vocab;
+    }
+
+    public string Name { get; }
+    public InferenceSession Session { get; }
+    public Vocab Vocab { get; }
+}
+
 public sealed class OcrModels : IDisposable
 {
     private readonly SessionOptions? _ownedOptions;
@@ -26,11 +40,12 @@ public sealed class OcrModels : IDisposable
         InferenceSession? order,
         InferenceSession? orient,
         InferenceSession? script,
-        InferenceSession? recCjk,
+        IReadOnlyDictionary<string, OcrModelGroup> groups,
+        IReadOnlyList<string> scriptGroups,
         Vocab vocab,
-        Vocab? vocabCjk,
         int detLongSide,
         int recHeight,
+        int recWindow,
         SessionOptions? ownedOptions)
     {
         Directory = directory;
@@ -40,11 +55,12 @@ public sealed class OcrModels : IDisposable
         Order = order;
         Orient = orient;
         Script = script;
-        RecCjk = recCjk;
+        Groups = groups;
+        ScriptGroups = scriptGroups;
         Vocab = vocab;
-        VocabCjk = vocabCjk;
         DetLongSide = detLongSide;
         RecHeight = recHeight;
+        RecWindow = recWindow;
         _ownedOptions = ownedOptions;
     }
 
@@ -63,23 +79,32 @@ public sealed class OcrModels : IDisposable
     /// <summary>Page-orientation classifier; <c>null</c> when absent.</summary>
     public InferenceSession? Orient { get; }
 
-    /// <summary>Hanzi line classifier; set together with <see cref="RecCjk"/>.</summary>
+    /// <summary>Script-group classifier; set when at least one group recognizer is available.</summary>
     public InferenceSession? Script { get; }
 
     /// <summary>The CJK line recognizer; set together with <see cref="Script"/>.</summary>
-    public InferenceSession? RecCjk { get; }
+    public InferenceSession? RecCjk => Groups.TryGetValue("cjk", out var g) ? g.Session : null;
 
     /// <summary>The line recognizer's vocabulary (Latin/multi).</summary>
     public Vocab Vocab { get; }
 
     /// <summary>The CJK recognizer's vocabulary, or <c>null</c> without the CJK models.</summary>
-    public Vocab? VocabCjk { get; }
+    public Vocab? VocabCjk => Groups.TryGetValue("cjk", out var g) ? g.Vocab : null;
+
+    /// <summary>Every optional group recognizer keyed by its metadata name.</summary>
+    public IReadOnlyDictionary<string, OcrModelGroup> Groups { get; }
+
+    /// <summary><c>script.onnx</c>'s class order (<c>script_groups</c> in metadata).</summary>
+    public IReadOnlyList<string> ScriptGroups { get; }
 
     /// <summary><c>det_long_side</c> from <c>meta.json</c>.</summary>
     public int DetLongSide { get; }
 
     /// <summary><c>rec_height</c> from <c>meta.json</c>.</summary>
     public int RecHeight { get; }
+
+    /// <summary>Tall-window multiplier for the base recognizer (<c>rec_window</c>; default 1).</summary>
+    public int RecWindow { get; }
 
     /// <summary>Whether the CJK recognizer is available.</summary>
     public bool HasCjk => RecCjk is not null;
@@ -152,24 +177,39 @@ public sealed class OcrModels : IDisposable
             var meta = metaDoc.RootElement;
             var vocab = Vocab.FromJson(meta.GetProperty("vocab").GetString()!);
 
-            // Chinese: a line classifier routes lines with hanzi to their own recognizer.
+            // Scripts: the classifier routes a line to rec_<group>.onnx and vocab_<group>.
             InferenceSession? script = null;
-            InferenceSession? recCjk = null;
-            Vocab? vocabCjk = null;
-            if (Has("script.onnx") && Has("rec_cjk.onnx"))
+            var groups = new Dictionary<string, OcrModelGroup>(StringComparer.Ordinal);
+            foreach (JsonProperty property in meta.EnumerateObject())
+            {
+                if (!property.Name.StartsWith("vocab_", StringComparison.Ordinal)) continue;
+                string name = property.Name.Substring("vocab_".Length);
+                string graph = $"rec_{name}.onnx";
+                if (!Has(graph)) continue;
+                var session = OnnxSessions.Open(Need(graph), options);
+                sessions.Add(session);
+                groups.Add(name, new OcrModelGroup(name, session,
+                    Vocab.FromJson(property.Value.GetString()!)));
+            }
+
+            if (groups.Count > 0 && Has("script.onnx"))
             {
                 script = OnnxSessions.Open(Need("script.onnx"), options);
                 sessions.Add(script);
-                recCjk = OnnxSessions.Open(Need("rec_cjk.onnx"), options);
-                sessions.Add(recCjk);
-                vocabCjk = Vocab.FromJson(meta.GetProperty("vocab_cjk").GetString()!);
             }
+
+            string[] scriptGroups = meta.TryGetProperty("script_groups", out JsonElement groupNames)
+                ? groupNames.EnumerateArray().Select(v => v.GetString()!).ToArray()
+                : ["base", "cjk", "rtl", "other"];
 
             int detLongSide = meta.GetProperty("det_long_side").GetInt32();
             int recHeight = meta.GetProperty("rec_height").GetInt32();
+            int recWindow = meta.TryGetProperty("rec_window", out JsonElement window)
+                ? window.GetInt32()
+                : 1;
 
-            return new OcrModels(onnxDirectory, det, rec, mask, order, orient, script, recCjk,
-                vocab, vocabCjk, detLongSide, recHeight, ownedOptions);
+            return new OcrModels(onnxDirectory, det, rec, mask, order, orient, script, groups,
+                scriptGroups, vocab, detLongSide, recHeight, recWindow, ownedOptions);
         }
         catch
         {
@@ -194,7 +234,8 @@ public sealed class OcrModels : IDisposable
         Order?.Dispose();
         Orient?.Dispose();
         Script?.Dispose();
-        RecCjk?.Dispose();
+        foreach (OcrModelGroup group in Groups.Values)
+            group.Session.Dispose();
         _ownedOptions?.Dispose();
     }
 }

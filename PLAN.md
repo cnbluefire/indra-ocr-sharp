@@ -646,6 +646,54 @@ Source of truth for requirements: `AGENTS.md`. Step specs: `docs/NNN-*.md`.
   an `indra-ocr-sharp_linux-x64.zip` — then `upload --clobber` with exactly the five; a fresh one: a
   single `release create`); and `yaml.safe_load` on both workflows (four publish rows, and the
   release job's download pattern `zip-win-*`).
+- Step `395` done: the read-only Python reference was `v0.3.2` at
+  `3d773aeedc5d79d1d0a2a04007a9075cd71a59f4`; upstream is now `v1.1.2` at
+  `0e96b93c6810f17cf8352acbb4487cc9e45b66d5` (`main` is `e203553`, with only README work after
+  the tag). The comparison checkout is `temp/indra-upstream-current`, never `resources/`. The
+  48-file / 2,760-insertion range adds the 1.1 model family and language models, recognizer groups,
+  handwriting/tall-window/dark-line input, arbitrary-angle and vertical pages, RTL, pictures and
+  two generations of text-layer trust checks. The inventory and staged porting order are recorded
+  in `docs/395-upstream-1.1.2.md`; README now names the exact upstream tag/commit and carries the
+  main NuGet package badge.
+  The first sub-step switches the model revision to `v1.1.0`, downloads `lm.npz` / `lm_*.npz`, and
+  generalises `OcrModels` from the one CJK pair to metadata-driven `cjk` / `rtl` / `world` groups,
+  preserving `script_groups` and `rec_window` for the pipeline work.
+  The second sub-step ports dark-line detection, the tall-window crop and RTL visual/logical order;
+  CPython's 776 RTL presentation-form compatibility mappings are generated into Core because
+  invariant globalization makes .NET's NFKC unavailable. The old pipeline leaves the new crop
+  switches off until group routing is wired.
+  The pipeline sub-step then wires metadata-driven groups, the 0.95 sure gate and uncertain-line
+  double read, the base recognizer's tall-window/dark crop, RTL page decoding and Hangul jamo NFC;
+  old one-output CJK classifiers remain a hard switch for backward compatibility.
+  The LM/orientation sub-step reads NPZ/NPY directly, gates CTC prefix beam search on the optional
+  top-k recognizer outputs and expands deskew to +/-45 degrees (2.0 -> 0.5 -> 0.1). The upstream
+  handwriting example's 21 line texts then match Python exactly; orientation accepts both four- and
+  five-class graphs.
+  The page/output sub-step carries `vertical` through Core/worker/CLI/viewer, decodes the detector's
+  optional picture channel with 8-connectivity, and extends PDF text-layer data with turn/frame/
+  sideways runs plus the visual-RTL trust gate. Old 3-channel detection and zero-turn PDF paths are
+  explicit compatibility branches.
+  The host-surface sub-step removes `--model-order`, rejects negative `--max-pages`, regenerates the
+  CLI/viewer help and HTML from upstream, and moves the product/package line to `1.1.2` /
+  `1.1.2-alpha.2`.
+  The 1.1.2 PDF sub-step adds the legacy-font script-agreement gate: up to six assigned lines are
+  checked by the router, and a mostly-Latin layer on confidently non-base images falls through to
+  OCR with `text layer does not match the page`.
+  The final PDF/CLI sub-step fixes frame 1/3 box mapping and rotated-render assignment, makes model
+  order unconditional, and ports `_page_count`'s negative-value argparse error. Harnesses can now
+  select a `temp/` reference/model snapshot through environment overrides without changing
+  `resources/`.
+  The result-algorithm sub-step adds CJK display width/punctuation, vertical XY-cut blocks, RTL
+  mirrored geometry, forced vertical-CJK routing with box mapping, and `tidy_lines`' leader/list
+  cleanup. Order/assemble fixtures are regenerated from 1.1.2 through the override-aware generators;
+  the old image fixture remains because its upstream image binaries changed and `resources/` is
+  read-only.
+  Final verification against the temp `v1.1.2` checkout and `v1.1.0` model snapshot: 22/22 selected
+  deterministic CLI cases (including image/PDF/text-layer/turned-PDF/negative-page paths), viewer
+  CLI 20/20, and regenerated 1.1 order/assemble/layout tests 34/34; both hosts print 1.1.2 and the
+  Release solution builds both library targets with 0 warnings/errors. The viewer HTTP reference
+  cannot start on this 2 GB machine once its three LM tables load (under 203 MB free, numpy OOM), so
+  that server comparison remains for CI/a roomier host rather than being mislabeled as passing.
 - 385 tests green, build clean (0 warnings); the CLI alignment harness 85/85, the end-to-end
   asset sweep 24/24, the viewer's command line 20/20 and its HTTP harness 12 cases plus
   `stderr`. The three libraries also build a `netstandard2.0` asset that runs on .NET Framework

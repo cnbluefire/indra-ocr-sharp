@@ -35,7 +35,7 @@ public class ViewerHostTests
             Threads: 1,
             Tesseract: false,
             TesseractLang: "eng",
-            Defaults: new ViewerDefaults(Mode: "auto", PdfOrder: true, ImageOcr: true, Math: false,
+            Defaults: new ViewerDefaults(Mode: "auto", ImageOcr: true, Math: false,
                                          Furniture: false, Dpi: 200.0, MaxPages: 20));
         using var engine = new Engine(args.ModelDir, args.Threads, args.Tesseract, args.Defaults);
         WebApplication app = Indra.Ocr.Viewer.Viewer.BuildHost(args, engine);

@@ -30,6 +30,6 @@ public static class ProductAttributes
         ?? host.GetName().Version?.ToString()
         ?? "";
 
-    /// <summary>The <c>--version</c> line: <c>indra-ocr 0.3.2</c>.</summary>
+    /// <summary>The <c>--version</c> line: <c>indra-ocr 1.1.2</c>.</summary>
     public static string VersionLine(Assembly host) => $"{Name(host)} {Version(host)}";
 }

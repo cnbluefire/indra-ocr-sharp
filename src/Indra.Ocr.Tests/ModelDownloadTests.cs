@@ -17,6 +17,9 @@ public class ModelDownloadTests
         Assert.True(ModelDownload.Wanted("assets/logo.onnx")); // '*' crosses '/', as fnmatch
         Assert.True(ModelDownload.Wanted("meta.json"));
         Assert.True(ModelDownload.Wanted("config.json"));
+        Assert.True(ModelDownload.Wanted("lm.npz"));
+        Assert.True(ModelDownload.Wanted("lm_cjk.npz"));
+        Assert.True(ModelDownload.Wanted("lm_world.npz"));
         Assert.False(ModelDownload.Wanted("math_meta.json"));
         Assert.False(ModelDownload.Wanted("mathcls.onnx"));
         Assert.True(ModelDownload.Wanted("mathcls.onnx", math: true));
@@ -41,7 +44,7 @@ public class ModelDownloadTests
     {
         Assert.Equal(["det.onnx", "rec.onnx", "order.onnx", "meta.json"], ModelDownload.Files);
         Assert.Equal("datalab-to/indra-ocr", ModelDownload.HfRepo);
-        Assert.Equal("v3.1.1", ModelDownload.HfRevision);
+        Assert.Equal("v1.1.0", ModelDownload.HfRevision);
         Assert.Equal(5, ModelDownload.MathFiles.Length);
     }
 

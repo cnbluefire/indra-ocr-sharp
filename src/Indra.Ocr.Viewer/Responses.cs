@@ -34,6 +34,7 @@ public sealed record JsonPage(
     string Source,
     int Rotation,
     double Skew,
+    bool Vertical,
     string Note,
     IReadOnlyList<ResponseLine> Lines,
     string? Markdown,
@@ -61,6 +62,7 @@ public sealed record PageResponse(
     string Note,
     int Rotation,
     double Skew,
+    bool Vertical,
     JsonPage Json,
     IReadOnlyDictionary<string, double> Timings,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Tesseract);

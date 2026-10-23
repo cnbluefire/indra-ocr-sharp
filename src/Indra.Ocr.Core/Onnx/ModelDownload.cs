@@ -35,7 +35,7 @@ public static class ModelDownload
     public const string HfRepo = "datalab-to/indra-ocr";
 
     /// <summary>The model set this package version was built and tested against (a tag).</summary>
-    public const string HfRevision = "v3.1.1";
+    public const string HfRevision = "v1.1.0";
 
     /// <summary>Every file a model folder needs (the reference's <c>models.FILES</c>).</summary>
     public static readonly string[] Files = ["det.onnx", "rec.onnx", "order.onnx", "meta.json"];
@@ -127,7 +127,8 @@ public static class ModelDownload
         "online, set 'HF_HUB_OFFLINE=0' as environment variable.";
 
     /// <summary>The patterns the reference keeps, whatever the model folder.</summary>
-    private static readonly string[] Always = ["*.onnx", "meta.json", "config.json"];
+    private static readonly string[] Always =
+        ["*.onnx", "meta.json", "config.json", "lm.npz", "lm_*.npz"];
 
     private static readonly HttpClient Http = CreateClient();
 
@@ -538,7 +539,7 @@ public static class ModelDownload
         // transfer, and a model that takes a minute to arrive must not be cut off. The per-request
         // budgets are the caller's (HubFilesAsync, FetchAsync).
         var http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
-        http.DefaultRequestHeaders.UserAgent.ParseAdd("indra-ocr-cs/0.3.2");
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("indra-ocr-cs/1.1.2");
         string? token = Environment.GetEnvironmentVariable("HF_TOKEN");
         if (!string.IsNullOrEmpty(token))
         {

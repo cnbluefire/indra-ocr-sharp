@@ -123,16 +123,18 @@ public sealed class PdfPage : IDisposable
     /// The upright text runs of this page, in content order, with the statistics
     /// (<c>textlayer.extract_runs</c>): the PDFium reading half of the module.
     /// </summary>
-    public (List<TextLine> Runs, TextLayerStats Stats) ExtractRuns()
+    public (List<TextLine> Runs, TextLayerStats Stats) ExtractRuns(int turn = 0, int? frame = null)
     {
+        int outputFrame = frame ?? turn;
         IReadOnlyList<PageChar> source = ReadChars();
         // The linear part of the page-to-frame map: a character is upright when its baseline
         // runs left to right once mapped through it (any /Rotate, any mirroring).
         double[,] affine = DeviceAffine();
 
-        var upright = new Dictionary<double, bool>();
+        var upright = new Dictionary<double, int?>();
         var bad = new Dictionary<string, int>();
         var chars = new List<string>();
+        var quarters = new List<int>();
         var rawBoxes = new List<double[]>();
         var breaks = new List<int>(); // run ends after these positions
         int nChars = 0, nRotated = 0, nBad = 0;
@@ -163,22 +165,42 @@ public sealed class PdfPage : IDisposable
 
                 nBad += k;
                 double a = pc.Angle;
-                if (!upright.TryGetValue(a, out bool up))
+                if (!upright.TryGetValue(a, out int? q))
                 {
                     double cos = Math.Cos(a), sin = Math.Sin(a);
-                    double dx = affine[0, 0] * cos + affine[0, 1] * sin;
-                    double dy = affine[1, 0] * cos + affine[1, 1] * sin;
-                    up = !(dx <= 0 || Math.Abs(dy) > 1e-3 * Math.Max(Math.Abs(dx), 1e-9));
-                    upright[a] = up;
+                    if (turn == 0 && outputFrame == 0)
+                    {
+                        double oldX = affine[0, 0] * cos + affine[0, 1] * sin;
+                        double oldY = affine[1, 0] * cos + affine[1, 1] * sin;
+                        if (oldX > 0 && Math.Abs(oldY) <= 1e-3 * Math.Max(Math.Abs(oldX), 1e-9)) q = 0;
+                        else
+                        {
+                            double dx = affine[0, 0] * cos - affine[0, 1] * sin;
+                            double dy = -affine[1, 0] * cos + affine[1, 1] * sin;
+                            q = Quarter(dx, dy);
+                        }
+                    }
+                    else
+                    {
+                        double dx = affine[0, 0] * cos - affine[0, 1] * sin;
+                        double dy = -affine[1, 0] * cos + affine[1, 1] * sin;
+                        q = Quarter(dx, dy);
+                    }
+                    upright[a] = q;
                 }
 
-                if (!up)
+                if (q != turn)
                 {
                     nRotated++; // not upright on the rendered page
+                }
+                if (q is null)
+                {
                     breaks.Add(chars.Count);
                     continue;
                 }
+                quarters.Add(((int)q - turn + 4) % 4);
             }
+            else quarters.Add(quarters.Count == 0 ? 0 : quarters[^1]);
 
             chars.Add(c);
             if (!pc.HasBox)
@@ -189,7 +211,10 @@ public sealed class PdfPage : IDisposable
             rawBoxes.Add([pc.Left, pc.Bottom, pc.Right, pc.Top]); // l, b, r, t
         }
 
-        TextLayerStats stats = new() { Chars = nChars, Rotated = nRotated, Bad = nBad };
+        var quarterCounts = new int[4];
+        foreach (int q in quarters) quarterCounts[q]++;
+        TextLayerStats stats = new() { Chars = nChars, Rotated = nRotated, Bad = nBad,
+            Quarters = quarterCounts, Turn = turn, Frame = outputFrame };
         if (chars.Count == 0)
         {
             return ([], stats);
@@ -221,6 +246,8 @@ public sealed class PdfPage : IDisposable
                 Math.Max(Math.Max(y0, y1), Math.Max(y2, y3)),
             };
             boxes[i] = box;
+            if (outputFrame != 0)
+                boxes[i] = TurnBox(box, pageWidth, pageHeight, outputFrame);
 
             // Characters outside the rendered frame (beyond a crop box) are not on the page:
             // they are dropped, not read.
@@ -236,11 +263,13 @@ public sealed class PdfPage : IDisposable
 
         // A run is pdfium's own segment: the breaks it emits, plus the end of the text.
         var cuts = new List<int>(breaks) { m };
+        for (int i = 1; i < quarters.Count; i++) if (quarters[i] != quarters[i - 1]) cuts.Add(i);
         cuts.Sort();
         var runs = new List<TextLine>();
         int start = 0;
         foreach (int end in cuts)
         {
+            int runStart = start;
             var seg = new List<TextChar>();
             for (int i = start; i < end; i++)
             {
@@ -279,11 +308,29 @@ public sealed class PdfPage : IDisposable
                 text.Append(sc.Character);
             }
 
-            runs.Add(new TextLine([minX, minY, maxX, maxY], UnicodeText.CollapseSpaces(text.ToString()), seg));
+            int q = runStart < quarters.Count ? quarters[runStart] : 0;
+            runs.Add(new TextLine([minX, minY, maxX, maxY], UnicodeText.CollapseSpaces(text.ToString()),
+                                  seg, q, runs.Count));
         }
 
         return (runs, stats);
     }
+
+    private static int? Quarter(double x, double y)
+    {
+        double ax = Math.Abs(x), ay = Math.Abs(y), m = Math.Max(Math.Max(ax, ay), 1e-9);
+        if (Math.Min(ax, ay) > 1e-3 * m) return null;
+        if (ax >= ay) return x > 0 ? 0 : 2;
+        return y > 0 ? 1 : 3;
+    }
+
+    private static double[] TurnBox(double[] b, double width, double height, int turn) => (turn % 4) switch
+    {
+        1 => [height - b[3], b[0], height - b[1], b[2]],
+        2 => [width - b[2], height - b[3], width - b[0], height - b[1]],
+        3 => [b[1], width - b[2], b[3], width - b[0]],
+        _ => b,
+    };
 
     /// <summary>
     /// Rasterises the page (<c>page.render(scale=..., grayscale=True)</c>). The returned image

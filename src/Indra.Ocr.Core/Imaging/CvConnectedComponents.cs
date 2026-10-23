@@ -101,6 +101,50 @@ public static class CvConnectedComponents
         return count + 1; // the background is label 0
     }
 
+    /// <summary>Eight-connectivity variant used by the detector's picture channel.</summary>
+    public static int LabelComponents8(GrayImage mask, Span<int> labels)
+    {
+        int width = mask.Width, height = mask.Height;
+        if (labels.Length < width * height)
+            throw new ArgumentException($"labels needs {width * height} entries", nameof(labels));
+        var parent = new List<int>(64) { 0 };
+        int next = 0;
+        var near = new int[4];
+        for (int y = 0; y < height; y++)
+        {
+            ReadOnlySpan<byte> row = mask.Row(y);
+            int start = y * width;
+            for (int x = 0; x < width; x++)
+            {
+                if (row[x] == 0) { labels[start + x] = 0; continue; }
+                int n = 0;
+                if (x > 0 && labels[start + x - 1] != 0) near[n++] = labels[start + x - 1];
+                if (y > 0)
+                {
+                    if (x > 0 && labels[start - width + x - 1] != 0) near[n++] = labels[start - width + x - 1];
+                    if (labels[start - width + x] != 0) near[n++] = labels[start - width + x];
+                    if (x + 1 < width && labels[start - width + x + 1] != 0) near[n++] = labels[start - width + x + 1];
+                }
+                if (n == 0) { parent.Add(++next); labels[start + x] = next; continue; }
+                int first = near[0]; labels[start + x] = first;
+                for (int i = 1; i < n; i++)
+                {
+                    int a = Find(parent, first), b = Find(parent, near[i]);
+                    if (a != b) parent[Math.Max(a, b)] = Math.Min(a, b);
+                }
+            }
+        }
+        var seen = new int[next + 1]; int count = 0;
+        for (int i = 0; i < width * height; i++)
+        {
+            if (labels[i] == 0) continue;
+            int root = Find(parent, labels[i]);
+            if (seen[root] == 0) seen[root] = ++count;
+            labels[i] = seen[root];
+        }
+        return count + 1;
+    }
+
     /// <summary>
     /// Fills <paramref name="stats"/> with <see cref="StatsPerLabel"/> ints per label
     /// (<c>left, top, width, height, area</c>), row 0 being the background.

@@ -629,11 +629,14 @@ public static class LayoutPost
         ReadOnlySpan<float> clsLogits, ReadOnlySpan<float> same,
         bool keepFurniture = false,
         IReadOnlyDictionary<int, IReadOnlyList<TableCell>>? cells = null,
-        ReadOnlySpan<float> tab = default)
+        ReadOnlySpan<float> tab = default,
+        ReadOnlySpan<float> pictures = default)
     {
         var parts = new List<string>();
+        var partBoxes = new List<double[]>();
         foreach (var blk in SplitBlocks(order, same, n))
         {
+            int before = parts.Count;
             int cls = ArgMaxColumnSum(clsLogits, blk);
             var textsB = new List<string>(blk.Count);
             foreach (int i in blk)
@@ -688,6 +691,31 @@ public static class LayoutPost
             {
                 parts.Add(JoinLines(textsB));
             }
+            if (parts.Count > before)
+                partBoxes.Add([MinX(boxes, blk), MinY(boxes, blk), MaxX(boxes, blk), MaxY(boxes, blk)]);
+        }
+        if (pictures.Length > 0)
+        {
+            var slots = new Dictionary<int, List<string>>();
+            for (int k = 0; k < pictures.Length / 4; k++)
+            {
+                int o = k * 4;
+                double cy = (pictures[o + 1] + pictures[o + 3]) / 2;
+                int at = parts.Count;
+                for (int j = 0; j < partBoxes.Count; j++)
+                    if ((partBoxes[j][1] + partBoxes[j][3]) / 2 > cy &&
+                        Math.Min(pictures[o + 2], partBoxes[j][2]) >
+                        Math.Max(pictures[o], partBoxes[j][0])) { at = j; break; }
+                if (!slots.TryGetValue(at, out List<string>? list)) slots[at] = list = [];
+                list.Add($"![](picture-{k})");
+            }
+            var merged = new List<string>();
+            for (int j = 0; j <= parts.Count; j++)
+            {
+                if (slots.TryGetValue(j, out List<string>? list)) merged.AddRange(list);
+                if (j < parts.Count) merged.Add(parts[j]);
+            }
+            parts = merged;
         }
         var kept = new List<string>();
         foreach (string p in parts)

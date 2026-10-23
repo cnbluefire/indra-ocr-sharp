@@ -233,13 +233,11 @@ public class OrientationTests
     }
 
     [Fact]
-    public void Estimate_skew_searches_in_half_then_tenth_degrees()
+    public void Estimate_skew_searches_coarse_then_half_then_tenth_degrees()
     {
-        // The first grid is -5.0 .. 5.0 in 0.5 steps and the second one is best +- 0.5 in 0.1
-        // steps, both with numpy's arange (docs/090): the step is (start+step)-start.
-        var coarse = NpyArange.Range(-Orientation.DeskewMax, Orientation.DeskewMax + 1e-6, 0.5);
-        Assert.Equal(21, coarse.Length);
-        Assert.Equal([-5.0, 5.0], new[] { coarse[0], coarse[^1] });
+        var coarse = NpyArange.Range(-Orientation.DeskewMax, Orientation.DeskewMax + 1e-6, 2.0);
+        Assert.Equal(46, coarse.Length);
+        Assert.Equal([-45.0, 45.0], new[] { coarse[0], coarse[^1] });
         var fine = NpyArange.Range(-0.5, 0.5 + 1e-6, 0.1);
         Assert.Equal(11, fine.Length);
         Assert.Equal(-1.1102230246251565e-16, fine[5]);   // not exactly 0: delta = (-0.4) - (-0.5)

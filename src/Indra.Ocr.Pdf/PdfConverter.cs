@@ -31,6 +31,10 @@ namespace Indra.Ocr.Pdf;
 /// </remarks>
 public sealed class PdfConverter
 {
+    private const int AgreeLines = 6;
+    private const double AgreeShare = 0.25;
+    private const double LatinCodes = 0.9;
+    private const string NotThePage = "text layer does not match the page";
     /// <summary>Resolution of the render for the text-layer ink checks.</summary>
     public const double CheckDpi = 72.0;
 
@@ -43,7 +47,6 @@ public sealed class PdfConverter
     private readonly OrtOcr _ocr;
     private readonly double _dpi;
     private readonly string _mode;
-    private readonly bool _pdfOrder;
     private readonly bool _imageOcr;
 
     /// <summary>
@@ -70,7 +73,6 @@ public sealed class PdfConverter
         _ocr = ocr;
         _dpi = dpi;
         _mode = mode;
-        _pdfOrder = pdfOrder;
         _imageOcr = imageOcr;
     }
 
@@ -79,7 +81,7 @@ public sealed class PdfConverter
 
     public string Mode => _mode;
 
-    public bool PdfOrder => _pdfOrder;
+    public bool PdfOrder => false;
 
     public bool ImageOcr => _imageOcr;
 
@@ -139,16 +141,27 @@ public sealed class PdfConverter
             TextLayer layer = TextLayerReader.ReadTextLayer(
                 page.Render(s), s, page.InvisibleTextFraction(), (page.Width, page.Height),
                 () => page.ExtractRuns());
+            int pageTurn = TextLayerReader.PageTurn(layer.Stats);
+            if (pageTurn != 0)
+            {
+                GrayImage turnedCheck = Rotate(page.Render(s), -pageTurn);
+                layer = TextLayerReader.ReadTextLayer(
+                    turnedCheck, s, page.InvisibleTextFraction(),
+                    pageTurn % 2 == 1 ? (page.Height, page.Width) : (page.Width, page.Height),
+                    () => page.ExtractRuns(pageTurn));
+            }
             timings["text_ms"] = textClock.Elapsed.TotalMilliseconds;
             // A layer the recognizer cannot read beats OCR, unless its codes are junk.
             bool unreadable = layer.Reason != TextLayerReader.BrokenFontMap
                               && !TextLayerRuns.Readable(_ocr, layer.Lines);
             if (layer.Lines.Count > 0 && (layer.Trusted || _mode == "text" || unreadable))
             {
-                return ConvertPageCore(page, layer, timings);
+                OcrPage? text = ConvertPageCore(page, layer, timings,
+                    check: _mode == "auto" && layer.Trusted && !unreadable);
+                if (text is not null) return text;
+                note = NotThePage;
             }
-
-            note = layer.Reason;
+            else note = layer.Reason;
             // A layer with a broken font map still places its glyphs: when most run upright,
             // the page is upright (orient.onnx is not asked).
             TextLayerStats stats = layer.Stats;
@@ -184,7 +197,7 @@ public sealed class PdfConverter
 
         merged["total_ms"] = total;
         return new OcrPage(ocr.Lines, merged, ocr.Markdown, ocr.Source, $"{note}; {ocr.Note}",
-                           ocr.Blocks, ocr.Rotation, ocr.Skew);
+                           ocr.Blocks, ocr.Rotation, ocr.Skew, ocr.Vertical);
     }
 
     /// <summary>
@@ -192,11 +205,13 @@ public sealed class PdfConverter
     /// the lines the layer does not cover. The rest of <see cref="ConvertPage(PdfDocument, int)"/>
     /// once the page's layer has been read — private, because nothing outside this class needs it.
     /// </summary>
-    private OcrPage ConvertPageCore(PdfPage page, TextLayer layer, IDictionary<string, double> timings)
+    private OcrPage? ConvertPageCore(PdfPage page, TextLayer layer,
+                                     IDictionary<string, double> timings, bool check = false)
     {
         double k = PageScale(page);
         var renderClock = Stopwatch.StartNew();
         GrayImage gray = page.Render(k);
+        if (layer.Stats.Frame != 0) gray = Rotate(gray, -layer.Stats.Frame);
         timings["render_ms"] = renderClock.Elapsed.TotalMilliseconds;
 
         var detectClock = Stopwatch.StartNew();
@@ -218,6 +233,26 @@ public sealed class PdfConverter
             else
             {
                 empty.Add(i);
+            }
+        }
+
+        if (check)
+        {
+            var full = new List<int>();
+            for (int i = 0; i < rec.Length; i++)
+                if (rec[i] is not null && UnicodeText.CodePointValues(rec[i]!.Text)
+                    .Count(UnicodeText.IsAlphaCodePoint) >= 4) full.Add(i);
+            int step = Math.Max(1, full.Count / AgreeLines);
+            int[] pick = full.Where((_, i) => i % step == 0).Take(AgreeLines).ToArray();
+            if (pick.Length > 0)
+            {
+                float[] picked = Subset(boxes, pick.ToList());
+                (string[] names, bool[] sure) = _ocr.BoxGroups(gray, picked);
+                int agree = 0;
+                for (int j = 0; j < pick.Length; j++)
+                    if (!(LatinShare(rec[pick[j]]!.Text) >= LatinCodes &&
+                          names[j] != "base" && sure[j])) agree++;
+                if (agree < AgreeShare * pick.Length) return null;
             }
         }
 
@@ -263,12 +298,30 @@ public sealed class PdfConverter
         }
 
         OcrPage outPage = _ocr.Assemble(gray.Width, gray.Height, OrtOcr.Quads(Subset(boxes, keep)),
-                                        keep.Count, keepRec, timings, _pdfOrder);
+                                         keep.Count, keepRec, timings, contentOrder: false);
         string note = lost > 0
             ? $"{outPage.Note}; {lost} chars outside detected lines"
             : outPage.Note;
         return new OcrPage(outPage.Lines, outPage.Timings, outPage.Markdown, source, note,
-                           outPage.Blocks, outPage.Rotation, outPage.Skew);
+                           outPage.Blocks, outPage.Rotation, outPage.Skew, outPage.Vertical);
+    }
+
+    private static double LatinShare(string text)
+    {
+        int letters = 0, latin = 0;
+        foreach (int cp in UnicodeText.CodePointValues(text))
+            if (UnicodeText.IsAlphaCodePoint(cp)) { letters++; if (cp < 128) latin++; }
+        return (double)latin / Math.Max(letters, 1);
+    }
+
+    private static GrayImage Rotate(GrayImage gray, int turns)
+    {
+        int k = (turns % 4 + 4) % 4;
+        if (k == 0) return gray;
+        var pixels = new byte[gray.PixelCount];
+        Orientation.Rotate90(gray, pixels, k);
+        return k % 2 == 1 ? new GrayImage(gray.Height, gray.Width, pixels)
+                          : new GrayImage(gray.Width, gray.Height, pixels);
     }
 
     /// <summary>

@@ -1,5 +1,5 @@
-usage: indra-ocr [-h] [--version] [--out OUT] [--format {md,text,json}]
-                 [--mode {auto,ocr,text}] [--model-order] [--no-image-ocr]
+﻿usage: indra-ocr [-h] [--version] [--out OUT] [--format {md,text,json}]
+                 [--mode {auto,ocr,text}] [--no-image-ocr]
                  [--model-dir MODEL_DIR] [--cores CORES] [--dpi DPI]
                  [--max-pages MAX_PAGES] [--password PASSWORD] [--math]
                  [--keep-furniture] [--timings]
@@ -27,6 +27,8 @@ options:
                         here 8)
   --dpi DPI
   --max-pages MAX_PAGES
+                        read at most this many pages of each file (0, the
+                        default: all)
   --password PASSWORD   password of encrypted PDFs
   --math                write math as LaTeX ($...$); slower on pages with math
                         (off by default)
@@ -39,6 +41,4 @@ text layer or OCR (PDFs):
                         auto: text layer where it passes the checks, OCR
                         elsewhere (default); ocr: never read the text layer;
                         text: use the text layer even when the checks fail
-  --model-order         order text-layer lines with the order model, not the
-                        PDF content order
   --no-image-ocr        on text-layer pages, do not OCR text inside images

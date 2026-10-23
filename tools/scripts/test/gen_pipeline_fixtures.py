@@ -27,18 +27,20 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import os
 import sys
 import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / "resources" / "indra-src"))
+REFERENCE = Path(os.environ.get("INDRA_OCR_REFERENCE", ROOT / "resources" / "indra-src"))
+sys.path.insert(0, str(REFERENCE))
 
 import numpy as np  # noqa: E402
 from indra_ocr.pipeline import OrtOCR, read_images, rotate_page  # noqa: E402
 
-EXAMPLES = ROOT / "resources" / "indra-src" / "assets" / "examples"
-MODELS = ROOT / "resources" / "models"
+EXAMPLES = REFERENCE / "assets" / "examples"
+MODELS = Path(os.environ.get("INDRA_OCR_TEST_MODELS", ROOT / "resources" / "models"))
 OUT = ROOT / "src" / "Indra.Ocr.Tests" / "fixtures" / "pipeline.json"
 
 # (example file, derivation, OrtOCR kwargs, turn).  ``derivation`` is applied to the decoded
@@ -137,7 +139,12 @@ def main() -> None:
         path = EXAMPLES / f"{name}.png"
         raw = path.read_bytes()
         base = read_images(path)[0]
-        rel = path.relative_to(ROOT / "resources").as_posix()
+        try:
+            rel = path.relative_to(ROOT / "resources").as_posix()
+        except ValueError:
+            # The fixture records the normal read-only reference location even when a refresh
+            # generates answers from an override clone in temp/.
+            rel = (Path("indra-src") / "assets" / "examples" / path.name).as_posix()
         info = inputs.get(name)
         if info is None:
             inputs[name] = info = {

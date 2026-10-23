@@ -14,10 +14,10 @@ public class ConsoleOutputTests
     {
         var report = new ModelDownloadProgress(
             "det.onnx", @"C:\models\det.onnx",
-            "https://huggingface.co/datalab-to/indra-ocr/resolve/v3.1.1/det.onnx", 0, 17_179_869);
+            "https://huggingface.co/datalab-to/indra-ocr/resolve/v1.1.0/det.onnx", 0, 17_179_869);
 
         Assert.Equal("downloading det.onnx (17.2 MB)\n" +
-                     "  from https://huggingface.co/datalab-to/indra-ocr/resolve/v3.1.1/det.onnx\n" +
+                     "  from https://huggingface.co/datalab-to/indra-ocr/resolve/v1.1.0/det.onnx\n" +
                      @"  to C:\models\det.onnx" + "\n",
                      ConsoleOutput.DownloadProgress(report));
     }

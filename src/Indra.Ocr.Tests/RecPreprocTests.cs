@@ -113,6 +113,32 @@ public class RecPreprocTests
         Assert.Equal(new[] { 2, 3 }, batches[1]);
     }
 
+    [Fact]
+    public void Dark_line_is_inverted_and_a_tall_window_keeps_the_text_scale()
+    {
+        const int w = 80, h = 60;
+        var page = new byte[w * h];
+        Array.Fill(page, (byte)240);
+        for (int y = 20; y < 40; y++)
+            for (int x = 10; x < 70; x++)
+                page[y * w + x] = 20;
+        for (int y = 25; y < 35; y++)
+            for (int x = 25; x < 55; x++)
+                page[y * w + x] = 245;
+
+        float[] box = [10, 20, 70, 40];
+        var gray = new GrayImage(w, h, page);
+        Assert.True(RecPreproc.IsDarkLine(gray, box));
+        float[] line = RecPreproc.CropLine(gray, box, out int lineWidth, dark: true);
+        float[] tall = RecPreproc.CropLine(gray, box, out int tallWidth, window: 3, dark: true);
+
+        Assert.Equal(32 * lineWidth, line.Length);
+        Assert.Equal(96 * tallWidth, tall.Length);
+        Assert.Equal(lineWidth, tallWidth);
+        Assert.True(line.Max() > 0.9f);
+        Assert.Equal(line, tall.AsSpan(32 * tallWidth, line.Length).ToArray());
+    }
+
     private static float[] Fill(int length, float value)
     {
         var a = new float[length];

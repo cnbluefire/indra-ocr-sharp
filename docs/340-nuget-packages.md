@@ -97,13 +97,13 @@ Per target framework, with ranges the port actually builds against:
 One place, `src/Directory.Build.props`:
 
 ```xml
-<Version>0.3.2</Version>              <!-- the reference's parity version -->
+<Version>1.1.2</Version>              <!-- the reference's parity version -->
 <PackageFlavor>alpha.2</PackageFlavor>
 <PackageVersion>$(Version)-$(PackageFlavor)</PackageVersion>
 ```
 
-`PackageVersion` (`0.3.2-alpha.2`) is what the package files are named after, what the consumer
-restores, and what the release tag carries (`v0.3.2-alpha.2`, a `--prerelease` because of the `-`).
+`PackageVersion` (`1.1.2-alpha.2`) is what the package files are named after, what the consumer
+restores, and what the release tag carries (`v1.1.2-alpha.2`, a `--prerelease` because of the `-`).
 `Version` stays the Python package's `__version__`, because both hosts
 print it and the viewer reports it in `/info` — it is part of the parity surface
 (`docs/330-product-version.md`). The major/minor track the reference, so a port of a newer upstream

@@ -95,6 +95,21 @@ public sealed class OrtOcr : IDisposable
             if (math && mathReader is null)
                 throw new FileNotFoundException($"math=True needs the math models in {onnxDirectory}");
             _math = mathReader;
+            var groups = _models.Groups.ToDictionary(
+                pair => pair.Key,
+                pair => new RecognizerGroup(pair.Key, new OnnxRecModel(pair.Value.Session),
+                                            pair.Value.Vocab),
+                StringComparer.Ordinal);
+            var languageModels = new Dictionary<string, LanguageModelSettings>(StringComparer.Ordinal);
+            foreach (string name in new[] { "base" }.Concat(groups.Keys))
+            {
+                string file = Path.Combine(onnxDirectory, name == "base" ? "lm.npz" : $"lm_{name}.npz");
+                if (!File.Exists(file)) continue;
+                double alpha = name is "cjk" or "world" ? 0.2 : 0.5;
+                double gate = name is "cjk" or "world" ? 0.95 : 0.9;
+                languageModels[name] = new LanguageModelSettings(
+                    new NgramLanguageModel(file), alpha, 1.5, gate);
+            }
             _recognizer = new Recognizer(
                 new OnnxRecModel(_models.Rec),
                 _models.Vocab,
@@ -103,7 +118,11 @@ public sealed class OrtOcr : IDisposable
                 _models.RecCjk is null ? null : new OnnxRecModel(_models.RecCjk),
                 _models.VocabCjk,
                 _models.RecHeight,
-                math: mathReader);
+                math: mathReader,
+                groups: groups,
+                scriptGroups: _models.ScriptGroups,
+                window: _models.RecWindow,
+                languageModels: languageModels);
             _assembler = new Assembler(_order, tableHeads, _models.Vocab, furniture);
         }
         catch
@@ -191,13 +210,19 @@ public sealed class OrtOcr : IDisposable
     /// in page pixels.</summary>
     public float[] Detect(GrayImage gray) => Detector.Run(_det, gray, LongSide, Adaptive);
 
+    public DetectionResult DetectAll(GrayImage gray) => Detector.RunAll(_det, gray, LongSide, Adaptive);
+
     /// <summary><c>recognize</c>: one line per box, in the boxes' order.</summary>
-    public List<RecognizedLine> Recognize(GrayImage gray, ReadOnlySpan<float> boxes)
-        => _recognizer.Run(gray, boxes);
+    public List<RecognizedLine> Recognize(GrayImage gray, ReadOnlySpan<float> boxes,
+                                          bool vertical = false)
+        => _recognizer.Run(gray, boxes, vertical);
 
     /// <summary><c>hanzi_lines</c>: which of the lines hold Chinese characters.</summary>
     public bool[] HanziLines(GrayImage gray, ReadOnlySpan<float> boxes)
         => _recognizer.HanziLines(gray, boxes);
+
+    public (string[] Names, bool[] Sure) BoxGroups(GrayImage gray, ReadOnlySpan<float> boxes)
+        => _recognizer.BoxGroups(gray, boxes);
 
     /// <summary><c>orientation</c>: the quarter turns to undo (0 without <c>orient.onnx</c>).</summary>
     public int Orientation(GrayImage gray) => _orient is null ? 0 : Orient.Turns(_orient, gray);
@@ -226,9 +251,11 @@ public sealed class OrtOcr : IDisposable
     /// (<see cref="Assembler.Run"/>). <see cref="Quads"/> does the conversion.
     /// </remarks>
     public OcrPage Assemble(double pageWidth, double pageHeight, ReadOnlySpan<float> boxes, int n,
-                            IReadOnlyList<RecognizedLine> rec,
-                            IDictionary<string, double>? timings = null, bool contentOrder = false)
-        => _assembler.Run(pageWidth, pageHeight, boxes, n, rec, timings, contentOrder);
+                             IReadOnlyList<RecognizedLine> rec,
+                             IDictionary<string, double>? timings = null, bool contentOrder = false,
+                             ReadOnlySpan<float> pictures = default, bool vertical = false)
+        => _assembler.Run(pageWidth, pageHeight, boxes, n, rec, timings, contentOrder, pictures,
+                          vertical);
 
     /// <summary>
     /// The detector's <c>[N, 5]</c> boxes (<c>x0 y0 x1 y1 score</c>) as the <c>[n, 4]</c> the
@@ -282,15 +309,18 @@ public sealed class OrtOcr : IDisposable
         clock.Restart();
 
         GrayImage upright = up.Page;
-        float[] boxes = Detect(upright);
+        DetectionResult detection = DetectAll(upright);
+        float[] boxes = detection.Boxes;
         timings["det_ms"] = clock.Elapsed.TotalMilliseconds;
         clock.Restart();
 
-        List<RecognizedLine> rec = Recognize(upright, boxes);
+        bool vertical = up.Turns == Orient.Vertical;
+        List<RecognizedLine> rec = Recognize(upright, boxes, vertical);
         timings["rec_ms"] = clock.Elapsed.TotalMilliseconds;
 
         OcrPage assembled = Assemble(upright.Width, upright.Height, Quads(boxes), boxes.Length / 5,
-                                     rec, timings);
+                                      rec, timings, pictures: vertical ? default : detection.Pictures,
+                                      vertical: vertical);
 
         // Boxes back on the page as turned, before the deskew.
         IReadOnlyList<OcrLine> lines = assembled.Lines;
@@ -317,9 +347,31 @@ public sealed class OrtOcr : IDisposable
             blocks = unrotatedBlocks;
         }
 
+        if (vertical)
+        {
+            double frameWidth = upright.Height;
+            var mappedLines = new List<OcrLine>(lines.Count);
+            foreach (OcrLine line in lines)
+            {
+                IReadOnlyList<double> b = line.Box;
+                mappedLines.Add(new OcrLine(
+                    new[] { frameWidth - b[3], b[0], frameWidth - b[1], b[2] },
+                    line.Text, line.Confidence));
+            }
+            var mappedBlocks = new List<LayoutBlock>(blocks.Count);
+            foreach (LayoutBlock block in blocks)
+            {
+                double[] b = block.Bbox;
+                mappedBlocks.Add(new LayoutBlock(block.Label,
+                    [frameWidth - b[3], b[0], frameWidth - b[1], b[2]], block.Text));
+            }
+            lines = mappedLines;
+            blocks = mappedBlocks;
+        }
+
         return new OcrPage(lines, assembled.Timings, assembled.Markdown, assembled.Source,
-                           assembled.Note, blocks, 90 * up.Turns,
-                           Numerics.RoundHalfEven(up.Skew, 2));
+                           assembled.Note, blocks, vertical ? 0 : 90 * up.Turns,
+                           Numerics.RoundHalfEven(up.Skew, 2), vertical);
     }
 
     public void Dispose()

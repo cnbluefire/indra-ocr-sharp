@@ -50,7 +50,8 @@ public sealed class OcrPage
         string note = "",
         IReadOnlyList<LayoutBlock>? blocks = null,
         int rotation = 0,
-        double skew = 0.0)
+        double skew = 0.0,
+        bool vertical = false)
     {
         Lines = lines;
         Timings = timings ?? new Dictionary<string, double>();
@@ -60,6 +61,7 @@ public sealed class OcrPage
         Blocks = blocks ?? Array.Empty<LayoutBlock>();
         Rotation = rotation;
         Skew = skew;
+        Vertical = vertical;
     }
 
     /// <summary>The lines in reading order.</summary>
@@ -85,6 +87,9 @@ public sealed class OcrPage
 
     /// <summary>Degrees of small tilt undone after the turn.</summary>
     public double Skew { get; }
+
+    /// <summary>Whether the page is set in vertical columns.</summary>
+    public bool Vertical { get; }
 
     /// <summary>The page's text: the lines' text newline-joined.</summary>
     public string Text
@@ -144,6 +149,7 @@ public sealed class Assembler
     private readonly Vocab? _vocab;
     private readonly bool _furniture;
     private readonly int? _spaceId;
+    private bool _pageRtl;
 
     /// <param name="order">The order model, or <c>null</c> when the model set has none.</param>
     /// <param name="tableHeads">The reference's <c>table_heads</c> flag.</param>
@@ -171,9 +177,19 @@ public sealed class Assembler
     /// </param>
     public OcrPage Run(double pageWidth, double pageHeight, ReadOnlySpan<float> boxes, int n,
                        IReadOnlyList<RecognizedLine> rec, IDictionary<string, double>? timings = null,
-                       bool contentOrder = false)
+                       bool contentOrder = false, ReadOnlySpan<float> pictures = default,
+                       bool vertical = false)
     {
         var clock = Stopwatch.StartNew();
+
+        int rtl = 0, ltr = 0;
+        foreach (RecognizedLine line in rec)
+            foreach (int cp in UnicodeText.CodePointValues(line.Text))
+            {
+                if (!UnicodeText.IsAlphaCodePoint(cp)) continue;
+                if (RtlText.IsRtl(cp)) rtl++; else ltr++;
+            }
+        _pageRtl = rtl > ltr;
 
         // Text-layer labels split a line at wide gaps; do the same (SPLIT_GAP).
         var bx = new List<float>(n * 4);
@@ -194,8 +210,25 @@ public sealed class Assembler
         }
         var curBoxes = bx.ToArray();
         int m = rc.Count;
+        TidyLines(ref curBoxes, rc, _pageRtl);
+        m = rc.Count;
         var texts = Texts(rc, m);
-        var ro = ReadingOrder.Run(_order, curBoxes, m, texts, pageWidth, pageHeight, _tableHeads);
+        float[] geometry = _pageRtl ? Mirror(curBoxes, m, (float)pageWidth) : curBoxes;
+        var ro = ReadingOrder.Run(_order, geometry, m, texts, pageWidth, pageHeight, _tableHeads);
+        if (vertical && ro.Layout is not null)
+        {
+            List<List<int>> grouped = OrderPost.XyCutBlocks(curBoxes, m);
+            int[] verticalOrder = grouped.SelectMany(v => v).ToArray();
+            var same = Enumerable.Repeat(-1f, m * m).ToArray();
+            foreach (List<int> group in grouped)
+                foreach (int a in group) foreach (int b in group) same[a * m + b] = 1f;
+            float[] cls = ro.Layout.Cls.ToArray();
+            foreach (int c in OrderPost.GridClassIds)
+            {
+                for (int i = 0; i < m; i++) cls[i * OrderPost.BlockClasses.Length + c] = -1e4f;
+            }
+            ro = new ReadingOrderResult(verticalOrder, new LayoutHeads(cls, same, null), ro.Logits);
+        }
 
         if (ro.Layout is not null && ro.Layout.Table is not null)
         {
@@ -309,6 +342,7 @@ public sealed class Assembler
         if (ro.Layout is not null)
         {
             blocks = LayoutPost.PageBlocks(curBoxes, m, texts, order, ro.Layout.Cls, ro.Layout.Same);
+            AddPictures(blocks, pictures);
             // Inside tables, labels split cells at smaller gaps (CELL_GAP).
             var cells = new Dictionary<int, IReadOnlyList<TableCell>>(m);
             for (int i = 0; i < m; i++)
@@ -320,8 +354,9 @@ public sealed class Assembler
                 cells[i] = list;
             }
             md = LayoutPost.PageMarkdown(curBoxes, m, texts, order, ro.Layout.Cls, ro.Layout.Same,
-                                         _furniture, cells,
-                                         ro.Layout.Table is null ? default : ro.Layout.Table);
+                                          _furniture, cells,
+                                          ro.Layout.Table is null ? default : ro.Layout.Table,
+                                          pictures);
         }
         else if (m < 2)
         {
@@ -329,6 +364,91 @@ public sealed class Assembler
         }
 
         return new OcrPage(lines, timingsView, md, "ocr", note, blocks);
+    }
+
+    private static float[] Mirror(float[] boxes, int n, float width)
+    {
+        var output = boxes.ToArray();
+        for (int i = 0; i < n; i++)
+        {
+            output[i * 4] = width - boxes[i * 4 + 2];
+            output[i * 4 + 2] = width - boxes[i * 4];
+        }
+        return output;
+    }
+
+    private void TidyLines(ref float[] boxes, List<Rec> rec, bool rtl)
+    {
+        int n = rec.Count;
+        var keep = Enumerable.Repeat(true, n).ToArray();
+        for (int i = 0; i < n; i++)
+        {
+            string core = rec[i].Text.Replace(" ", "");
+            if (core.Length == 0 || core.Any(c => !".·…‥_-–—=".Contains(c))) continue;
+            double h = boxes[i * 4 + 3] - boxes[i * 4 + 1];
+            double w = boxes[i * 4 + 2] - boxes[i * 4];
+            if (UnicodeText.CodePointCount(core) >= 3 || w >= 3 * h || !core.Any(c => "-–—".Contains(c)))
+                keep[i] = false;
+        }
+        for (int i = 0; i < n; i++)
+        {
+            string marker = UnicodeText.Strip(rec[i].Text);
+            if (!keep[i] || !IsMarker(marker)) continue;
+            double hi = boxes[i * 4 + 3] - boxes[i * 4 + 1];
+            int best = -1; double bestGap = double.PositiveInfinity;
+            for (int j = 0; j < n; j++)
+            {
+                if (i == j || !keep[j] || UnicodeText.Strip(rec[j].Text).Length == 0) continue;
+                double hj = boxes[j * 4 + 3] - boxes[j * 4 + 1];
+                double overlap = Math.Min(boxes[i * 4 + 3], boxes[j * 4 + 3]) -
+                                 Math.Max(boxes[i * 4 + 1], boxes[j * 4 + 1]);
+                if (overlap < 0.5 * Math.Min(hi, hj)) continue;
+                double gap = rtl ? boxes[i * 4] - boxes[j * 4 + 2]
+                                 : boxes[j * 4] - boxes[i * 4 + 2];
+                if (gap >= -0.3 * hi && gap <= 2.5 * Math.Max(hi, hj) && gap < bestGap)
+                { best = j; bestGap = gap; }
+            }
+            if (best < 0) continue;
+            rec[best] = new Rec(marker + " " + UnicodeText.Strip(rec[best].Text), rec[best].Conf,
+                                rec[best].Toks);
+            boxes[best * 4] = Math.Min(boxes[i * 4], boxes[best * 4]);
+            boxes[best * 4 + 1] = Math.Min(boxes[i * 4 + 1], boxes[best * 4 + 1]);
+            boxes[best * 4 + 2] = Math.Max(boxes[i * 4 + 2], boxes[best * 4 + 2]);
+            boxes[best * 4 + 3] = Math.Max(boxes[i * 4 + 3], boxes[best * 4 + 3]);
+            keep[i] = false;
+        }
+        var outputBoxes = new List<float>(); var outputRec = new List<Rec>();
+        for (int i = 0; i < n; i++) if (keep[i])
+        { outputBoxes.AddRange(boxes.AsSpan(i * 4, 4)); outputRec.Add(rec[i]); }
+        boxes = outputBoxes.ToArray(); rec.Clear(); rec.AddRange(outputRec);
+    }
+
+    private static bool IsMarker(string text)
+    {
+        if (UnicodeText.CodePointCount(text) == 1 && "•◦▪▫●○■□‣⁃∙*".Contains(text)) return true;
+        string t = text;
+        if (t.StartsWith('(') && t.EndsWith(')')) t = t[1..^1];
+        else if (t.EndsWith('.') || t.EndsWith(')')) t = t[..^1]; else return false;
+        if (t.Length is < 1 or > 5) return false;
+        return t.All(char.IsDigit) || (t.Length == 1 &&
+               (t[0] is >= 'A' and <= 'Z' or >= 'a' and <= 'z')) ||
+               t.All(c => "ivxlcIVXLC".Contains(c));
+    }
+
+    private static void AddPictures(List<LayoutBlock> blocks, ReadOnlySpan<float> pictures)
+    {
+        for (int k = 0; k < pictures.Length / 4; k++)
+        {
+            int o = k * 4;
+            double cy = (pictures[o + 1] + pictures[o + 3]) / 2;
+            int at = blocks.Count;
+            for (int i = 0; i < blocks.Count; i++)
+                if ((blocks[i].Bbox[1] + blocks[i].Bbox[3]) / 2 > cy &&
+                    Math.Min(pictures[o + 2], blocks[i].Bbox[2]) >
+                    Math.Max(pictures[o], blocks[i].Bbox[0])) { at = i; break; }
+            blocks.Insert(at, new LayoutBlock("Picture",
+                new double[] { pictures[o], pictures[o + 1], pictures[o + 2], pictures[o + 3] }, ""));
+        }
     }
 
     // ------------------------------------------------------------------ gutter cuts
@@ -467,7 +587,15 @@ public sealed class Assembler
             var sb = new System.Text.StringBuilder(toks.Count);
             foreach (var tk in toks)
                 sb.Append(tk.Character);
-            return UnicodeText.CollapseSpaces(sb.ToString());
+            string text = UnicodeText.CollapseSpaces(sb.ToString());
+            // Two-element character tokens are group-recognizer output in visual order; the
+            // three-element text-layer form carries ContentIndex and is already logical text.
+            if (toks[0].ContentIndex is null)
+            {
+                text = Nfc.Normalize(text);
+                if (RtlText.HasRtl(text)) text = RtlText.Flip(text, baseRtl: _pageRtl ? true : null);
+            }
+            return text;
         }
         if (_vocab is null)
             throw new InvalidOperationException("an id-token line needs a vocabulary to decode");

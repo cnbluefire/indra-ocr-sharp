@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import sys
 import zlib
 from pathlib import Path
@@ -40,13 +41,30 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from refutil import fixtures_dir  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / "resources" / "indra-src"))
+REFERENCE = Path(os.environ.get("INDRA_OCR_REFERENCE", ROOT / "resources" / "indra-src"))
+sys.path.insert(0, str(REFERENCE))
 from indra_ocr.order_post import BLOCK_CLASSES  # noqa: E402
 from indra_ocr.pipeline import OrtOCR  # noqa: E402
-from indra_ocr.textlayer import order_backtracks, pdf_order_coherent  # noqa: E402
+try:  # removed upstream in 1.1: kept here to refresh the port's compatibility helper fixtures
+    from indra_ocr.textlayer import order_backtracks, pdf_order_coherent  # type: ignore[attr-defined]  # noqa: E402
+except ImportError:
+    def order_backtracks(boxes):
+        if len(boxes) < 3:
+            return 0
+        h = float(np.median(boxes[:, 3] - boxes[:, 1]))
+        return sum(b[1] < a[1] - 0.5 * h and b[0] < a[2] - h
+                   for a, b in zip(boxes[:-1], boxes[1:]))
+
+    def pdf_order_coherent(boxes, pair_logits=None):
+        if order_backtracks(boxes) > max(1, int(0.02 * len(boxes))):
+            return False
+        if pair_logits is None or len(boxes) < 3:
+            return True
+        i = np.arange(len(boxes) - 1)
+        return float((pair_logits[i, i + 1] > 0).mean()) >= 0.85
 from indra_ocr.vocab import Vocab  # noqa: E402
 
-MODELS = ROOT / "resources" / "models"
+MODELS = Path(os.environ.get("INDRA_OCR_TEST_MODELS", ROOT / "resources" / "models"))
 FIX = fixtures_dir()
 f32_ = np.float32
 
@@ -413,7 +431,12 @@ def assemble_case(name, boxes, rec, model: RecordingModel | None, wh,
     stub = Stub(None if model is None else model, table_heads, furniture)
     b = np.ascontiguousarray(boxes, np.float32).reshape(-1, 4)
     t: dict = {}
-    page = OrtOCR.assemble(stub, (float(wh[0]), float(wh[1])), b, list(rec), t, content_order)
+    try:
+        page = OrtOCR.assemble(stub, (float(wh[0]), float(wh[1])), b, list(rec), t,
+                               content_order=content_order)
+    except TypeError:  # 1.1 removed the content-order switch
+        page = OrtOCR.assemble(stub, (float(wh[0]), float(wh[1])), b, list(rec), t)
+        content_order = False
     assemble_cases.append({
         "name": name, "n": int(len(b)), "page": [float(wh[0]), float(wh[1])],
         "boxes": f32(b), "rec": rec_json(rec),

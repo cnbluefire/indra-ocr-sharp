@@ -25,6 +25,9 @@ public static class TextLayerReader
 
     /// <summary><see cref="TextLayer.Reason"/> when the layer's codes are not text.</summary>
     public const string BrokenFontMap = "broken font map";
+    public const string VisualRtl = "right-to-left text in visual order";
+    public const int MinRtlPairs = 20;
+    public const double MaxVisualRtlFraction = 0.25;
 
     /// <summary>
     /// Characters of a string that are not text: the replacement character, private use,
@@ -131,6 +134,13 @@ public static class TextLayerReader
             return new TextLayer(runs, size, false, BrokenFontMap, stats);
         }
 
+        (int pairs, double visual) = VisualRtlFraction(runs);
+        if (pairs >= MinRtlPairs && visual > MaxVisualRtlFraction)
+        {
+            stats = stats with { VisualRtl = Numerics.RoundHalfEven(visual, 3) };
+            return new TextLayer(runs, size, false, VisualRtl, stats);
+        }
+
         double empty = NoInkFraction(gray, runs, scale);
         stats = stats with { NoInk = Numerics.RoundHalfEven(empty, 4) };
         if (empty > MaxNoInkLineFraction)
@@ -145,4 +155,34 @@ public static class TextLayerReader
     /// <summary>Python's <c>f"{x:.0%}"</c>: the value times 100, rounded half to even, then "%".</summary>
     private static string Percent0(double fraction)
         => ((long)Numerics.RoundHalfEven(fraction * 100.0, 0)).ToString(CultureInfo.InvariantCulture) + "%";
+
+    public static (int Pairs, double Fraction) VisualRtlFraction(IReadOnlyList<TextLine> runs)
+    {
+        int pairs = 0, right = 0;
+        foreach (TextLine run in runs)
+            for (int i = 0; i + 1 < run.Chars.Count; i++)
+                if (RtlText.IsRtl(First(run.Chars[i].Character)) &&
+                    RtlText.IsRtl(First(run.Chars[i + 1].Character)))
+                {
+                    pairs++;
+                    double a = run.Chars[i].Bbox[0] + run.Chars[i].Bbox[2];
+                    double b = run.Chars[i + 1].Bbox[0] + run.Chars[i + 1].Bbox[2];
+                    if (b > a) right++;
+                }
+        return (pairs, (double)right / Math.Max(pairs, 1));
+    }
+
+    private static int First(string s) => char.IsSurrogatePair(s, 0) ? char.ConvertToUtf32(s, 0) : s[0];
+
+    public static int PageTurn(TextLayerStats stats)
+    {
+        IReadOnlyList<int>? quarters = stats.Quarters;
+        if (quarters is null || quarters.Count < 4) return 0;
+        int best = 1;
+        for (int i = 2; i < 4; i++) if (quarters[i] > quarters[best]) best = i;
+        return quarters[best] > 0.5 * Math.Max(stats.Chars, 1) ? best : 0;
+    }
+
+    public static bool VerticalLayout(TextLayerStats stats)
+        => stats.Steps is { Count: >= 2 } steps && steps[0] >= 30 && steps[0] > 2 * steps[1];
 }

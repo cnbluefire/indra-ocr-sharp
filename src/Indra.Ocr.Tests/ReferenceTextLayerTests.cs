@@ -101,8 +101,8 @@ public class ReferenceTextLayerTests
         Assert.Equal("ocr",
                      SourceArguments.Options(ap.ParseArgs(["--mode", "ocr", "a.pdf"])).Mode);
         var (_, pdfOrder, imageOcr) =
-            SourceArguments.Options(ap.ParseArgs(["--model-order", "--no-image-ocr", "a.pdf"]));
-        Assert.False(pdfOrder);
+            SourceArguments.Options(ap.ParseArgs(["--no-image-ocr", "a.pdf"]));
+        Assert.True(pdfOrder);
         Assert.False(imageOcr);
     }
 

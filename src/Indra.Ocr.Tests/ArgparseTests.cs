@@ -63,7 +63,7 @@ public class ArgparseTests
         ArgumentParserExit exit = Assert.Throws<ArgumentParserExit>(() => CliParser.Build().ParseArgs(["--version"]));
         Assert.Equal(0, exit.Status);
         Assert.Equal("", exit.Stderr);
-        Assert.Equal("indra-ocr 0.3.2\n", exit.Stdout);
+        Assert.Equal("indra-ocr 1.1.2\n", exit.Stdout);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class ArgparseTests
     {
         ArgumentParserExit exit = Fail("--m", "a.pdf");
         Assert.Equal(
-            "indra-ocr: error: ambiguous option: --m could match --mode, --model-order, " +
+            "indra-ocr: error: ambiguous option: --m could match --mode, " +
             "--model-dir, --max-pages, --math\n", exit.Stderr[(exit.Stderr.IndexOf("indra-ocr: error:")..)]);
     }
 
@@ -115,19 +115,17 @@ public class ArgparseTests
         Assert.False(a.Flag("math"));
         Assert.False(a.Flag("keep_furniture"));
         Assert.False(a.Flag("timings"));
-        Assert.False(a.Flag("model_order"));
         Assert.False(a.Flag("no_image_ocr"));
     }
 
     [Fact]
     public void Options_take_values_and_abbreviations()
     {
-        ParsedArguments a = Parse("--form=json", "--dpi=100", "--threads", "3", "--model-order",
+        ParsedArguments a = Parse("--form=json", "--dpi=100", "--threads", "3",
                             "--keep-furniture", "a.pdf", "b.png");
         Assert.Equal("json", a.Str("format"));
         Assert.Equal(100.0, a.Float("dpi"));
         Assert.Equal(3, a.Int("cores"));
-        Assert.True(a.Flag("model_order"));
         Assert.True(a.Flag("keep_furniture"));
         Assert.Equal(["a.pdf", "b.png"], a.StrList("inputs"));
     }

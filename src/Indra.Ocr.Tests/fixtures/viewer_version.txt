@@ -1,1 +1,1 @@
-indra-ocr 0.3.2
+indra-ocr 1.1.2

@@ -21,6 +21,7 @@ public sealed class Vocab
 {
     private readonly string[] _chars;
     private readonly Dictionary<string, int> _index;
+    private readonly bool _jamo;
 
     public Vocab(IEnumerable<string> chars)
     {
@@ -29,6 +30,7 @@ public sealed class Vocab
         for (int i = 0; i < _chars.Length; i++)
             _index[_chars[i]] = i + 1;
         HasCommands = Array.Exists(_chars, c => UnicodeText.CodePointCount(c) > 1);
+        _jamo = _index.ContainsKey("ᄀ");
     }
 
     /// <summary>The tokens, in class order: token <c>i</c> is class <c>i + 1</c>.</summary>
@@ -141,7 +143,10 @@ public sealed class Vocab
                 toks.Add(_chars[id - 1]);
 
         if (!HasCommands)
-            return string.Concat(toks);
+        {
+            string text = string.Concat(toks);
+            return _jamo ? Nfc.Normalize(text) : text;
+        }
 
         var sb = new StringBuilder();
         for (int k = 0; k < toks.Count; k++)

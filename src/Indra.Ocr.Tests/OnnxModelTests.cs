@@ -38,6 +38,10 @@ public class OnnxModelTests
         var meta = root.GetProperty("meta");
         Assert.Equal(meta.GetProperty("det_long_side").GetInt32(), models.DetLongSide);
         Assert.Equal(meta.GetProperty("rec_height").GetInt32(), models.RecHeight);
+        Assert.Equal(meta.TryGetProperty("rec_window", out JsonElement window)
+                         ? window.GetInt32()
+                         : 1,
+                     models.RecWindow);
 
         // The vocabulary sizes the shipped meta.json implies (see docs/050-vocab.md).
         Assert.Equal(1677, models.Vocab.Characters.Length);

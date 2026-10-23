@@ -253,7 +253,16 @@ public sealed class ArgumentParser
     /// <summary><c>parse_args</c>: the namespace, or an <see cref="ArgumentParserExit"/>.</summary>
     public ParsedArguments ParseArgs(IReadOnlyList<string> argv)
     {
-        ParsedArguments ns = ParseKnownArgs(argv, out List<string> extras);
+        ParsedArguments ns;
+        List<string> extras;
+        try
+        {
+            ns = ParseKnownArgs(argv, out extras);
+        }
+        catch (ArgumentError e)
+        {
+            throw Error(e.Action is null ? e.Message : $"argument {e.Action.Name}: {e.Message}");
+        }
         if (extras.Count > 0)
         {
             throw Error($"unrecognized arguments: {string.Join(" ", extras)}");
@@ -555,6 +564,7 @@ public sealed class ArgumentParser
                 return action.Type switch
                 {
                     ArgumentType.Int => ArgumentNumber.ParseInt(argString),
+                    ArgumentType.PageCount => ParsePageCount(action, argString),
                     ArgumentType.Float => ArgumentNumber.ParseFloat(argString),
                     ArgumentType.Path => PathHelper.Normalize(argString),
                     _ => argString,
@@ -565,6 +575,14 @@ public sealed class ArgumentParser
                 throw Error($"argument {action.Name}: invalid {TypeName(action.Type)} value: " +
                             $"{Repr(argString)}");
             }
+        }
+
+        object ParsePageCount(Argument action, string text)
+        {
+            long value = ArgumentNumber.ParseInt(text);
+            if (value < 0)
+                throw new ArgumentError(action, $"must be 0 (all pages) or more, not {value}");
+            return value;
         }
 
         void CheckValue(Argument action, object? value)
@@ -661,6 +679,7 @@ public sealed class ArgumentParser
     private static string TypeName(ArgumentType type) => type switch
     {
         ArgumentType.Int => "int",
+        ArgumentType.PageCount => "_page_count",
         ArgumentType.Float => "float",
         ArgumentType.Path => "Path",
         _ => "str",

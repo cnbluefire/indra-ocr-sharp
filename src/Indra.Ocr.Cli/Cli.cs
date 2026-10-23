@@ -81,6 +81,8 @@ internal static class Cli
 
         int cores = a.Int("cores");
         int maxPages = a.Int("max_pages");
+        if (maxPages < 0)
+            throw parser.Error($"argument --max-pages: must be 0 (all pages) or more, not {maxPages}");
         string? password = a.Str("password");
         double dpi = a.Float("dpi");
         bool furniture = a.Flag("keep_furniture");
@@ -485,6 +487,7 @@ internal static class Cli
             ("source", ConsoleOutput.Str(page.Source)),
             ("rotation", ConsoleOutput.Num(page.Rotation)),
             ("skew", ConsoleOutput.Num(page.Skew)),
+            ("vertical", ConsoleOutput.Bool(page.Vertical)),
             ("note", ConsoleOutput.Str(page.Note)),
             ("lines", ConsoleOutput.Array(page.Lines.Select(LineJson))),
             ("markdown", page.Markdown is null ? ConsoleOutput.Null() : ConsoleOutput.Str(page.Markdown)),

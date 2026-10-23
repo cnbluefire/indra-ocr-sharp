@@ -175,7 +175,7 @@ public sealed class Engine : IDisposable
         lock (_lock)
         {
             OrtOcr ocr = Ocr(math, opts.Furniture);
-            var conv = new PdfConverter(ocr, dpi: dpi, mode: mode, pdfOrder: !opts.ModelOrder,
+            var conv = new PdfConverter(ocr, dpi: dpi, mode: mode, pdfOrder: true,
                                         imageOcr: opts.ImageOcr ?? true);
             if (pdf)
             {
@@ -265,7 +265,7 @@ public sealed class Engine : IDisposable
                 jsonBlocks.Add(new JsonBlock(block.Label, block.Bbox, block.Text));
             }
 
-            json = new JsonPage(n, page.Source, page.Rotation, page.Skew, page.Note, jsonLines,
+            json = new JsonPage(n, page.Source, page.Rotation, page.Skew, page.Vertical, page.Note, jsonLines,
                                 page.Markdown, jsonBlocks, page.Timings);
         }
 
@@ -286,6 +286,7 @@ public sealed class Engine : IDisposable
             Note: page.Note,
             Rotation: page.Rotation,
             Skew: page.Skew,
+            Vertical: page.Vertical,
             Json: json,
             Timings: timings,
             Tesseract: null);

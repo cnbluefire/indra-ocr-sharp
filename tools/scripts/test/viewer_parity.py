@@ -58,17 +58,20 @@ PY = ROOT / "tools" / "pyenv" / "Scripts" / "python.exe"
 EXE = Path(os.environ.get(
     "INDRA_OCR_VIEWER_EXE",
     ROOT / "src" / "Indra.Ocr.Viewer" / "bin" / "Debug" / "net10.0" / "indra-ocr-viewer.exe"))
-MODELS = ROOT / "resources" / "models"
+MODELS = Path(os.environ.get("INDRA_OCR_TEST_MODELS", ROOT / "resources" / "models"))
 FIXTURE = ROOT / "src" / "Indra.Ocr.Tests" / "fixtures" / "viewer.json"
 WORK = ROOT / "temp" / "viewer_parity"
-EXAMPLES = ROOT / "resources" / "indra-src" / "assets" / "examples"
+REFERENCE = Path(os.environ.get("INDRA_OCR_REFERENCE", ROOT / "resources" / "indra-src"))
+EXAMPLES = REFERENCE / "assets" / "examples"
 
 #: The two example pages the ``assets`` case sends through the API (see it for why these two).
 #: ``resources/`` is externally downloaded material, so the case is skipped when it is absent.
 ASSET_PAGES = ("multi_column", "chinese_essay")
 
 ENV = dict(os.environ)
-ENV["PYTHONPATH"] = str(ROOT / "resources" / "indra-src")
+ENV["PYTHONPATH"] = str(REFERENCE)
+ENV["OPENBLAS_NUM_THREADS"] = "1"
+ENV["OMP_NUM_THREADS"] = "1"
 ENV["PYTHONIOENCODING"] = "utf-8"
 ENV["COLUMNS"] = "80"
 
@@ -223,7 +226,6 @@ def case_page_options(s: Session) -> None:
     s.page("default", did, 0)
     s.page("mode-text", did, 0, {"mode": "text"})
     s.page("mode-ocr", did, 0, {"mode": "ocr"})
-    s.page("model-order", did, 0, {"model_order": True})
     s.page("no-image-ocr", did, 0, {"image_ocr": False})
     s.page("dpi-100", did, 0, {"dpi": 100})
     s.page("furniture", did, 0, {"furniture": True})

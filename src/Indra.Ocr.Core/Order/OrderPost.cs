@@ -112,21 +112,32 @@ public static class OrderPost
                 if (t.Length == 0)
                     continue;
                 int len = UnicodeText.CodePointCount(t);
+                int displayLen = 0;
                 int digits = 0;
                 foreach (int cp in UnicodeText.CodePointValues(t))
+                {
                     if (UnicodeText.IsDigitCodePoint(cp))
                         digits++;
+                    displayLen += IsEastAsianWide(cp) ? 2 : 1;
+                }
                 int o = i * FeatureCount + GeomCount;
-                f[o + 0] = (float)(Numerics.Log1p(len) / 5.0);
+                f[o + 0] = (float)(Numerics.Log1p(displayLen) / 5.0);
                 f[o + 1] = (float)(digits / (double)len);
                 f[o + 2] = IsListItem(t, len) ? 1f : 0f;
                 f[o + 3] = t.EndsWith('-') ? 1f : 0f;
-                f[o + 4] = ".!?:;".Contains(t[^1]) ? 1f : 0f;
+                f[o + 4] = ".!?:;。！？：；．".Contains(t[^1]) ? 1f : 0f;
                 f[o + 5] = FirstCodePointIsUpper(t) ? 1f : 0f;
             }
         }
         return f;
     }
+
+    private static bool IsEastAsianWide(int cp) =>
+        cp is >= 0x1100 and <= 0x115F or 0x2329 or 0x232A or
+        >= 0x2E80 and <= 0xA4CF or >= 0xAC00 and <= 0xD7A3 or
+        >= 0xF900 and <= 0xFAFF or >= 0xFE10 and <= 0xFE6F or
+        >= 0xFF01 and <= 0xFF60 or >= 0xFFE0 and <= 0xFFE6 or
+        >= 0x1F300 and <= 0x1FAFF or >= 0x20000 and <= 0x3FFFD;
 
     /// <summary>
     /// <c>t[0] in "•-–▪◦*·→" or (t[:3].rstrip(".)").isdigit() and len(t) &gt; 3)</c>.
@@ -342,6 +353,37 @@ public static class OrderPost
         for (int i = 0; i < n; i++)
             ids.Add(i);
         return Rec(boxes, ids).ToArray();
+    }
+
+    public static List<List<int>> XyCutBlocks(ReadOnlySpan<float> boxes, int n,
+                                               double minGap = 1.0)
+    {
+        var heights = new float[n];
+        for (int i = 0; i < n; i++) heights[i] = boxes[i * 4 + 3] - boxes[i * 4 + 1];
+        double h = n == 0 ? 0 : Numerics.Median(heights);
+        var ids = Enumerable.Range(0, n).ToList();
+        return Blocks(boxes, ids, minGap * h);
+    }
+
+    private static List<List<int>> Blocks(ReadOnlySpan<float> boxes, List<int> ids, double minGap)
+    {
+        if (ids.Count == 0) return [];
+        var b = new float[ids.Count * 4];
+        for (int i = 0; i < ids.Count; i++)
+            boxes.Slice(ids[i] * 4, 4).CopyTo(b.AsSpan(i * 4));
+        if (ids.Count > 1)
+        {
+            var y = BestCut(b, ids.Count, 1); var x = BestCut(b, ids.Count, 0);
+            var cut = y.Gap >= x.Gap ? y : x;
+            if (cut.K >= 0 && cut.Gap >= minGap)
+            {
+                var a = cut.Order.Take(cut.K).Select(i => ids[i]).ToList();
+                var c = cut.Order.Skip(cut.K).Select(i => ids[i]).ToList();
+                var result = Blocks(boxes, a, minGap); result.AddRange(Blocks(boxes, c, minGap));
+                return result;
+            }
+        }
+        return [OrderXyCut(b, ids.Count).Select(i => ids[i]).ToList()];
     }
 
     private static List<int> Rec(ReadOnlySpan<float> boxes, List<int> ids)

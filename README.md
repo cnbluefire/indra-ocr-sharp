@@ -1,24 +1,28 @@
 # Indra.Ocr.Sharp
 
-A C# / .NET port of Datalab's **Indra OCR** (`indra-ocr`): the same command line, the same local
+[![NuGet](https://img.shields.io/nuget/vpre/Bluefire.Indra.Ocr.Sharp.svg?logo=nuget)](https://www.nuget.org/packages/Bluefire.Indra.Ocr.Sharp)
+[![Upstream Indra OCR](https://img.shields.io/badge/upstream-v1.1.2-blue)](https://github.com/datalab-to/indra/tree/v1.1.2)
+
+A C# / .NET port of Datalab's **Indra OCR 1.1.2** (`indra-ocr`): the same command line, the same local
 viewer, the same output — no Python, no PyTorch, no OpenCV.
 
-- Upstream code: <https://github.com/datalab-to/indra> (Apache-2.0)
+- Upstream code: <https://github.com/datalab-to/indra> (Apache-2.0); this port targets
+  **v1.1.2** / commit [`0e96b93`](https://github.com/datalab-to/indra/commit/0e96b93c6810f17cf8352acbb4487cc9e45b66d5)
 - Model weights: <https://huggingface.co/datalab-to/indra-ocr> (modified OpenRAIL-M)
 
 ## About Indra OCR
 
 Indra OCR is Datalab's 1M-parameter OCR model: it turns PDFs and images into markdown, plain
 text or JSON with boxes, on the CPU. Its numbers belong to upstream, not to this port — about
-18 MB of ONNX models, up to 49 pages per second on 32 cores, ~230 ms per page on 4 vCPUs, a
-bounding box for every line and every layout block with reading order, and a digital PDF's own
-text layer read in any script, with OCR only where text is missing.
+76 MB of networks and language models, about 44 pages per second on 32 x86 cores, handwriting,
+80+ scan languages, pages tilted by up to 45 degrees, light text on dark ground, and a bounding box
+for every line and layout block. A digital PDF's own text layer is used where it passes the trust
+checks, with OCR only where it is missing or misleading.
 
 - Repository and full README: <https://github.com/datalab-to/indra>
 - Models: <https://huggingface.co/datalab-to/indra-ocr>
 - Documentation: <https://documentation.datalab.to>
-- What it does not do (handwriting, complex tables, scripts outside the OCR list on scans,
-  degraded scans): upstream's *Limitations* section.
+- Current limitations and benchmark scope: upstream's *Limitations* section.
 
 ## About this port
 
@@ -45,8 +49,8 @@ its viewer and its library — to C# on .NET 10.
 - **AOT-ready.** The three libraries are `IsAotCompatible` and both hosts `PublishAot`, so
   `dotnet publish -r <rid>` produces native binaries, one per host, with no runtime to install; the
   solution is globalization-invariant, so they need no ICU.
-- **Same models.** The same Hugging Face repository and revision (v3.1.1) the Python package
-  uses, downloaded on the first run (about 18 MB) and cached. `--model-dir` or
+- **Same models.** The same Hugging Face repository and revision (`v1.1.0`) the Python package
+  uses, downloaded on the first run (about 76 MB) and cached. `--model-dir` or
   `INDRA_OCR_MODEL_DIR` uses a local copy instead, and the math models download only with
   `--math`.
 
@@ -121,7 +125,7 @@ refuses.
 
 ## Command line
 
-The first run downloads the models (about 18 MB) from Hugging Face and caches them.
+The first run downloads the models (about 76 MB) from Hugging Face and caches them.
 
 ```shell
 indra-ocr paper.pdf                       # markdown to stdout
@@ -140,7 +144,6 @@ indra-ocr paper.pdf --model-dir models/   # use a local model folder, download n
 | `--out DIR` | write one file per input (`.md`, `.txt` or `.jsonl`) |
 | `--format md\|text\|json` | output format (default `md`) |
 | `--mode auto\|ocr\|text` | `auto` (default) reads the text layer where it passes the checks and OCRs elsewhere; `ocr` never reads it; `text` uses it even when the checks fail |
-| `--model-order` | order text-layer lines with the order model, not the PDF content order |
 | `--no-image-ocr` | on text-layer pages, do not OCR text inside images |
 | `--model-dir DIR` | folder with the models (default: `INDRA_OCR_MODEL_DIR`, else download) |
 | `--cores N` (alias `--threads`) | cores to use, one worker process each (default: all usable cores) |
@@ -167,7 +170,7 @@ indra-ocr-viewer --dpi 300 --max-pages 50  # initial render resolution and page 
 | `--max-pages N` | initial page limit per document (default 20) |
 | `--keep-furniture` | initially keep page headers and footers |
 | `--math` | initially write math as LaTeX |
-| `--model-dir DIR`, `--mode`, `--model-order`, `--no-image-ocr` | as the CLI's: the model folder and the initial pipeline options |
+| `--model-dir DIR`, `--mode`, `--no-image-ocr` | as the CLI's: the model folder and the initial pipeline options |
 | `--tesseract`, `--tesseract-lang L` | accepted for command-line parity, but this port does not implement the comparison: `--tesseract` fails at startup (`tesseract is not supported by this port`) and `/info` always reports `tesseract: false` |
 
 Drop in a PDF or an image and each page shows its lines, layout blocks and reading order over

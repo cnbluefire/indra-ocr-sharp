@@ -47,6 +47,15 @@ public sealed class OnnxRecModel : IRecModel
                 $"conf [{string.Join(",", conf.Dimensions.ToArray())}] and " +
                 $"lengths [{string.Join(",", lengths.Dimensions.ToArray())}] for a batch of {batch}");
 
-        return new RecOutput(ids.ToArray(), conf.ToArray(), lengths.ToArray(), ids.Dimensions[1]);
+        float[]? blank = null, topv = null; long[]? topi = null; int topClasses = 0;
+        if (outputs >= 6)
+        {
+            blank = results[3].AsTensor<float>().ToArray();
+            var tv = results[4].AsTensor<float>(); topv = tv.ToArray();
+            topi = results[5].AsTensor<long>().ToArray();
+            topClasses = tv.Dimensions[^1];
+        }
+        return new RecOutput(ids.ToArray(), conf.ToArray(), lengths.ToArray(), ids.Dimensions[1],
+                             blank, topv, topi, topClasses);
     }
 }

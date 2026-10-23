@@ -34,6 +34,7 @@ public enum ArgumentType
     Int,
     Float,
     Path,
+    PageCount,
 }
 
 /// <summary>One command-line argument: argparse's <c>Action</c>.</summary>
